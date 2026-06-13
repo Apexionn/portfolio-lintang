@@ -436,7 +436,7 @@ function AboutSection() {
 
 function ProjectsSection() {
   return (
-    <section className="relative z-10 py-[100px]" id="projects">
+    <section className="relative z-10 py-[100px]" id="work">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
         <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
           02 / Selected Work
