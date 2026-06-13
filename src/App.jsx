@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
 // DATA
@@ -42,8 +42,11 @@ const SKILLS = {
 };
 
 // THREE.JS NEURAL MESH (Hero)
-function useNeuralMesh(canvasRef) {
+// Menggunakan isDesktop sebagai dependency agar animasi menyala kembali saat layar dilebarkan
+function useNeuralMesh(canvasRef, isDesktop) {
   useEffect(() => {
+    if (!isDesktop) return; // Matikan total eksekusi 3D jika di mobile untuk hemat baterai
+    
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -187,7 +190,7 @@ function useNeuralMesh(canvasRef) {
       window.removeEventListener("resize", onResize);
       renderer.dispose();
     };
-  }, [canvasRef]);
+  }, [isDesktop]); // <--- KUNCI PERBAIKAN BUG 1: Memantau perubahan isDesktop
 }
 
 // SCROLL REVEAL HOOK
@@ -210,40 +213,98 @@ function useScrollReveal() {
   }, []);
 }
 
-// COMPONENTS
 function Nav() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Mencegah scroll layar belakang saat menu mobile terbuka
+  useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isMenuOpen]);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-6 md:px-[60px] py-4 md:py-5 border-b border-port-grid bg-port-bg/80 backdrop-blur-md">
-      <a href="#" className="font-syne font-[800] text-[20px] text-port-text-primary tracking-[-0.5px] no-underline">
-        LA<span className="text-port-teal">.</span>
-      </a>
-      <ul className="hidden md:flex gap-9 list-none">
-        {['About', 'Work', 'Arsenal', 'Contact'].map((item) => (
-          <li key={item}>
-            <a href={`#${item.toLowerCase()}`} className="font-syne-mono text-[11px] tracking-[0.12em] uppercase text-port-text-muted hover:text-port-teal transition-colors duration-200 no-underline">
-              {item}
-            </a>
-          </li>
-        ))}
-      </ul>
-      <div className="flex items-center gap-2 font-syne-mono text-[11px] text-port-text-muted">
-        <div className="w-2 h-2 rounded-full bg-port-teal shadow-[0_0_10px_#00F5C4] animate-pulse-glow" />
-        Available for work
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-6 md:px-[60px] py-4 md:py-5 border-b border-port-grid bg-port-bg/80 backdrop-blur-md">
+        {/* LOGO */}
+        <a href="#" className="font-syne font-[800] text-[20px] text-port-text-primary tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
+          LA<span className="text-port-teal">.</span>
+        </a>
+
+        {/* DESKTOP MENU */}
+        <ul className="hidden md:flex gap-9 list-none">
+          {['About', 'Work', 'Arsenal', 'Contact'].map((item) => (
+            <li key={item}>
+              <a href={`#${item.toLowerCase()}`} className="font-syne-mono text-[11px] tracking-[0.12em] uppercase text-port-text-muted hover:text-port-teal transition-colors duration-200 no-underline">
+                {item}
+              </a>
+            </li>
+          ))}
+        </ul>
+        
+        {/* DESKTOP STATUS */}
+        <div className="hidden md:flex items-center gap-2 font-syne-mono text-[11px] text-port-text-muted">
+          <div className="w-2 h-2 rounded-full bg-port-teal shadow-[0_0_10px_#00F5C4] animate-pulse-glow" />
+          Available for work
+        </div>
+
+        {/* MOBILE HAMBURGER BUTTON */}
+        <button 
+          className="md:hidden relative z-[110] flex flex-col justify-center items-center w-[32px] h-[32px] gap-[6px] cursor-pointer bg-transparent border-none outline-none"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        >
+          <div className={`w-[24px] h-[2px] bg-port-text-primary transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[8px]' : ''}`} />
+          <div className={`w-[24px] h-[2px] bg-port-text-primary transition-all duration-300 ${isMenuOpen ? 'opacity-0' : ''}`} />
+          <div className={`w-[24px] h-[2px] bg-port-text-primary transition-all duration-300 ${isMenuOpen ? '-rotate-45 -translate-y-[8px]' : ''}`} />
+        </button>
+      </nav>
+
+      {/* MOBILE FULLSCREEN MENU - Dikeluarkan dari <nav> agar posisinya mutlak dan tidak terpotong */}
+      <div className={`fixed inset-0 bg-[#080B10]/98 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-500 md:hidden z-[105] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <ul className="flex flex-col gap-[36px] list-none text-center p-0 m-0">
+          {['About', 'Work', 'Arsenal', 'Contact'].map((item, idx) => (
+            <li key={item} style={{ transitionDelay: `${idx * 100}ms` }} className={`transition-transform duration-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <a 
+                href={`#${item.toLowerCase()}`} 
+                onClick={() => setIsMenuOpen(false)}
+                className="font-syne text-[36px] font-[800] tracking-[-1px] text-port-text-primary hover:text-port-teal transition-colors duration-200 no-underline"
+              >
+                {item}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <div className={`absolute bottom-[60px] flex items-center gap-2 font-syne-mono text-[11px] text-port-text-muted transition-opacity duration-500 delay-500 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
+          <div className="w-2 h-2 rounded-full bg-port-teal shadow-[0_0_10px_#00F5C4] animate-pulse-glow" />
+          Available for work
+        </div>
       </div>
-    </nav>
+    </>
   );
 }
 
 function HeroSection() {
   const canvasRef = useRef(null);
-  useNeuralMesh(canvasRef);
+  const [isDesktop, setIsDesktop] = useState(true);
+
+  useEffect(() => {
+    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    handleResize(); // Cek ukuran saat baru pertama kali memuat web
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useNeuralMesh(canvasRef, isDesktop); // Panggil efek dengan mengirimkan status ukuran layar
 
   return (
     <section className="relative z-10 min-h-screen flex flex-col justify-center pt-[80px]" id="hero">
       <div className="max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col md:flex-row items-center justify-between gap-[60px]">
         
         {/* LEFT CONTENT */}
-        <div className="flex-1 w-full pt-10 md:pt-0">
+        <div className={`w-full pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
           <p className="font-syne-mono text-[12px] text-port-teal tracking-[0.15em] uppercase mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
             // Full Stack · AI · Game Dev
           </p>
@@ -262,12 +323,12 @@ function HeroSection() {
             CS student at BINUS University. Shipping production-ready apps and training language models
           </p>
           
-          {/* ACTION AREA (Buttons, Labels & Scroll Indicator) */}
+          {/* ACTION AREA */}
           <div className="relative w-full">
             
             {/* ROW 1: Buttons (Left) and NEURAL MESH (Right) */}
             <div className="flex items-center opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.9s]">
-              <div className="flex gap-[16px]">
+              <div className="flex gap-[16px] flex-wrap">
                 <a href="#projects" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
                   [ View My Work ]
                 </a>
@@ -276,36 +337,35 @@ function HeroSection() {
                 </a>
               </div>
 
-              {/* Teks khusus Desktop, dilempar sejajar tombol ke sisi paling kanan layar */}
-              <p className="hidden md:block absolute top-1/2 -translate-y-1/2 font-syne-mono text-[10px] text-port-text-muted text-right leading-[1.6] tracking-[0.08em]" style={{ right: 'calc(-100% - 60px)' }}>
-                NEURAL MESH
-                <br />
-                INTERACTIVE · REAL-TIME
-              </p>
+              {/* Teks khusus Desktop */}
+              {isDesktop && (
+                <p className="absolute top-1/2 -translate-y-1/2 font-syne-mono text-[10px] text-port-text-muted text-right leading-[1.6] tracking-[0.08em]" style={{ right: 'calc(-100% - 60px)' }}>
+                  NEURAL MESH
+                  <br />
+                  INTERACTIVE · REAL-TIME
+                </p>
+              )}
             </div>
 
-            {/* ROW 2: Scroll To Explore (Tepat di bawah tombol) */}
-            <div className="mt-[40px] hidden md:flex items-center gap-[12px] font-syne-mono text-[10px] text-port-text-muted tracking-[0.15em] uppercase opacity-0 animate-[fadeUp_0.6s_ease_forwards_1.2s]">
-              <div className="w-[40px] h-px bg-port-grid relative overflow-hidden">
-                <div className="absolute top-0 left-[-100%] w-full h-full bg-port-teal animate-scanline" />
+            {/* KUNCI PERBAIKAN BUG 2: Gunakan {isDesktop && ...} agar React benar-benar menghapusnya dari HP */}
+            {isDesktop && (
+              <div className="mt-[40px] flex items-center gap-[12px] font-syne-mono text-[10px] text-port-text-muted tracking-[0.15em] uppercase opacity-0 animate-[fadeUp_0.6s_ease_forwards_1.2s]">
+                <div className="w-[40px] h-px bg-port-grid relative overflow-hidden">
+                  <div className="absolute top-0 left-[-100%] w-full h-full bg-port-teal animate-scanline" />
+                </div>
+                scroll to explore
               </div>
-              scroll to explore
-            </div>
+            )}
 
           </div>
         </div>
 
-        {/* RIGHT CANVAS */}
-        <div className="flex-1 w-full relative h-[320px] md:h-[480px]">
-          <canvas ref={canvasRef} className="w-full h-full block" />
-          
-          {/* Teks khusus Mobile (agar tetap tampil di dalam kotak canvas jika buka dari HP) */}
-          <p className="md:hidden absolute bottom-[16px] right-[16px] font-syne-mono text-[10px] text-port-text-muted text-right leading-[1.6] tracking-[0.08em]">
-            NEURAL MESH
-            <br />
-            INTERACTIVE · REAL-TIME
-          </p>
-        </div>
+        {/* RIGHT CANVAS - Hanya di-render jika ukuran layar Desktop */}
+        {isDesktop && (
+          <div className="flex-1 w-full relative h-[320px] md:h-[480px]">
+            <canvas ref={canvasRef} className="w-full h-full block" />
+          </div>
+        )}
 
       </div>
     </section>
@@ -332,7 +392,7 @@ function AboutSection() {
                 { label: "Location", value: "Jakarta, Indonesia" },
                 { label: "Education", value: "BINUS University" },
                 { label: "Focus", value: "Full Stack & AI Systems" },
-                { label: "Community", value: "Binus Game Dev Club" },
+                { label: "Community", value: "HIMTI & Binus Game Dev Club" },
               ].map((item, i) => (
                 <div className={`flex flex-col gap-[4px] py-[20px] border-b border-port-grid ${i === 0 ? 'border-t' : ''}`} key={item.label}>
                   <span className="font-syne-mono text-[10px] text-port-text-muted uppercase tracking-[0.12em]">{item.label}</span>
@@ -441,7 +501,7 @@ function ArsenalSection() {
               <span className="text-port-teal select-none">$ </span>
               <span className="text-port-text-dim">ls --category core stack</span>
             </div>
-            <div className="flex flex-wrap gap-[8px] mt-[6px] pl-[16px]">
+            <div className="flex flex-wrap gap-[8px] mt-[6px] md:pl-[16px]">
               {SKILLS.core.map((s) => (
                 <span className="font-syne-mono text-[11px] tracking-[0.08em] px-[14px] py-[6px] rounded-[2px] transition-transform duration-150 hover:-translate-y-[2px] cursor-default bg-port-teal/10 text-port-teal border border-port-teal/25" key={s}>{s}</span>
               ))}
@@ -451,7 +511,7 @@ function ArsenalSection() {
               <span className="text-port-teal select-none">$ </span>
               <span className="text-port-text-dim">ls --category ai and ml</span>
             </div>
-            <div className="flex flex-wrap gap-[8px] mt-[6px] pl-[16px]">
+            <div className="flex flex-wrap gap-[8px] mt-[6px] md:pl-[16px]">
               {SKILLS.ai.map((s) => (
                 <span className="font-syne-mono text-[11px] tracking-[0.08em] px-[14px] py-[6px] rounded-[2px] transition-transform duration-150 hover:-translate-y-[2px] cursor-default bg-port-violet/10 text-[#A394F5] border border-port-violet/30" key={s}>{s}</span>
               ))}
@@ -461,7 +521,7 @@ function ArsenalSection() {
               <span className="text-port-teal select-none">$ </span>
               <span className="text-port-text-dim">ls --category tools and design</span>
             </div>
-            <div className="flex flex-wrap gap-[8px] mt-[6px] pl-[16px]">
+            <div className="flex flex-wrap gap-[8px] mt-[6px] md:pl-[16px]">
               {SKILLS.tools.map((s) => (
                 <span className="font-syne-mono text-[11px] tracking-[0.08em] px-[14px] py-[6px] rounded-[2px] transition-transform duration-150 hover:-translate-y-[2px] cursor-default bg-port-grid text-port-text-dim border border-port-grid" key={s}>{s}</span>
               ))}
@@ -471,7 +531,7 @@ function ArsenalSection() {
               <span className="text-port-teal select-none">$ </span>
               <span className="text-port-text-dim">status</span>
             </div>
-            <div className="font-syne-mono text-[13px] leading-[1.5] pl-[16px]">
+            <div className="font-syne-mono text-[13px] leading-[1.5] md:pl-[16px]">
               <span className="text-port-teal">→ </span>
               <span className="text-[#8A9BB5]">Always learning. Currently exploring: Agents & RAG pipelines. </span>
               <span className="inline-block w-[8px] h-[14px] bg-port-teal align-[-2px] animate-blink" />
@@ -501,7 +561,7 @@ function ContactSection() {
             conversation about hard problems my inbox is open.
           </p>
           <div className="flex justify-center gap-[16px] flex-wrap reveal-item" data-delay="300">
-            <a href="mailto:hello@lintang.dev" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
+            <a href="mailto:lintanganggowo@gmail.com" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
               [ Send a message ]
             </a>
             <a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="font-syne-mono text-[12px] tracking-[0.12em] bg-transparent text-port-text-primary border border-port-grid py-[14px] px-[28px] inline-flex items-center gap-[8px] transition-all duration-200 hover:border-port-teal hover:text-port-teal hover:-translate-y-px">
@@ -522,8 +582,8 @@ function Footer() {
       </p>
       <ul className="flex gap-[24px] list-none">
         <li><a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">GitHub</a></li>
-        <li><a href="https://linkedin.com/in/lintang" target="_blank" rel="noreferrer" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">LinkedIn</a></li>
-        <li><a href="mailto:hello@lintang.dev" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">Email</a></li>
+        <li><a href="https://www.linkedin.com/in/lintang-anggowoyuono/" target="_blank" rel="noreferrer" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">LinkedIn</a></li>
+        <li><a href="mailto:lintanganggowo@gmail.com" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">Email</a></li>
       </ul>
     </footer>
   );
