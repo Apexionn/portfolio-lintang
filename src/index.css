@@ -7,7 +7,6 @@
 @layer base {
   html { scroll-behavior: smooth; }
   body {
-    /* Menggunakan CSS standar untuk setup awal agar PostCSS tidak bingung */
     background-color: #080B10;
     color: #E8EDF5;
     font-family: 'DM Mono', monospace;

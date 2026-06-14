@@ -36,16 +36,15 @@ const PROJECTS = [
 ];
 
 const SKILLS = {
-  core: ["React", "Node.js", "Supabase", "PostgreSQL", "Railway", "REST APIs", "Git", "TypeScript"],
-  ai: ["Large Language Models", "NLP", "IndoBERT", "Prompt Engineering", "Python", "HuggingFace", "Scikit learn"],
-  tools: ["Figma", "Three.js", "Game Development", "Unity", "Vite", "Docker"],
+  core: ["React", "Node.js", "MySQL", "PostgreSQL", "Railway", "REST APIs", "Git", "TypeScript"],
+  ai: ["Large Language Models", "Natural Language Processing", "Machine Learning", "Prompt Engineering", "Python", "HuggingFace", "Computer Vision"],
+  tools: ["Figma", "Three.js", "Unity", "Vite", "Docker"],
 };
 
 // THREE.JS NEURAL MESH (Hero)
-// Menggunakan isDesktop sebagai dependency agar animasi menyala kembali saat layar dilebarkan
 function useNeuralMesh(canvasRef, isDesktop) {
   useEffect(() => {
-    if (!isDesktop) return; // Matikan total eksekusi 3D jika di mobile untuk hemat baterai
+    if (!isDesktop) return; 
     
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -533,7 +532,7 @@ function ArsenalSection() {
             </div>
             <div className="font-syne-mono text-[13px] leading-[1.5] md:pl-[16px]">
               <span className="text-port-teal">→ </span>
-              <span className="text-[#8A9BB5]">Always learning. Currently exploring: Agents & RAG pipelines. </span>
+              <span className="text-[#8A9BB5]">Always learning. Currently exploring: Deep Learning & Game Development.</span>
               <span className="inline-block w-[8px] h-[14px] bg-port-teal align-[-2px] animate-blink" />
             </div>
           </div>
