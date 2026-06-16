@@ -502,7 +502,7 @@ function AboutSection() {
                 { label: "Location", value: "Jakarta, Indonesia" },
                 { label: "Education", value: "BINUS University" },
                 { label: "Focus", value: "Full Stack & AI Systems" },
-                { label: "Community", value: "HIMTI & Binus Game Dev Club" },
+                { label: "Community", value: "HIMTI" },
               ].map((item, i) => (
                 <div className={`flex flex-col gap-[4px] py-[20px] border-b border-port-grid ${i === 0 ? 'border-t' : ''}`} key={item.label}>
                   <span className="font-syne-mono text-[10px] text-port-text-muted uppercase tracking-[0.12em]">{item.label}</span>
@@ -899,7 +899,7 @@ function ArsenalSection() {
             </div>
             <div className="font-syne-mono text-[13px] leading-[1.5] md:pl-[16px]">
               <span className="text-port-teal">→ </span>
-              <span className="text-[#8A9BB5]">Always learning. Currently exploring: Deep Learning & Game Development.</span>
+              <span className="text-[#8A9BB5]">Always learning. Currently exploring: Experience New Stuff & Game Development.</span>
               <span className="inline-block w-[8px] h-[14px] bg-port-teal align-[-2px] animate-blink" />
             </div>
           </div>
