@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom"; // <--- Tambahkan baris ini
 import * as THREE from "three";
 
 // DATA
@@ -18,7 +19,7 @@ const PROJECTS = [
     name: "PATANI",
     subtitle: "Agricultural Intelligence Platform",
     tags: ["AI ML", "Web App"],
-    stack: "Python · Scikit learn · React · Supabase",
+    stack: "Python · Scikit learn · React",
     desc: "Web based AI application that takes environmental sensor data and outputs crop yield predictions with precision fertilizer recommendations. Real machine learning in production, not a demo.",
     featured: false,
     link: "https://github.com/Apexionn/frontend_ai",
@@ -40,6 +41,129 @@ const SKILLS = {
   ai: ["Large Language Models", "Natural Language Processing", "Machine Learning", "Prompt Engineering", "Python", "HuggingFace", "Computer Vision"],
   tools: ["Figma", "Three.js", "Unity", "Vite", "Docker"],
 };
+
+const EXPERIENCE = [
+  {
+    role: "Registration Coordinator Volunteer",
+    org: "Codeavour 7.0 International Finale",
+    tag: "Volunteer",
+    period: "June 2026",
+    current: true,
+    desc: "Coordinated registration operations and managed participant check in during the international technology competition event.",
+    bullets: [
+      "Collaborated with committee members to ensure smooth event execution",
+      "Received a Certificate of Recognition and Letter of Appreciation for outstanding contribution",
+    ],
+    stack: "Event Operations · Coordination",
+    proofs: [
+      {
+        src: "/codeavour.jpg",
+        label: "certificate",
+        alt: "Codeavour 7.0 Certificate of Recognition",
+      }
+    ],
+  },
+  {
+    role: "Web Development Division Coordinator",
+    org: "HIMTI BINUS",
+    tag: "Leadership",
+    period: "May 2025 to April 2025",
+    current: true,
+    desc: "Leading a small team building and maintaining web platforms for the organization, setting code standards and coordinating sprint delivery.",
+    bullets: [
+      "Coordinated a 5 person dev team across two concurrent projects",
+      "Introduced a shared component library, cutting build time ~30%",
+    ],
+    stack: "React · Figma",
+    proofs: [
+      {
+        src: "/hishot.JPG",
+        label: "Team photo & App Preview",
+        alt: "HIMTI web development team",
+      },
+      {
+        src: "/home-hishot.png",
+        label: "App Preview",
+        alt: "HIMTI web development team",
+      },
+      {
+        src: "/about-hishot.png",
+        label: "App Preview",
+        alt: "HIMTI web development team",
+      },
+      {
+        src: "/events-hishot.png",
+        label: "App Preview",
+        alt: "HIMTI web development team",
+      },
+      {
+        src: "/faq-hishot.png",
+        label: "App Preview",
+        alt: "HIMTI web development team",
+      },
+    ],
+  },
+  {
+    role: "Frontend Web Developer",
+    org: "PT Satrio Gemilang Perkasa",
+    tag: "Contract",
+    period: "Jan 2024 to Aug 2024",
+    current: false,
+    desc: "Developed and implemented responsive and user friendly interfaces for a banking application. Focused on creating a consistent and visually appealing style across the platform, ensuring accessibility and seamless user experience.",
+    bullets: [
+      "Engineered core frontend features to improve overall platform accessibility",
+      "Established cohesive visual styling to unify the interface across multiple user journeys",
+    ],
+    stack: "React · TypeScript · CSS",
+    proofs: [
+      {
+        src: "/satrio.jpeg",
+        label: "Team Photo",
+        alt: "Banking application interface",
+      }
+    ],
+  },
+  {
+    role: "Back End Developer Intern",
+    org: "PT Asuransi Bintang Tbk",
+    tag: "Internship",
+    period: "Aug 2023 to Oct 2023",
+    current: false,
+    desc: "Led the development of a robust and efficient back end system for managing room bookings within the company. Designed and implemented RESTful APIs, ensured data integrity, and optimized system performance to streamline the booking process.",
+    bullets: [
+      "Architected RESTful APIs to handle concurrent workspace reservations without scheduling conflicts",
+      "Optimized database queries to ensure data integrity and fast response times for employees",
+    ],
+    stack: "Node.js · Express · MySQL",
+    proofs: [
+      {
+        src: "/asbin.jpeg",
+        label: "Team Photo & App Preview",
+        alt: "Meeting room booking dashboard",
+      },
+      {
+        src: "/login.jpg",
+        label: "app screenshot",
+        alt: "Meeting room booking dashboard",
+      },
+      {
+        src: "/br1.png",
+        label: "app screenshot",
+        alt: "Meeting room booking dashboard",
+      },
+      {
+        src: "/br5.png",
+        label: "app screenshot",
+        alt: "Meeting room booking dashboard",
+      },
+      {
+        src: "/form5.png",
+        label: "app screenshot",
+        alt: "Meeting room booking dashboard",
+      },
+    ],
+  },
+];
 
 // THREE.JS NEURAL MESH (Hero)
 function useNeuralMesh(canvasRef, isDesktop) {
@@ -189,7 +313,7 @@ function useNeuralMesh(canvasRef, isDesktop) {
       window.removeEventListener("resize", onResize);
       renderer.dispose();
     };
-  }, [isDesktop]); // <--- KUNCI PERBAIKAN BUG 1: Memantau perubahan isDesktop
+  }, [isDesktop]);
 }
 
 // SCROLL REVEAL HOOK
@@ -215,7 +339,6 @@ function useScrollReveal() {
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Mencegah scroll layar belakang saat menu mobile terbuka
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -228,14 +351,12 @@ function Nav() {
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-6 md:px-[60px] py-4 md:py-5 border-b border-port-grid bg-port-bg/80 backdrop-blur-md">
-        {/* LOGO */}
         <a href="#" className="font-syne font-[800] text-[20px] text-port-text-primary tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
           LA<span className="text-port-teal">.</span>
         </a>
 
-        {/* DESKTOP MENU */}
         <ul className="hidden md:flex gap-9 list-none">
-          {['About', 'Work', 'Arsenal', 'Contact'].map((item) => (
+          {['About', 'Work', 'Experience', 'Arsenal', 'Contact'].map((item) => (
             <li key={item}>
               <a href={`#${item.toLowerCase()}`} className="font-syne-mono text-[11px] tracking-[0.12em] uppercase text-port-text-muted hover:text-port-teal transition-colors duration-200 no-underline">
                 {item}
@@ -244,13 +365,11 @@ function Nav() {
           ))}
         </ul>
         
-        {/* DESKTOP STATUS */}
         <div className="hidden md:flex items-center gap-2 font-syne-mono text-[11px] text-port-text-muted">
           <div className="w-2 h-2 rounded-full bg-port-teal shadow-[0_0_10px_#00F5C4] animate-pulse-glow" />
           Available for work
         </div>
 
-        {/* MOBILE HAMBURGER BUTTON */}
         <button 
           className="md:hidden relative z-[110] flex flex-col justify-center items-center w-[32px] h-[32px] gap-[6px] cursor-pointer bg-transparent border-none outline-none"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -261,10 +380,9 @@ function Nav() {
         </button>
       </nav>
 
-      {/* MOBILE FULLSCREEN MENU - Dikeluarkan dari <nav> agar posisinya mutlak dan tidak terpotong */}
       <div className={`fixed inset-0 bg-[#080B10]/98 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-500 md:hidden z-[105] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <ul className="flex flex-col gap-[36px] list-none text-center p-0 m-0">
-          {['About', 'Work', 'Arsenal', 'Contact'].map((item, idx) => (
+          {['About', 'Work', 'Experience', 'Arsenal', 'Contact'].map((item, idx) => (
             <li key={item} style={{ transitionDelay: `${idx * 100}ms` }} className={`transition-transform duration-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
               <a 
                 href={`#${item.toLowerCase()}`} 
@@ -291,41 +409,37 @@ function HeroSection() {
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
-    handleResize(); // Cek ukuran saat baru pertama kali memuat web
+    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useNeuralMesh(canvasRef, isDesktop); // Panggil efek dengan mengirimkan status ukuran layar
+  useNeuralMesh(canvasRef, isDesktop);
 
   return (
     <section className="relative z-10 min-h-screen flex flex-col justify-center pt-[80px]" id="hero">
       <div className="max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col md:flex-row items-center justify-between gap-[60px]">
         
-        {/* LEFT CONTENT */}
         <div className={`w-full pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
           <p className="font-syne-mono text-[12px] text-port-teal tracking-[0.15em] uppercase mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
             // Full Stack · AI · Game Dev
           </p>
           <h1 className="font-syne text-[clamp(36px,4.5vw,48px)] font-[800] leading-[1.0] tracking-[-2px] mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s]">
             <span className="text-port-text-muted font-normal text-[0.7em] tracking-[-1px]">&lt; </span>
-            Building at the
+            Hello!
             <br />
-            intersection of
+            I'm
             <br />
-            <span className="text-port-teal">Systems &amp;</span>
+            <span className="text-port-teal">Lintang</span>
             <br />
-            <span className="text-port-teal">Intelligence</span>
+            <span className="text-port-teal">Anggowoyuono</span>
             <span className="text-port-text-muted font-normal text-[0.7em] tracking-[-1px]"> /&gt;</span>
           </h1>
           <p className="text-[14px] text-port-text-dim leading-[1.8] max-w-[440px] mb-[44px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.7s]">
             CS student at BINUS University. Shipping production-ready apps and training language models
           </p>
           
-          {/* ACTION AREA */}
           <div className="relative w-full">
-            
-            {/* ROW 1: Buttons (Left) and NEURAL MESH (Right) */}
             <div className="flex items-center opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.9s]">
               <div className="flex gap-[16px] flex-wrap">
                 <a href="#projects" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
@@ -336,7 +450,6 @@ function HeroSection() {
                 </a>
               </div>
 
-              {/* Teks khusus Desktop */}
               {isDesktop && (
                 <p className="absolute top-1/2 -translate-y-1/2 font-syne-mono text-[10px] text-port-text-muted text-right leading-[1.6] tracking-[0.08em]" style={{ right: 'calc(-100% - 60px)' }}>
                   NEURAL MESH
@@ -346,7 +459,6 @@ function HeroSection() {
               )}
             </div>
 
-            {/* KUNCI PERBAIKAN BUG 2: Gunakan {isDesktop && ...} agar React benar-benar menghapusnya dari HP */}
             {isDesktop && (
               <div className="mt-[40px] flex items-center gap-[12px] font-syne-mono text-[10px] text-port-text-muted tracking-[0.15em] uppercase opacity-0 animate-[fadeUp_0.6s_ease_forwards_1.2s]">
                 <div className="w-[40px] h-px bg-port-grid relative overflow-hidden">
@@ -359,7 +471,6 @@ function HeroSection() {
           </div>
         </div>
 
-        {/* RIGHT CANVAS - Hanya di-render jika ukuran layar Desktop */}
         {isDesktop && (
           <div className="flex-1 w-full relative h-[320px] md:h-[480px]">
             <canvas ref={canvasRef} className="w-full h-full block" />
@@ -410,12 +521,7 @@ function AboutSection() {
               />
             </div>
 
-            {/* TEXT CONTENT */}
             <div className="text-[15px] text-port-text-dim leading-[1.9] space-y-[20px]">
-              <p>
-                I'm Lintang Anggowoyuono, a Computer Science student at{" "}
-                <strong className="text-port-text-primary font-[500]">BINUS University</strong> with a passion for building technology that transforms ideas into meaningful digital experiences.
-              </p>
               <p>
                 My journey began in elementary school through a <strong className="text-port-text-primary font-[500]">game development</strong> club, where I discovered how software could bring creativity and logic together. That curiosity led me to pursue <strong className="text-port-text-primary font-[500]">Software Engineering</strong> in vocational high school and eventually Computer Science at BINUS University, where I continue to explore the intersection of software engineering, artificial intelligence, and user centered design.
               </p>
@@ -477,12 +583,273 @@ function ProjectsSection() {
   );
 }
 
+function ExperienceSection() {
+  const [modalState, setModalState] = useState({ isOpen: false, proofs: [], currentIndex: 0 });
+
+  const openModal = (proofs) => {
+    setModalState({ isOpen: true, proofs: proofs, currentIndex: 0 });
+  };
+
+  const closeModal = () => {
+    setModalState((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const nextImage = (e) => {
+    if (e) e.stopPropagation();
+    setModalState((prev) => ({
+      ...prev,
+      currentIndex: prev.currentIndex === prev.proofs.length - 1 ? 0 : prev.currentIndex + 1
+    }));
+  };
+
+  const prevImage = (e) => {
+    if (e) e.stopPropagation();
+    setModalState((prev) => ({
+      ...prev,
+      currentIndex: prev.currentIndex === 0 ? prev.proofs.length - 1 : prev.currentIndex - 1
+    }));
+  };
+
+  // Mencegah scroll layar saat modal terbuka & Listener Keyboard
+  useEffect(() => {
+    if (modalState.isOpen) {
+      document.body.style.overflow = 'hidden';
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
+      };
+      
+      window.addEventListener('keydown', handleKeyDown);
+      
+      return () => {
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [modalState.isOpen, modalState.proofs]);
+
+  return (
+    <section className="relative z-10 py-[100px]" id="experience">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
+        <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
+          03 / Experience
+        </p>
+        <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[56px] reveal-item" data-delay="100">
+          Where I've
+          <br />
+          shipped work.
+        </h2>
+
+        {/* Timeline Container */}
+        <div className="relative max-w-[960px] pl-8">
+          <div
+            className="absolute left-[5px] top-2 bottom-2 w-px"
+            style={{ background: "linear-gradient(to bottom, #00F5C4, #1A2235 80%)" }}
+          />
+
+          <div className="flex flex-col gap-[64px]">
+            {EXPERIENCE.map((item, i) => (
+              <div className="relative reveal-item" data-delay={String(i * 100 + 150)} key={item.role}>
+                {/* Timeline Dot */}
+                <div
+                  className={`absolute -left-8 top-1 w-[11px] h-[11px] rounded-full bg-port-bg border-2 ${
+                    item.current ? "border-port-teal" : "border-port-text-muted"
+                  }`}
+                  style={{ boxShadow: "0 0 0 4px #080B10" }}
+                >
+                  {item.current && (
+                    <span
+                      className="absolute -inset-[6px] rounded-full border border-port-teal opacity-40 animate-ping"
+                      style={{ animationDuration: "2s" }}
+                    />
+                  )}
+                </div>
+
+                <div className="flex flex-col md:flex-row justify-between items-start gap-[40px]">
+                  {/* TEXT CONTENT */}
+                  <div className="flex-1">
+                    <div className="flex justify-between items-baseline flex-wrap gap-2 mb-[6px]">
+                      <span className="font-syne text-[22px] font-[700] text-port-text-primary">
+                        {item.role}
+                      </span>
+                      <span className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.05em] whitespace-nowrap">
+                        {item.period}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-[10px] mb-[18px]">
+                      <span className="text-[14px] text-port-teal font-[500]">{item.org}</span>
+                      <span className="font-syne-mono text-[9px] tracking-[0.08em] uppercase px-[9px] py-[3px] rounded-[2px] bg-port-violet/10 text-[#A394F5] border border-port-violet/30">
+                        {item.tag}
+                      </span>
+                    </div>
+
+                    <p className="text-[14px] text-port-text-dim leading-[1.75] mb-[20px] max-w-[600px]">
+                      {item.desc}
+                    </p>
+
+                    <ul className="flex flex-col gap-[10px]">
+                      {item.bullets.map((b) => (
+                        <li key={b} className="text-[13px] text-port-text-dim leading-[1.6] pl-[20px] relative">
+                          <span className="absolute left-0 top-0 text-port-teal font-[800]">›</span>
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+
+                    <p className="font-syne-mono text-[11px] text-port-text-muted mt-[20px] tracking-[0.04em]">
+                      stack: {item.stack}
+                    </p>
+                  </div>
+
+                  {/* PROOF THUMBNAIL (Preview Gambar Pertama) */}
+                  {item.proofs && item.proofs.length > 0 && (
+                    <div className="flex flex-col items-start md:items-end gap-[12px] shrink-0 w-[200px]">
+                      <button
+                        onClick={() => openModal(item.proofs)}
+                        className="relative w-full h-[130px] rounded-[4px] bg-port-surface border border-port-grid flex items-center justify-center group cursor-pointer overflow-hidden transition-all duration-300 hover:border-port-teal hover:-translate-y-1"
+                      >
+                        {/* Gambar Tampil Duluan */}
+                        <img 
+                          src={item.proofs[0].src} 
+                          alt={item.proofs[0].alt} 
+                          className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://via.placeholder.com/200x130/1A2235/00F5C4?text=Missing+Image";
+                          }}
+                        />
+
+                        {/* Indikator Jumlah Gambar (Jika lebih dari 1) */}
+                        {item.proofs.length > 1 && (
+                          <div className="absolute bottom-2 left-2 bg-[#080B10]/80 backdrop-blur-md border border-port-grid px-[6px] py-[2px] rounded text-[9px] font-syne-mono text-port-text-primary">
+                            1 / {item.proofs.length}
+                          </div>
+                        )}
+
+                        {/* Zoom Icon (Top Right) */}
+                        <svg className="absolute top-[10px] right-[10px] w-4 h-4 text-port-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                          <line x1="11" y1="8" x2="11" y2="14"></line>
+                          <line x1="8" y1="11" x2="14" y2="11"></line>
+                        </svg>
+                      </button>
+
+                      <div className="flex items-center gap-[6px] font-syne-mono text-[10px] text-port-text-muted tracking-[0.1em] uppercase pl-1 md:pr-1">
+                        <svg className="w-[14px] h-[14px] text-port-text-dim" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                        </svg>
+                        {item.proofs[0].label}
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* FULLSCREEN PREVIEW MODAL DENGAN PAGINATION DI-RENDER MENGGUNAKAN REACT PORTAL */}
+      {modalState.isOpen && modalState.proofs.length > 0 && createPortal(
+        <div 
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10 bg-[#080B10]/95 backdrop-blur-xl transition-opacity duration-300"
+          onClick={closeModal}
+        >
+          {/* Tombol Tutup */}
+          <button 
+            className="absolute top-6 right-6 md:top-10 md:right-10 text-port-text-muted hover:text-port-teal transition-colors duration-200 cursor-pointer p-2 z-[10000]"
+            onClick={closeModal}
+          >
+            <svg className="w-8 h-8 md:w-10 md:h-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Kontainer Gambar */}
+          <div 
+            className="relative max-w-6xl w-full max-h-[85vh] rounded-[4px] border border-port-grid bg-port-surface overflow-hidden shadow-[0_0_50px_rgba(0,245,196,0.05)]"
+            onClick={(e) => e.stopPropagation()} 
+          >
+            {/* Window Top Bar */}
+            <div className="absolute top-0 left-0 w-full h-[40px] bg-port-bg border-b border-port-grid flex items-center px-4 gap-2 z-10">
+               <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
+               <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
+               <div className="w-2.5 h-2.5 rounded-full bg-[#28C840]"></div>
+               <span className="font-syne-mono text-[10px] text-port-text-muted ml-3 uppercase tracking-widest">
+                 {modalState.proofs[modalState.currentIndex].label}
+               </span>
+               
+               {/* Indikator Angka Pagination */}
+               {modalState.proofs.length > 1 && (
+                  <span className="font-syne-mono text-[10px] text-port-teal ml-auto tracking-widest">
+                    {modalState.currentIndex + 1} / {modalState.proofs.length}
+                  </span>
+               )}
+            </div>
+            
+            {/* Area Gambar */}
+            <div className="relative w-full h-full bg-[#05070A] pt-[40px] flex items-center justify-center">
+              
+              {/* Tombol Prev */}
+              {modalState.proofs.length > 1 && (
+                <button onClick={prevImage} className="absolute left-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+              )}
+
+              <img 
+                key={modalState.currentIndex} 
+                src={modalState.proofs[modalState.currentIndex].src} 
+                alt={modalState.proofs[modalState.currentIndex].alt} 
+                className="w-full h-full object-contain max-h-[calc(85vh-40px)] animate-[fadeUp_0.3s_ease_forwards]"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://via.placeholder.com/800x600/1A2235/00F5C4?text=Image+Not+Found";
+                }}
+              />
+
+              {/* Tombol Next */}
+              {modalState.proofs.length > 1 && (
+                <button onClick={nextImage} className="absolute right-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+              )}
+
+            </div>
+          </div>
+          
+          {/* Dot Pagination (Bawah) */}
+          {modalState.proofs.length > 1 && (
+             <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-3" onClick={(e) => e.stopPropagation()}>
+                {modalState.proofs.map((_, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setModalState(prev => ({ ...prev, currentIndex: idx }))}
+                    className={`w-2 h-2 rounded-full transition-all duration-300 ${modalState.currentIndex === idx ? 'bg-port-teal w-6' : 'bg-port-grid hover:bg-port-text-muted'}`}
+                  />
+                ))}
+             </div>
+          )}
+        </div>,
+        document.body // Injeksi langsung ke <body>!
+      )}
+    </section>
+  );
+}
+
 function ArsenalSection() {
   return (
     <section className="relative z-10 py-[100px]" id="arsenal">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
         <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
-          03 / Tech Arsenal
+          04 / Tech Arsenal
         </p>
         <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[32px] reveal-item" data-delay="100">
           The stack.
@@ -548,7 +915,7 @@ function ContactSection() {
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
         <div className="max-w-[700px] mx-auto text-center">
           <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[28px] flex items-center justify-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 before:content-[''] before:block before:h-px before:w-[60px] before:bg-port-teal before:opacity-40 reveal-item" data-delay="0">
-            04 / Contact
+            05 / Contact
           </p>
           <h2 className="font-syne text-[clamp(36px,5vw,72px)] font-[800] tracking-[-3px] leading-[0.95] text-port-text-primary mb-[28px] reveal-item" data-delay="100">
             Let's build something
@@ -604,6 +971,8 @@ export default function App() {
         <AboutSection />
         <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
         <ProjectsSection />
+        <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
+        <ExperienceSection />
         <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
         <ArsenalSection />
         <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
