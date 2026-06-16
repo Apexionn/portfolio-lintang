@@ -114,7 +114,7 @@ const EXPERIENCE = [
       "Engineered core frontend features to improve overall platform accessibility",
       "Established cohesive visual styling to unify the interface across multiple user journeys",
     ],
-    stack: "React · TypeScript · CSS",
+    stack: "React · TypeScript · Tailwind · Bitbucket",
     proofs: [
       {
         src: "/satrio.jpeg",
@@ -124,17 +124,19 @@ const EXPERIENCE = [
     ],
   },
   {
-    role: "Back End Developer Intern",
+    role: "Frontend Developer Intern",
     org: "PT Asuransi Bintang Tbk",
     tag: "Internship",
     period: "Aug 2023 to Oct 2023",
     current: false,
-    desc: "Led the development of a robust and efficient back end system for managing room bookings within the company. Designed and implemented RESTful APIs, ensured data integrity, and optimized system performance to streamline the booking process.",
+    desc: "Contributed to the development of a room booking management system by building responsive and user-friendly interfaces. Collaborated with back-end developers to integrate APIs, improved user experience, and ensured smooth functionality across the application.",
     bullets: [
-      "Architected RESTful APIs to handle concurrent workspace reservations without scheduling conflicts",
-      "Optimized database queries to ensure data integrity and fast response times for employees",
+      "Developed responsive user interface components for the room booking system",
+      "Improved application usability and consistency across different devices and screen sizes",
+      "Integrated front-end features with RESTful APIs to display and manage booking data",
+      "Assisted in testing, debugging, and optimizing front-end performance",
     ],
-    stack: "Node.js · Express · MySQL",
+    stack: "TailwindCSS · Laravel · Postman",
     proofs: [
       {
         src: "/asbin.jpeg",
