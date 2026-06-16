@@ -47,7 +47,7 @@ const EXPERIENCE = [
     role: "Registration Coordinator Volunteer",
     org: "Codeavour 7.0 International Finale",
     tag: "Volunteer",
-    period: "June 2026",
+    period: "May 2026",
     current: true,
     desc: "Coordinated registration operations and managed participant check in during the international technology competition event.",
     bullets: [
