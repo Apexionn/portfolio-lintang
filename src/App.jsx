@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom"; // <--- Tambahkan baris ini
+import { createPortal } from "react-dom";
 import * as THREE from "three";
 
 // DATA
@@ -8,7 +8,7 @@ const PROJECTS = [
     num: "01",
     name: "CineMate",
     subtitle: "Cinema Booking System",
-    tags: ["Full Stack", "MVVM", "React"],
+    tags: ["Frontend", "MVVM", "React", 'Tailwind'],
     stack: "React · MVVM · REST API · Node.js",
     desc: "A full online cinema booking experience engineered with React (MVVM architecture) and a dedicated REST backend. Clean separation of concerns, real booking flows, and a UI that doesn't get in the way of buying a ticket.",
     featured: true,
@@ -57,10 +57,15 @@ const EXPERIENCE = [
     stack: "Event Operations · Coordination",
     proofs: [
       {
-        src: "/codeavour.jpg",
-        label: "certificate",
+        src: "/team-codeavour.jpg",
+        label: "Team Photo & Certificate",
         alt: "Codeavour 7.0 Certificate of Recognition",
-      }
+      },
+      {
+        src: "/codeavour.jpg",
+        label: "Certificate",
+        alt: "Codeavour 7.0 Certificate of Recognition",
+      },
     ],
   },
   {
@@ -78,7 +83,7 @@ const EXPERIENCE = [
     proofs: [
       {
         src: "/hishot.JPG",
-        label: "Team photo & App Preview",
+        label: "Team Photo & App Preview",
         alt: "HIMTI web development team",
       },
       {
@@ -145,22 +150,22 @@ const EXPERIENCE = [
       },
       {
         src: "/login.jpg",
-        label: "app screenshot",
+        label: "App Preview",
         alt: "Meeting room booking dashboard",
       },
       {
         src: "/br1.png",
-        label: "app screenshot",
+        label: "App Preview",
         alt: "Meeting room booking dashboard",
       },
       {
         src: "/br5.png",
-        label: "app screenshot",
+        label: "App Preview",
         alt: "Meeting room booking dashboard",
       },
       {
         src: "/form5.png",
-        label: "app screenshot",
+        label: "App Preview",
         alt: "Meeting room booking dashboard",
       },
     ],
@@ -407,11 +412,13 @@ function Nav() {
 
 function HeroSection() {
   const canvasRef = useRef(null);
-  const [isDesktop, setIsDesktop] = useState(true);
+  
+  const [isDesktop, setIsDesktop] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 768 : false
+  );
 
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 768);
-    handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -426,17 +433,19 @@ function HeroSection() {
           <p className="font-syne-mono text-[12px] text-port-teal tracking-[0.15em] uppercase mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
             // Full Stack · AI · Game Dev
           </p>
-          <h1 className="font-syne text-[clamp(36px,4.5vw,48px)] font-[800] leading-[1.0] tracking-[-2px] mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s]">
+          
+          <h1 className="font-syne text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] font-[800] leading-[1.1] md:leading-[1.0] tracking-[-1px] md:tracking-[-2px] mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s] break-words">
             <span className="text-port-text-muted font-normal text-[0.7em] tracking-[-1px]">&lt; </span>
             Hello!
             <br />
             I'm
             <br />
-            <span className="text-port-teal">Lintang</span>
+            <span className="text-port-teal break-words">Lintang</span>
             <br />
-            <span className="text-port-teal">Anggowoyuono</span>
+            <span className="text-port-teal break-words">Anggowoyuono</span>
             <span className="text-port-text-muted font-normal text-[0.7em] tracking-[-1px]"> /&gt;</span>
           </h1>
+          
           <p className="text-[14px] text-port-text-dim leading-[1.8] max-w-[440px] mb-[44px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.7s]">
             CS student at BINUS University. Shipping production-ready apps and training language models
           </p>
@@ -587,8 +596,10 @@ function ProjectsSection() {
 
 function ExperienceSection() {
   const [modalState, setModalState] = useState({ isOpen: false, proofs: [], currentIndex: 0 });
+  const [isModalImageLoading, setIsModalImageLoading] = useState(true);
 
   const openModal = (proofs) => {
+    setIsModalImageLoading(true); 
     setModalState({ isOpen: true, proofs: proofs, currentIndex: 0 });
   };
 
@@ -598,6 +609,7 @@ function ExperienceSection() {
 
   const nextImage = (e) => {
     if (e) e.stopPropagation();
+    setIsModalImageLoading(true);
     setModalState((prev) => ({
       ...prev,
       currentIndex: prev.currentIndex === prev.proofs.length - 1 ? 0 : prev.currentIndex + 1
@@ -606,6 +618,7 @@ function ExperienceSection() {
 
   const prevImage = (e) => {
     if (e) e.stopPropagation();
+    setIsModalImageLoading(true);
     setModalState((prev) => ({
       ...prev,
       currentIndex: prev.currentIndex === 0 ? prev.proofs.length - 1 : prev.currentIndex - 1
@@ -641,12 +654,11 @@ function ExperienceSection() {
           03 / Experience
         </p>
         <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[56px] reveal-item" data-delay="100">
-          Where I've
+          The
           <br />
-          shipped work.
+          Journey.
         </h2>
 
-        {/* Timeline Container */}
         <div className="relative max-w-[960px] pl-8">
           <div
             className="absolute left-[5px] top-2 bottom-2 w-px"
@@ -656,7 +668,6 @@ function ExperienceSection() {
           <div className="flex flex-col gap-[64px]">
             {EXPERIENCE.map((item, i) => (
               <div className="relative reveal-item" data-delay={String(i * 100 + 150)} key={item.role}>
-                {/* Timeline Dot */}
                 <div
                   className={`absolute -left-8 top-1 w-[11px] h-[11px] rounded-full bg-port-bg border-2 ${
                     item.current ? "border-port-teal" : "border-port-text-muted"
@@ -672,7 +683,6 @@ function ExperienceSection() {
                 </div>
 
                 <div className="flex flex-col md:flex-row justify-between items-start gap-[40px]">
-                  {/* TEXT CONTENT */}
                   <div className="flex-1">
                     <div className="flex justify-between items-baseline flex-wrap gap-2 mb-[6px]">
                       <span className="font-syne text-[22px] font-[700] text-port-text-primary">
@@ -708,14 +718,12 @@ function ExperienceSection() {
                     </p>
                   </div>
 
-                  {/* PROOF THUMBNAIL (Preview Gambar Pertama) */}
                   {item.proofs && item.proofs.length > 0 && (
                     <div className="flex flex-col items-start md:items-end gap-[12px] shrink-0 w-[200px]">
                       <button
                         onClick={() => openModal(item.proofs)}
                         className="relative w-full h-[130px] rounded-[4px] bg-port-surface border border-port-grid flex items-center justify-center group cursor-pointer overflow-hidden transition-all duration-300 hover:border-port-teal hover:-translate-y-1"
                       >
-                        {/* Gambar Tampil Duluan */}
                         <img 
                           src={item.proofs[0].src} 
                           alt={item.proofs[0].alt} 
@@ -726,15 +734,13 @@ function ExperienceSection() {
                           }}
                         />
 
-                        {/* Indikator Jumlah Gambar (Jika lebih dari 1) */}
                         {item.proofs.length > 1 && (
-                          <div className="absolute bottom-2 left-2 bg-[#080B10]/80 backdrop-blur-md border border-port-grid px-[6px] py-[2px] rounded text-[9px] font-syne-mono text-port-text-primary">
+                          <div className="absolute bottom-2 left-2 bg-[#080B10]/80 backdrop-blur-md border border-port-grid px-[6px] py-[2px] rounded text-[9px] font-syne-mono text-port-text-primary z-10">
                             1 / {item.proofs.length}
                           </div>
                         )}
 
-                        {/* Zoom Icon (Top Right) */}
-                        <svg className="absolute top-[10px] right-[10px] w-4 h-4 text-port-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                        <svg className="absolute top-[10px] right-[10px] w-4 h-4 text-port-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300 drop-shadow-md z-10" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                           <circle cx="11" cy="11" r="8"></circle>
                           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                           <line x1="11" y1="8" x2="11" y2="14"></line>
@@ -758,13 +764,11 @@ function ExperienceSection() {
         </div>
       </div>
 
-      {/* FULLSCREEN PREVIEW MODAL DENGAN PAGINATION DI-RENDER MENGGUNAKAN REACT PORTAL */}
       {modalState.isOpen && modalState.proofs.length > 0 && createPortal(
         <div 
           className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10 bg-[#080B10]/95 backdrop-blur-xl transition-opacity duration-300"
           onClick={closeModal}
         >
-          {/* Tombol Tutup */}
           <button 
             className="absolute top-6 right-6 md:top-10 md:right-10 text-port-text-muted hover:text-port-teal transition-colors duration-200 cursor-pointer p-2 z-[10000]"
             onClick={closeModal}
@@ -774,12 +778,10 @@ function ExperienceSection() {
             </svg>
           </button>
 
-          {/* Kontainer Gambar */}
           <div 
             className="relative max-w-6xl w-full max-h-[85vh] rounded-[4px] border border-port-grid bg-port-surface overflow-hidden shadow-[0_0_50px_rgba(0,245,196,0.05)]"
             onClick={(e) => e.stopPropagation()} 
           >
-            {/* Window Top Bar */}
             <div className="absolute top-0 left-0 w-full h-[40px] bg-port-bg border-b border-port-grid flex items-center px-4 gap-2 z-10">
                <div className="w-2.5 h-2.5 rounded-full bg-[#FF5F57]"></div>
                <div className="w-2.5 h-2.5 rounded-full bg-[#FEBC2E]"></div>
@@ -788,7 +790,6 @@ function ExperienceSection() {
                  {modalState.proofs[modalState.currentIndex].label}
                </span>
                
-               {/* Indikator Angka Pagination */}
                {modalState.proofs.length > 1 && (
                   <span className="font-syne-mono text-[10px] text-port-teal ml-auto tracking-widest">
                     {modalState.currentIndex + 1} / {modalState.proofs.length}
@@ -796,10 +797,14 @@ function ExperienceSection() {
                )}
             </div>
             
-            {/* Area Gambar */}
             <div className="relative w-full h-full bg-[#05070A] pt-[40px] flex items-center justify-center">
               
-              {/* Tombol Prev */}
+              {isModalImageLoading && (
+                <div className="absolute inset-0 flex items-center justify-center pt-[40px] z-0">
+                  <div className="w-10 h-10 border-2 border-port-grid border-t-port-teal rounded-full animate-spin shadow-[0_0_15px_rgba(0,245,196,0.2)]" />
+                </div>
+              )}
+
               {modalState.proofs.length > 1 && (
                 <button onClick={prevImage} className="absolute left-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"></path></svg>
@@ -810,14 +815,15 @@ function ExperienceSection() {
                 key={modalState.currentIndex} 
                 src={modalState.proofs[modalState.currentIndex].src} 
                 alt={modalState.proofs[modalState.currentIndex].alt} 
-                className="w-full h-full object-contain max-h-[calc(85vh-40px)] animate-[fadeUp_0.3s_ease_forwards]"
+                onLoad={() => setIsModalImageLoading(false)}
+                className={`relative z-10 w-full h-full object-contain max-h-[calc(85vh-40px)] transition-opacity duration-300 ${isModalImageLoading ? 'opacity-0' : 'opacity-100'}`}
                 onError={(e) => {
                   e.target.onerror = null;
+                  setIsModalImageLoading(false);
                   e.target.src = "https://via.placeholder.com/800x600/1A2235/00F5C4?text=Image+Not+Found";
                 }}
               />
 
-              {/* Tombol Next */}
               {modalState.proofs.length > 1 && (
                 <button onClick={nextImage} className="absolute right-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"></path></svg>
@@ -827,20 +833,22 @@ function ExperienceSection() {
             </div>
           </div>
           
-          {/* Dot Pagination (Bawah) */}
           {modalState.proofs.length > 1 && (
              <div className="absolute bottom-6 md:bottom-10 left-1/2 -translate-x-1/2 flex gap-3" onClick={(e) => e.stopPropagation()}>
                 {modalState.proofs.map((_, idx) => (
                   <button 
                     key={idx}
-                    onClick={() => setModalState(prev => ({ ...prev, currentIndex: idx }))}
+                    onClick={() => {
+                      setIsModalImageLoading(true); // PERBAIKAN: Set loading di titik pagination
+                      setModalState(prev => ({ ...prev, currentIndex: idx }))
+                    }}
                     className={`w-2 h-2 rounded-full transition-all duration-300 ${modalState.currentIndex === idx ? 'bg-port-teal w-6' : 'bg-port-grid hover:bg-port-text-muted'}`}
                   />
                 ))}
              </div>
           )}
         </div>,
-        document.body // Injeksi langsung ke <body>!
+        document.body
       )}
     </section>
   );
@@ -962,7 +970,7 @@ export default function App() {
   useScrollReveal();
 
   return (
-    <>
+    <div className="relative w-full overflow-x-hidden min-h-screen">
       <div className="fixed inset-0 opacity-45 pointer-events-none z-0" aria-hidden="true" style={{ backgroundImage: 'linear-gradient(#1A2235 1px, transparent 1px), linear-gradient(90deg, #1A2235 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
       <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" style={{ background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, #080B10 100%)' }} />
 
@@ -981,6 +989,6 @@ export default function App() {
         <ContactSection />
       </main>
       <Footer />
-    </>
+    </div>
   );
 }
