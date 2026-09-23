@@ -185,7 +185,10 @@ function useNeuralMesh(canvasRef, isDesktop) {
 
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setSize(W, H);
+    // "false" = jangan biarkan Three.js menimpa CSS width/height canvas.
+    // Biarkan Tailwind (w-full h-full) yang mengatur ukuran tampilan,
+    // Three.js cukup mengatur resolusi buffer render internalnya saja.
+    renderer.setSize(W, H, false);
     renderer.setClearColor(0x000000, 0);
 
     const scene = new THREE.Scene();
@@ -250,13 +253,19 @@ function useNeuralMesh(canvasRef, isDesktop) {
     wrap.addEventListener("mouseleave", onLeave);
 
     const onResize = () => {
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      renderer.setSize(w, h);
+      const w = wrap.clientWidth;
+      const h = wrap.clientHeight;
+      if (w === 0 || h === 0) return;
+      renderer.setSize(w, h, false);
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
     };
     window.addEventListener("resize", onResize);
+
+    // ResizeObserver menangkap perubahan ukuran container itu sendiri
+    // (misal saat layout flex berubah), bukan cuma saat window di-resize.
+    const resizeObserver = new ResizeObserver(onResize);
+    resizeObserver.observe(wrap);
 
     let frameId;
     let frame = 0;
@@ -318,6 +327,7 @@ function useNeuralMesh(canvasRef, isDesktop) {
       wrap.removeEventListener("mousemove", onMove);
       wrap.removeEventListener("mouseleave", onLeave);
       window.removeEventListener("resize", onResize);
+      resizeObserver.disconnect();
       renderer.dispose();
     };
   }, [isDesktop]);
@@ -453,21 +463,13 @@ function HeroSection() {
           <div className="relative w-full">
             <div className="flex items-center opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.9s]">
               <div className="flex gap-[16px] flex-wrap">
-                <a href="#projects" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
-                  [ View My Work ]
+                <a href="/cv-lintang-anggowoyuono.pdf" target="_blank" rel="noreferrer" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
+                  [ Download CV ]
                 </a>
                 <a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="font-syne-mono text-[12px] tracking-[0.12em] bg-transparent text-port-text-primary border border-port-grid py-[14px] px-[28px] inline-flex items-center gap-[8px] transition-all duration-200 hover:border-port-teal hover:text-port-teal hover:-translate-y-px">
                   GitHub ↗
                 </a>
               </div>
-
-              {isDesktop && (
-                <p className="absolute top-1/2 -translate-y-1/2 font-syne-mono text-[10px] text-port-text-muted text-right leading-[1.6] tracking-[0.08em]" style={{ right: 'calc(-100% - 60px)' }}>
-                  NEURAL MESH
-                  <br />
-                  INTERACTIVE · REAL-TIME
-                </p>
-              )}
             </div>
 
             {isDesktop && (
