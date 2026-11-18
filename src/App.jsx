@@ -395,16 +395,18 @@ function HeroSection() {
         <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
           <div className="game-avatar-card character-sheet relative p-3 sm:p-4">
             <div className="character-sheet-header flex items-center justify-between gap-3 mb-3">
-              <span className="character-card-kicker">CHARACTER CARD</span>
+              <span className="character-card-kicker">Lintang Anggowoyuono</span>
               <span className="character-card-index">01</span>
             </div>
             <div className="game-avatar-window character-portrait relative overflow-hidden">
               <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
             </div>
             <div className="character-info">
-              <h2 className="character-name">Lintang Anggowoyuono</h2>
-              <p className="character-affiliation">Computer Science <span>·</span> BINUS University</p>
-              <div className="character-skills" aria-label="Areas of focus">
+              <span className="character-class-label">CLASS</span>
+              <h2 className="character-name">Code Artificer</h2>
+              <p className="character-affiliation">GUILD <span>·</span> BINUS UNIVERSITY</p>
+              <div className="character-skills" aria-label="Abilities">
+                <span className="character-abilities-label">ABILITIES</span>
                 <span>Full Stack</span>
                 <span>AI</span>
                 <span>Game Development</span>

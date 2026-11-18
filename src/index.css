@@ -72,11 +72,13 @@
   .character-portrait { aspect-ratio:4/4.1;border:1px solid #87443d;border-radius:2px;background:#241e1b; }
   .character-portrait img { object-position:center 38%; }
   .character-info { padding:14px 3px 2px; }
-  .character-name { color:#f3e7d5;font:600 clamp(17px,2vw,21px)/1.15 Georgia,serif;letter-spacing:-.015em; }
-  .character-affiliation { color:#b3a79a;font:11px/1.5 'DM Mono',monospace;margin-top:5px; }
+  .character-class-label { color:#d27b68;font:600 7px 'Syne Mono',monospace;letter-spacing:.16em; }
+  .character-name { color:#f3e7d5;font:600 clamp(19px,2.2vw,24px)/1.15 Georgia,serif;letter-spacing:-.015em;margin-top:4px; }
+  .character-affiliation { color:#d8c39b;font:700 8px/1.5 'Syne Mono',monospace;letter-spacing:.08em;margin-top:5px; }
   .character-affiliation span { color:#c27562;padding:0 3px; }
-  .character-skills { display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:13px;padding-top:10px;border-top:1px solid #49332e;color:#d9b7a9;font:9px 'Syne Mono',monospace; }
-  .character-skills span + span::before { content:'·';color:#c27562;margin-right:16px; }
+  .character-skills { display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:13px;padding-top:10px;border-top:1px solid #49332e;color:#d9b7a9;font:9px 'Syne Mono',monospace; }
+  .character-abilities-label { color:#d27b68;font-size:7px;letter-spacing:.14em; }
+  .character-skills span:nth-child(3)::before, .character-skills span:nth-child(4)::before { content:'·';color:#c27562;margin-right:12px; }
   .game-pixel-label-accent { color:#c8ef76; }
   .game-player-status { display:flex;align-items:center;gap:6px;color:#c8ef76;font:10px 'Syne Mono',monospace; }
   .game-player-status i { width:7px;height:7px; }
