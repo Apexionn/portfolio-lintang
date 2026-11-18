@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import * as THREE from "three";
+
+const OrbScene = lazy(() => import("./OrbScene.jsx"));
 
 // DATA
 const PROJECTS = [
@@ -170,167 +171,6 @@ const EXPERIENCE = [
   },
 ];
 
-// THREE.JS NEURAL MESH (Hero)
-function useNeuralMesh(canvasRef, isDesktop) {
-  useEffect(() => {
-    if (!isDesktop) return; 
-    
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const W = canvas.clientWidth || 560;
-    const H = canvas.clientHeight || 480;
-
-    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    // "false" = jangan biarkan Three.js menimpa CSS width/height canvas.
-    // Biarkan Tailwind (w-full h-full) yang mengatur ukuran tampilan,
-    // Three.js cukup mengatur resolusi buffer render internalnya saja.
-    renderer.setSize(W, H, false);
-    renderer.setClearColor(0x000000, 0);
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, W / H, 0.1, 100);
-    camera.position.set(0, 0, 5.5);
-
-    const NODE_COUNT = 64;
-    const CONNECT_DIST = 2.0;
-
-    const nodes = Array.from({ length: NODE_COUNT }, () => {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const r = 1.2 + Math.random() * 1.2;
-      return {
-        x: r * Math.sin(phi) * Math.cos(theta),
-        y: r * Math.sin(phi) * Math.sin(theta),
-        z: r * Math.cos(phi),
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: 0.02 + Math.random() * 0.03,
-        isCentral: Math.random() < 0.12,
-      };
-    });
-
-    const tealMat = new THREE.MeshBasicMaterial({ color: 0x00f5c4 });
-    const violetMat = new THREE.MeshBasicMaterial({ color: 0x5e4ae3 });
-    const dimMat = new THREE.MeshBasicMaterial({ color: 0x1a2235 });
-
-    const smallGeo = new THREE.SphereGeometry(0.04, 8, 8);
-    const bigGeo = new THREE.SphereGeometry(0.08, 10, 10);
-
-    const meshes = nodes.map((n) => {
-      const geo = n.isCentral ? bigGeo : smallGeo;
-      const mat = n.isCentral ? violetMat : Math.random() < 0.3 ? dimMat : tealMat;
-      const m = new THREE.Mesh(geo, mat);
-      m.position.set(n.x, n.y, n.z);
-      scene.add(m);
-      return m;
-    });
-
-    const maxLines = NODE_COUNT * NODE_COUNT;
-    const linePositions = new Float32Array(maxLines * 6);
-    const lineColors = new Float32Array(maxLines * 6);
-    const lineGeo = new THREE.BufferGeometry();
-    lineGeo.setAttribute("position", new THREE.BufferAttribute(linePositions, 3));
-    lineGeo.setAttribute("color", new THREE.BufferAttribute(lineColors, 3));
-    const lineSegments = new THREE.LineSegments(
-      lineGeo,
-      new THREE.LineBasicMaterial({ vertexColors: true, opacity: 0.18, transparent: true })
-    );
-    scene.add(lineSegments);
-
-    let targetMX = 0, targetMY = 0, currentMX = 0, currentMY = 0;
-    const wrap = canvas.parentElement;
-    
-    const onMove = (e) => {
-      const r = wrap.getBoundingClientRect();
-      targetMX = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      targetMY = -((e.clientY - r.top) / r.height - 0.5) * 2;
-    };
-    const onLeave = () => { targetMX = 0; targetMY = 0; };
-    wrap.addEventListener("mousemove", onMove);
-    wrap.addEventListener("mouseleave", onLeave);
-
-    const onResize = () => {
-      const w = wrap.clientWidth;
-      const h = wrap.clientHeight;
-      if (w === 0 || h === 0) return;
-      renderer.setSize(w, h, false);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    };
-    window.addEventListener("resize", onResize);
-
-    // ResizeObserver menangkap perubahan ukuran container itu sendiri
-    // (misal saat layout flex berubah), bukan cuma saat window di-resize.
-    const resizeObserver = new ResizeObserver(onResize);
-    resizeObserver.observe(wrap);
-
-    let frameId;
-    let frame = 0;
-    const TEAL = new THREE.Color(0x00f5c4);
-    const VIOLET = new THREE.Color(0x5e4ae3);
-
-    const animate = () => {
-      frameId = requestAnimationFrame(animate);
-      frame++;
-
-      currentMX += (targetMX - currentMX) * 0.04;
-      currentMY += (targetMY - currentMY) * 0.04;
-
-      const t = frame * 0.006;
-      scene.rotation.y = t * 0.1 + currentMX * 0.35;
-      scene.rotation.x = Math.sin(t * 0.05) * 0.12 + currentMY * 0.2;
-
-      nodes.forEach((n, i) => {
-        n.pulse += n.pulseSpeed;
-        const s = 0.85 + 0.3 * Math.sin(n.pulse);
-        meshes[i].scale.setScalar(s);
-      });
-
-      let lineIdx = 0;
-      const tealArr = [TEAL.r, TEAL.g, TEAL.b];
-      const violetArr = [VIOLET.r, VIOLET.g, VIOLET.b];
-
-      for (let i = 0; i < nodes.length; i++) {
-        for (let j = i + 1; j < nodes.length; j++) {
-          const dx = nodes[i].x - nodes[j].x;
-          const dy = nodes[i].y - nodes[j].y;
-          const dz = nodes[i].z - nodes[j].z;
-          const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-          if (d < CONNECT_DIST) {
-            const base = lineIdx * 6;
-            linePositions[base] = nodes[i].x; linePositions[base + 1] = nodes[i].y; linePositions[base + 2] = nodes[i].z;
-            linePositions[base + 3] = nodes[j].x; linePositions[base + 4] = nodes[j].y; linePositions[base + 5] = nodes[j].z;
-
-            const colorArr = nodes[i].isCentral || nodes[j].isCentral ? violetArr : tealArr;
-            lineColors[base] = colorArr[0]; lineColors[base + 1] = colorArr[1]; lineColors[base + 2] = colorArr[2];
-            lineColors[base + 3] = colorArr[0]; lineColors[base + 4] = colorArr[1]; lineColors[base + 5] = colorArr[2];
-            lineIdx++;
-          }
-        }
-      }
-
-      for (let k = lineIdx * 6; k < linePositions.length; k++) linePositions[k] = 0;
-      lineGeo.attributes.position.needsUpdate = true;
-      lineGeo.attributes.color.needsUpdate = true;
-      lineGeo.setDrawRange(0, lineIdx * 2);
-
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      wrap.removeEventListener("mousemove", onMove);
-      wrap.removeEventListener("mouseleave", onLeave);
-      window.removeEventListener("resize", onResize);
-      resizeObserver.disconnect();
-      renderer.dispose();
-    };
-  }, [isDesktop]);
-}
-
 // SCROLL REVEAL HOOK
 function useScrollReveal() {
   useEffect(() => {
@@ -431,8 +271,6 @@ function Nav() {
 }
 
 function HeroSection() {
-  const canvasRef = useRef(null);
-  
   const [isDesktop, setIsDesktop] = useState(
     typeof window !== "undefined" ? window.innerWidth >= 768 : false
   );
@@ -442,8 +280,6 @@ function HeroSection() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
-
-  useNeuralMesh(canvasRef, isDesktop);
 
   return (
     <section className="relative z-10 min-h-screen flex flex-col justify-center pt-[80px]" id="hero">
@@ -495,8 +331,10 @@ function HeroSection() {
         </div>
 
         {isDesktop && (
-          <div className="flex-1 w-full relative h-[320px] md:h-[480px]">
-            <canvas ref={canvasRef} className="w-full h-full block" />
+          <div className="flex-1 w-full relative h-[320px] md:h-[480px] bg-[radial-gradient(ellipse_at_center,rgba(0,245,196,0.09),transparent_52%)]">
+            <Suspense fallback={null}>
+              <OrbScene />
+            </Suspense>
           </div>
         )}
 
