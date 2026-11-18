@@ -65,12 +65,31 @@
   .game-avatar-corner { position:absolute;width:14px;height:14px;border-color:#ff917d;border-style:solid; }
   .avatar-corner-tl { top:7px;left:7px;border-width:2px 0 0 2px; }
   .avatar-corner-br { bottom:7px;right:7px;border-width:0 2px 2px 0; }
+  .character-sheet { transform:rotate(1deg); overflow:visible; color:#342718; background:radial-gradient(ellipse at 50% 18%,#fff8e4 0%,#f2e5c4 60%,#e8d7b0 100%); border:3px solid #9a713d; border-radius:14px; box-shadow:7px 8px 0 #0b1122, inset 0 0 0 2px #fff6df; }
+  .character-sheet::before { content:'';position:absolute;inset:6px;border:1px solid #b99661;border-radius:7px;pointer-events:none; }
+  .character-sheet-header, .character-identity, .character-specialties { position:relative;z-index:1; }
+  .character-card-kicker { color:#72532e;font:700 9px Georgia,serif;letter-spacing:.13em; }
+  .character-level-badge { color:#f8edcf;background:#344b3c;border:1px solid #ab854d;border-radius:4px;padding:5px 7px;font:700 8px 'Syne Mono',monospace;white-space:nowrap; }
+  .character-level-badge span { color:#e7c778; }
+  .character-portrait { aspect-ratio:4/4.15;border:3px solid #ab854d;border-radius:6px;background:#ddcba3;box-shadow:inset 0 0 0 2px #f8edcf; }
+  .character-portrait img { object-position:center 38%; }
+  .character-portrait::after { content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 65%,rgba(50,37,20,.18));pointer-events:none; }
+  .character-sheet .game-avatar-corner { border-color:#f3d895;width:17px;height:17px; }
+  .character-identity { border-bottom:1px solid #cbb487;padding-bottom:9px; }
+  .character-name { color:#392919;font:700 20px/1.1 Georgia,serif;letter-spacing:.015em; }
+  .character-class { color:#74552e;font:700 7px/1.6 'Syne Mono',monospace;letter-spacing:.08em;margin-top:4px; }
+  .character-class span { color:#ad7745; }
+  .character-sigil { color:#a07a43;font:30px/1 Georgia,serif; }
+  .character-specialties { display:flex;align-items:center;justify-content:space-between;gap:8px; }
+  .character-specialties-label { color:#8b693b;font:700 7px 'Press Start 2P',monospace; }
+  .character-specialties-list { color:#3b4d3e;font:700 8px 'Syne Mono',monospace;letter-spacing:.04em;white-space:nowrap; }
+  .character-specialties-list i { color:#a9844b;font-style:normal;font-size:6px;padding:0 3px; }
   .game-pixel-label-accent { color:#c8ef76; }
   .game-player-status { display:flex;align-items:center;gap:6px;color:#c8ef76;font:10px 'Syne Mono',monospace; }
   .game-player-status i { width:7px;height:7px; }
   .game-floating-token { position:absolute;display:grid;place-items:center;width:42px;height:42px;border:2px solid #f6efd9;border-radius:9px;box-shadow:3px 4px 0 #0b1122;font-size:22px; }
-  .token-star { top:-17px;right:-20px;color:#19223c;background:#ffcf69;transform:rotate(8deg); }
-  .token-heart { bottom:30px;left:-22px;color:#fff0df;background:#ff917d;transform:rotate(-9deg); }
+  .token-star { top:-17px;right:-20px;color:#fff2cb;background:#49614b;border-color:#d4b36c;transform:rotate(8deg); }
+  .token-heart { bottom:40px;left:-22px;color:#fff0df;background:#8b3f3c;border-color:#e2c58a;transform:rotate(-9deg); }
   .game-section { scroll-margin-top:76px; }
   .game-section-label { display:flex;align-items:center;gap:10px;color:#ffb2a3; }
   .game-label-icon { display:grid;place-items:center;width:28px;height:24px;background:#ff917d;color:#172039;border-radius:5px;font:10px 'Press Start 2P',monospace; }

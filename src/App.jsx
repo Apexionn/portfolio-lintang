@@ -393,20 +393,26 @@ function HeroSection() {
         </div>
 
         <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
-          <div className="game-avatar-card relative p-3 sm:p-4">
-            <div className="flex items-center justify-between mb-3 px-1">
-              <span className="game-pixel-label">PLAYER CARD</span>
-              <span className="game-pixel-label game-pixel-label-accent">LV. 03</span>
+          <div className="game-avatar-card character-sheet relative p-3 sm:p-4">
+            <div className="character-sheet-header flex items-center justify-between gap-3 mb-3 px-1">
+              <span className="character-card-kicker">ADVENTURER PROFILE</span>
+              <span className="character-level-badge"><span aria-hidden="true">✦</span> LV. 03</span>
             </div>
-            <div className="game-avatar-window relative overflow-hidden">
+            <div className="game-avatar-window character-portrait relative overflow-hidden">
               <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
-              <div className="game-avatar-scanline" />
               <span className="game-avatar-corner avatar-corner-tl" />
               <span className="game-avatar-corner avatar-corner-br" />
             </div>
-            <div className="flex items-center justify-between mt-3 px-1">
-              <span className="font-syne text-[15px] font-[800]">LINTANG A.</span>
-              <span className="game-player-status"><i /> Online</span>
+            <div className="character-identity flex items-center justify-between gap-3 mt-3 px-1">
+              <div className="min-w-0">
+                <p className="character-name">Lintang A.</p>
+                <p className="character-class">CODE ARTIFICER <span>·</span> BINUS GUILD</p>
+              </div>
+              <span className="character-sigil" aria-hidden="true">✧</span>
+            </div>
+            <div className="character-specialties mt-3 px-1 pt-3">
+              <span className="character-specialties-label">SPECIALTIES</span>
+              <span className="character-specialties-list">WEB <i>◆</i> AI <i>◆</i> GAME DEV</span>
             </div>
           </div>
           <div className="game-floating-token token-star" aria-hidden="true">✦</div>
