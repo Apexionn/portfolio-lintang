@@ -309,25 +309,25 @@ function Nav() {
 
 function HeroSection() {
   const [isDesktop, setIsDesktop] = useState(
-    typeof window !== "undefined" ? window.innerWidth >= 768 : false
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : false
   );
 
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 768);
+    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   return (
     <section className="game-hero relative z-10 min-h-screen flex flex-col justify-center pt-[100px] pb-12" id="hero">
-      <div className="game-hero-layout max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col md:flex-row items-center justify-between gap-10 md:gap-[60px]">
+      <div className="game-hero-layout max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-[60px]">
         
-        <div className={`w-full pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
+        <div className={`w-full min-w-0 pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
           <p className="game-eyebrow font-syne-mono text-[10px] sm:text-[11px] tracking-[0.12em] uppercase mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
             PLAYER 01 <span>•</span> BINUS COMPUTER SCIENCE
           </p>
           
-          <h1 className="game-hero-title font-syne text-[clamp(44px,8vw,88px)] font-[800] leading-[0.98] tracking-[-0.06em] mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s] break-words">
+          <h1 className="game-hero-title font-syne font-[800] leading-[0.98] tracking-[-0.06em] mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s] break-words">
             <span>Lintang</span>
             <br />
             <span>Anggowoyuono</span>
@@ -567,28 +567,9 @@ function ExperienceSection() {
         </h2>
 
         <div className="game-quest-list relative max-w-[1040px] pl-6 sm:pl-9">
-          <div
-            className="absolute left-[5px] top-2 bottom-2 w-px"
-            style={{ background: "linear-gradient(to bottom, #ff917d, #c8ef76 65%, #151d35 100%)" }}
-          />
-
           <div className="flex flex-col gap-[64px]">
             {EXPERIENCE.map((item, i) => (
               <div className="game-quest-entry relative reveal-item" data-delay={String(i * 100 + 150)} key={item.role}>
-                <div
-                  className={`absolute -left-8 top-1 w-[11px] h-[11px] rounded-full bg-port-bg border-2 ${
-                    item.current ? "border-port-teal" : "border-port-text-muted"
-                  }`}
-                  style={{ boxShadow: "0 0 0 4px #151d35" }}
-                >
-                  {item.current && (
-                    <span
-                      className="absolute -inset-[6px] rounded-full border border-port-teal opacity-40 animate-ping"
-                      style={{ animationDuration: "2s" }}
-                    />
-                  )}
-                </div>
-
                 <div className="game-panel game-quest-card flex flex-col md:flex-row justify-between items-start gap-6 md:gap-8 p-5 sm:p-7">
                   <div className="flex-1">
                     <div className="flex justify-between items-baseline flex-wrap gap-2 mb-[6px]">
