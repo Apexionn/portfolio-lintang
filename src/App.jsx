@@ -413,15 +413,7 @@ function AboutSection() {
             </div>
           </div>
 
-          <div className="reveal-item flex flex-col gap-8" data-delay="200">
-            <div className="game-about-photo w-full max-w-[260px] aspect-square overflow-hidden relative">
-              <img 
-                src="/lintang.jpeg" 
-                alt="Lintang Anggowoyuono" 
-                className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-              />
-            </div>
-
+          <div className="reveal-item" data-delay="200">
             <div className="game-panel game-about-copy text-[14px] sm:text-[15px] leading-[1.9] space-y-4 p-5 sm:p-7">
               <p>
                 My interest in software began in an elementary school <strong className="text-port-text-primary font-[500]">game development</strong> club, where I saw how code could bring creativity and logic together. I went on to study <strong className="text-port-text-primary font-[500]">Software Engineering</strong> in vocational high school and now study Computer Science at BINUS University, exploring software engineering, artificial intelligence, and user-centered design.
