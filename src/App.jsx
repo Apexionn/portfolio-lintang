@@ -72,7 +72,7 @@ const EXPERIENCE = [
     role: "Web Development Division Coordinator",
     org: "HIMTI BINUS",
     tag: "Leadership",
-    period: "May 2025 to April 2026",
+    period: "April 2025 to May 2025",
     current: false,
     desc: "Led a web development team building and maintaining platforms for the organization, setting code standards and coordinating project delivery.",
     bullets: [
@@ -359,6 +359,14 @@ function Nav() {
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = 'hidden';
+      const handleKeyDown = (event) => {
+        if (event.key === 'Escape') setIsMenuOpen(false);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = 'unset';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
     } else {
       document.body.style.overflow = 'unset';
     }
@@ -388,6 +396,10 @@ function Nav() {
         </div>
 
         <button 
+          type="button"
+          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-expanded={isMenuOpen}
+          aria-controls="mobile-navigation"
           className="md:hidden relative z-[110] flex flex-col justify-center items-center w-[32px] h-[32px] gap-[6px] cursor-pointer bg-transparent border-none outline-none"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
@@ -397,7 +409,7 @@ function Nav() {
         </button>
       </nav>
 
-      <div className={`fixed inset-0 bg-[#080B10]/98 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-500 md:hidden z-[105] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+      <div id="mobile-navigation" aria-hidden={!isMenuOpen} inert={!isMenuOpen} className={`fixed inset-0 bg-[#080B10]/98 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-500 md:hidden z-[105] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
         <ul className="flex flex-col gap-[36px] list-none text-center p-0 m-0">
           {['About', 'Work', 'Experience', 'Arsenal', 'Contact'].map((item, idx) => (
             <li key={item} style={{ transitionDelay: `${idx * 100}ms` }} className={`transition-transform duration-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
@@ -599,8 +611,11 @@ function ProjectsSection() {
 function ExperienceSection() {
   const [modalState, setModalState] = useState({ isOpen: false, proofs: [], currentIndex: 0 });
   const [isModalImageLoading, setIsModalImageLoading] = useState(true);
+  const closeButtonRef = useRef(null);
+  const lastFocusedElementRef = useRef(null);
 
   const openModal = (proofs) => {
+    lastFocusedElementRef.current = document.activeElement;
     setIsModalImageLoading(true); 
     setModalState({ isOpen: true, proofs: proofs, currentIndex: 0 });
   };
@@ -631,11 +646,24 @@ function ExperienceSection() {
   useEffect(() => {
     if (modalState.isOpen) {
       document.body.style.overflow = 'hidden';
+      closeButtonRef.current?.focus();
 
       const handleKeyDown = (e) => {
         if (e.key === 'Escape') closeModal();
         if (e.key === 'ArrowRight') nextImage();
         if (e.key === 'ArrowLeft') prevImage();
+        if (e.key === 'Tab') {
+          const focusable = document.querySelectorAll('[data-gallery-dialog] button:not([disabled])');
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last?.focus();
+          } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first?.focus();
+          }
+        }
       };
       
       window.addEventListener('keydown', handleKeyDown);
@@ -643,6 +671,7 @@ function ExperienceSection() {
       return () => {
         document.body.style.overflow = 'unset';
         window.removeEventListener('keydown', handleKeyDown);
+        lastFocusedElementRef.current?.focus();
       };
     } else {
       document.body.style.overflow = 'unset';
@@ -723,6 +752,8 @@ function ExperienceSection() {
                   {item.proofs && item.proofs.length > 0 && (
                     <div className="flex flex-col items-start md:items-end gap-[12px] shrink-0 w-[200px]">
                       <button
+                        type="button"
+                        aria-label={`Open ${item.org} gallery`}
                         onClick={() => openModal(item.proofs)}
                         className="relative w-full h-[130px] rounded-[4px] bg-port-surface border border-port-grid flex items-center justify-center group cursor-pointer overflow-hidden transition-all duration-300 hover:border-port-teal hover:-translate-y-1"
                       >
@@ -768,10 +799,17 @@ function ExperienceSection() {
 
       {modalState.isOpen && modalState.proofs.length > 0 && createPortal(
         <div 
+          role="dialog"
+          aria-modal="true"
+          aria-label={modalState.proofs[modalState.currentIndex].label}
+          data-gallery-dialog
           className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10 bg-[#080B10]/95 backdrop-blur-xl transition-opacity duration-300"
           onClick={closeModal}
         >
           <button 
+            ref={closeButtonRef}
+            type="button"
+            aria-label="Close image gallery"
             className="absolute top-6 right-6 md:top-10 md:right-10 text-port-text-muted hover:text-port-teal transition-colors duration-200 cursor-pointer p-2 z-[10000]"
             onClick={closeModal}
           >
@@ -808,7 +846,7 @@ function ExperienceSection() {
               )}
 
               {modalState.proofs.length > 1 && (
-                <button onClick={prevImage} className="absolute left-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
+                <button type="button" aria-label="Previous image" onClick={prevImage} className="absolute left-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
               )}
@@ -827,7 +865,7 @@ function ExperienceSection() {
               />
 
               {modalState.proofs.length > 1 && (
-                <button onClick={nextImage} className="absolute right-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
+                <button type="button" aria-label="Next image" onClick={nextImage} className="absolute right-4 w-10 h-10 rounded-full bg-port-bg/80 border border-port-grid flex items-center justify-center text-port-text-primary hover:text-port-teal hover:border-port-teal transition-all duration-200 z-20">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7"></path></svg>
                 </button>
               )}
@@ -840,6 +878,9 @@ function ExperienceSection() {
                 {modalState.proofs.map((_, idx) => (
                   <button 
                     key={idx}
+                    type="button"
+                    aria-label={`Show image ${idx + 1}`}
+                    aria-current={modalState.currentIndex === idx ? "true" : undefined}
                     onClick={() => {
                       setIsModalImageLoading(true); // PERBAIKAN: Set loading di titik pagination
                       setModalState(prev => ({ ...prev, currentIndex: idx }))
