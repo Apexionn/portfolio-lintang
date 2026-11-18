@@ -330,14 +330,6 @@ function HeroSection() {
           </div>
         </div>
 
-        {isDesktop && (
-          <div className="flex-1 w-full relative h-[320px] md:h-[480px] bg-[radial-gradient(ellipse_at_center,rgba(0,245,196,0.09),transparent_52%)]">
-            <Suspense fallback={null}>
-              <OrbScene />
-            </Suspense>
-          </div>
-        )}
-
       </div>
     </section>
   );
@@ -847,11 +839,27 @@ function Footer() {
 // ROOT APP
 export default function App() {
   useScrollReveal();
+  const [showOrbScene, setShowOrbScene] = useState(
+    typeof window !== "undefined" ? window.innerWidth >= 768 : false
+  );
+
+  useEffect(() => {
+    const updateSceneVisibility = () => setShowOrbScene(window.innerWidth >= 768);
+    window.addEventListener("resize", updateSceneVisibility);
+    return () => window.removeEventListener("resize", updateSceneVisibility);
+  }, []);
 
   return (
     <div className="relative w-full overflow-x-hidden min-h-screen">
       <div className="fixed inset-0 opacity-45 pointer-events-none z-0" aria-hidden="true" style={{ backgroundImage: 'linear-gradient(#1A2235 1px, transparent 1px), linear-gradient(90deg, #1A2235 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
       <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" style={{ background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, #080B10 100%)' }} />
+      {showOrbScene && (
+        <div className="fixed inset-0 pointer-events-none z-[1] opacity-40" aria-hidden="true">
+          <Suspense fallback={null}>
+            <OrbScene />
+          </Suspense>
+        </div>
+      )}
 
       <Nav />
       <main>

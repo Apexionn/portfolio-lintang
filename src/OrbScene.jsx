@@ -39,7 +39,7 @@ export default function OrbScene() {
     camera.position.set(0, 0, 5.4);
 
     const orbGroup = new Group();
-    orbGroup.position.set(0.15, 0, 0);
+    orbGroup.position.set(2.1, 0.1, -0.6);
     scene.add(orbGroup);
 
     const coreGeometry = new SphereGeometry(1.12, 40, 32);
