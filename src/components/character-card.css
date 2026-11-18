@@ -22,8 +22,7 @@
   box-shadow:
     0 1px 0 #bd9b61,
     0 3px 0 #58402e,
-    0 10px 24px rgba(7, 9, 16, .44),
-    inset 0 0 0 2px rgba(255, 248, 225, .6);
+    0 10px 24px rgba(7, 9, 16, .44);
   transform: perspective(1400px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg));
   transform-style: preserve-3d;
   transition: transform 240ms ease-out, box-shadow 240ms ease-out;
@@ -38,9 +37,8 @@
 
 .bard-card::before {
   z-index: 5;
-  inset: 7px;
+  inset: 8px;
   border: 1px solid rgba(111, 78, 40, .76);
-  box-shadow: inset 0 0 0 1px rgba(255, 249, 226, .5);
 }
 
 .bard-card::after {
@@ -127,9 +125,9 @@
   min-height: 0;
   margin: 0 7px;
   padding: 5px 5px 0;
-  background: linear-gradient(145deg, #f1e5c9, #c4a36b 35%, #815e38 36%, #e8d9b8 41%, #e4d3ad);
-  border: 1px solid #805e36;
-  box-shadow: 0 1px 2px rgba(58, 39, 25, .42), inset 0 0 0 1px rgba(255, 248, 220, .62);
+  background: #d9c391;
+  border: 1px solid #785a35;
+  box-shadow: 0 1px 2px rgba(58, 39, 25, .36), inset 0 0 0 2px rgba(255, 248, 220, .58);
 }
 
 .bard-card__portrait-mat {
@@ -237,27 +235,26 @@
 
 .bard-card__corner {
   position: absolute;
-  width: 42px;
-  height: 42px;
+  width: 36px;
+  height: 36px;
   overflow: hidden;
   stroke: currentColor;
-  stroke-width: 1;
+  stroke-width: .9;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.bard-card__corner--northwest { top: 10px; left: 10px; }
-.bard-card__corner--northeast { top: 10px; right: 10px; }
-.bard-card__corner--southwest { bottom: 10px; left: 10px; }
-.bard-card__corner--southeast { right: 10px; bottom: 10px; }
+.bard-card__corner--northwest { top: 12px; left: 12px; }
+.bard-card__corner--northeast { top: 12px; right: 12px; }
+.bard-card__corner--southwest { bottom: 12px; left: 12px; }
+.bard-card__corner--southeast { right: 12px; bottom: 12px; }
 
 @media (hover: hover) and (pointer: fine) {
   .bard-card:hover {
     box-shadow:
       0 1px 0 #bd9b61,
       0 4px 0 #58402e,
-      0 16px 30px rgba(7, 9, 16, .48),
-      inset 0 0 0 2px rgba(255, 248, 225, .6);
+      0 16px 30px rgba(7, 9, 16, .48);
   }
 }
 
@@ -268,11 +265,11 @@
   .bard-card__portrait-frame { margin-inline: 5px; }
   .bard-card__details { padding-inline: 15px; }
   .bard-card__calling p { font-size: 12px; }
-  .bard-card__corner { width: 37px; height: 37px; }
-  .bard-card__corner--northwest { top: 10px; left: 9px; }
-  .bard-card__corner--northeast { top: 10px; right: 9px; }
-  .bard-card__corner--southwest { bottom: 10px; left: 9px; }
-  .bard-card__corner--southeast { right: 9px; bottom: 10px; }
+  .bard-card__corner { width: 32px; height: 32px; }
+  .bard-card__corner--northwest { top: 11px; left: 11px; }
+  .bard-card__corner--northeast { top: 11px; right: 11px; }
+  .bard-card__corner--southwest { bottom: 11px; left: 11px; }
+  .bard-card__corner--southeast { right: 11px; bottom: 11px; }
 }
 
 @media (hover: none), (prefers-reduced-motion: reduce) {
