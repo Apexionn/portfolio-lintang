@@ -396,21 +396,23 @@ function HeroSection() {
           <div className="game-avatar-card character-sheet relative p-3 sm:p-4">
             <div className="character-sheet-header flex items-center justify-between gap-3 mb-3">
               <span className="character-card-kicker">Lintang Anggowoyuono</span>
-              <span className="character-card-index">01</span>
+              <span className="character-card-index">ADVENTURER</span>
             </div>
-            <div className="game-avatar-window character-portrait relative overflow-hidden">
-              <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
+            <div className="character-art-layout">
+              <aside className="character-ability-rail" aria-label="Abilities">
+                <div className="character-ability"><b><span>FS</span></b><span>FULL STACK</span></div>
+                <div className="character-ability"><b><span>AI</span></b><span>AI</span></div>
+                <div className="character-ability"><b><span>GD</span></b><span>GAME DEV</span></div>
+              </aside>
+              <div className="game-avatar-window character-portrait relative overflow-hidden">
+                <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
+                <div className="character-portrait-shade" />
+              </div>
             </div>
             <div className="character-info">
               <span className="character-class-label">CLASS</span>
               <h2 className="character-name">Code Artificer</h2>
-              <p className="character-affiliation">GUILD <span>·</span> BINUS UNIVERSITY</p>
-              <div className="character-skills" aria-label="Abilities">
-                <span className="character-abilities-label">ABILITIES</span>
-                <span>Full Stack</span>
-                <span>AI</span>
-                <span>Game Development</span>
-              </div>
+              <p className="character-affiliation"><span>GUILD</span> BINUS UNIVERSITY</p>
             </div>
           </div>
         </div>

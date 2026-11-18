@@ -69,16 +69,20 @@
   .character-sheet-header { min-height:24px;color:#b7a897; }
   .character-card-kicker { font:600 8px/1.4 'Syne Mono',monospace;letter-spacing:.16em;text-transform:uppercase; }
   .character-card-index { color:#d27b68;font:10px Georgia,serif; }
+  .character-card-index { color:#d1bfa7;font:600 7px 'Syne Mono',monospace;letter-spacing:.14em; }
+  .character-art-layout { display:grid;grid-template-columns:58px minmax(0,1fr);gap:8px; }
+  .character-ability-rail { display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:5px 4px;border:1px solid #52352f;background:#151412; }
+  .character-ability { display:flex;flex-direction:column;align-items:center;gap:4px;color:#c8b6a3;font:600 6px/1.2 'Syne Mono',monospace;letter-spacing:.04em;text-align:center; }
+  .character-ability b { display:grid;place-items:center;width:31px;height:31px;border:1px solid #ae6b58;transform:rotate(45deg);color:#f0dfc3;background:#211a17;font:700 9px Georgia,serif; }
+  .character-ability b span { transform:rotate(-45deg); }
   .character-portrait { aspect-ratio:4/4.1;border:1px solid #87443d;border-radius:2px;background:#241e1b; }
   .character-portrait img { object-position:center 38%; }
-  .character-info { padding:14px 3px 2px; }
+  .character-portrait-shade { position:absolute;inset:0;background:linear-gradient(180deg,transparent 58%,rgba(17,13,12,.68));pointer-events:none; }
+  .character-info { padding:12px 3px 2px;border-top:1px solid #87443d;margin-top:10px; }
   .character-class-label { color:#d27b68;font:600 7px 'Syne Mono',monospace;letter-spacing:.16em; }
   .character-name { color:#f3e7d5;font:600 clamp(19px,2.2vw,24px)/1.15 Georgia,serif;letter-spacing:-.015em;margin-top:4px; }
   .character-affiliation { color:#d8c39b;font:700 8px/1.5 'Syne Mono',monospace;letter-spacing:.08em;margin-top:5px; }
-  .character-affiliation span { color:#c27562;padding:0 3px; }
-  .character-skills { display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:13px;padding-top:10px;border-top:1px solid #49332e;color:#d9b7a9;font:9px 'Syne Mono',monospace; }
-  .character-abilities-label { color:#d27b68;font-size:7px;letter-spacing:.14em; }
-  .character-skills span:nth-child(3)::before, .character-skills span:nth-child(4)::before { content:'·';color:#c27562;margin-right:12px; }
+  .character-affiliation span { color:#d27b68;margin-right:7px; }
   .game-pixel-label-accent { color:#c8ef76; }
   .game-player-status { display:flex;align-items:center;gap:6px;color:#c8ef76;font:10px 'Syne Mono',monospace; }
   .game-player-status i { width:7px;height:7px; }
