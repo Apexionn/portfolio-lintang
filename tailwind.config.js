@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        'port-bg': '#080B10',
-        'port-surface': '#0E1421',
-        'port-surface-alt': '#111827',
-        'port-grid': '#1A2235',
-        'port-teal': '#00F5C4',
-        'port-violet': '#5E4AE3',
-        'port-text-primary': '#E8EDF5',
-        'port-text-muted': '#5A6B8A',
-        'port-text-dim': '#8A9BB5',
+        'port-bg': '#151d35',
+        'port-surface': '#202a46',
+        'port-surface-alt': '#263452',
+        'port-grid': '#536486',
+        'port-teal': '#c8ef76',
+        'port-violet': '#ff917d',
+        'port-text-primary': '#f6efd9',
+        'port-text-muted': '#aebbd6',
+        'port-text-dim': '#c4cde0',
       },
       fontFamily: {
         'syne': ['Syne', 'sans-serif'],

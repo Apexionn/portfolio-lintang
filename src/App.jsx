@@ -1,7 +1,5 @@
-import { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-
-const OrbScene = lazy(() => import("./OrbScene.jsx"));
 
 // DATA
 const PROJECTS = [
@@ -191,8 +189,48 @@ function useScrollReveal() {
   }, []);
 }
 
+function GameWorldBackground() {
+  return (
+    <div className="game-world-background fixed inset-0 pointer-events-none z-0" aria-hidden="true">
+      <svg className="game-world-art absolute inset-0 w-full h-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" shapeRendering="crispEdges">
+        <defs>
+          <pattern id="game-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+            <path d="M48 0H0V48" fill="none" stroke="#b9c8e8" strokeOpacity=".045" strokeWidth="1" />
+          </pattern>
+        </defs>
+        <rect width="1440" height="900" fill="url(#game-grid)" />
+        <g className="game-cloud cloud-one" fill="#536486" opacity=".34">
+          <path d="M1130 170h32v-24h48v-24h72v24h48v24h48v48h-248z" />
+          <path d="M120 330h32v-24h48v-24h72v24h48v24h32v48H120z" />
+        </g>
+        <g fill="#d7e2ff" opacity=".55">
+          <path d="M200 130h8v8h-8zM390 215h6v6h-6zM900 110h8v8h-8zM1040 320h6v6h-6zM720 260h7v7h-7zM1320 390h6v6h-6zM560 100h5v5h-5z" />
+        </g>
+        <g className="game-platform platform-left">
+          <path d="M0 746h80v-24h48v-24h128v24h48v24h64v24H0z" fill="#24304d" />
+          <path d="M0 746h80v-24h48v-24h128v24h48v24h64" fill="none" stroke="#7182a7" strokeWidth="4" />
+          <path d="M46 772h28v28H46zM146 772h28v28h-28zM246 772h28v28h-28z" fill="#354565" />
+        </g>
+        <g className="game-platform platform-right">
+          <path d="M1010 820h72v-24h56v-24h120v24h54v24h128v80h-430z" fill="#24304d" />
+          <path d="M1010 820h72v-24h56v-24h120v24h54v24h128" fill="none" stroke="#7182a7" strokeWidth="4" />
+          <path d="M1080 844h28v28h-28zM1190 844h28v28h-28zM1300 844h28v28h-28z" fill="#354565" />
+        </g>
+      </svg>
+      <div className="game-world-vignette absolute inset-0" />
+    </div>
+  );
+}
+
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const links = [
+    { label: "Profile", id: "about", icon: "◉" },
+    { label: "Projects", id: "work", icon: "✦" },
+    { label: "Quest Log", id: "experience", icon: "▤" },
+    { label: "Inventory", id: "arsenal", icon: "◇" },
+    { label: "Contact", id: "contact", icon: "➜" },
+  ];
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -213,24 +251,24 @@ function Nav() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-[100] flex justify-between items-center px-6 md:px-[60px] py-4 md:py-5 border-b border-port-grid bg-port-bg/80 backdrop-blur-md">
-        <a href="#" className="font-syne font-[800] text-[20px] text-port-text-primary tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
-          LA<span className="text-port-teal">.</span>
+      <nav className="game-nav fixed top-3 left-1/2 -translate-x-1/2 z-[100] flex justify-between items-center px-3 sm:px-5 py-2.5 w-[calc(100%-24px)] max-w-[1180px]">
+        <a href="#hero" aria-label="Lintang Anggowoyuono, home" className="game-logo font-syne font-[800] text-[18px] sm:text-[20px] tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
+          LA<span>.</span>
         </a>
 
-        <ul className="hidden md:flex gap-9 list-none">
-          {['About', 'Work', 'Experience', 'Arsenal', 'Contact'].map((item) => (
-            <li key={item}>
-              <a href={`#${item.toLowerCase()}`} className="font-syne-mono text-[11px] tracking-[0.12em] uppercase text-port-text-muted hover:text-port-teal transition-colors duration-200 no-underline">
-                {item}
+        <ul className="hidden md:flex items-center gap-1.5 list-none p-0 m-0">
+          {links.map((item) => (
+            <li key={item.id}>
+              <a href={`#${item.id}`} className="game-nav-link font-syne-mono text-[10px] lg:text-[11px] tracking-[0.08em] uppercase no-underline">
+                <span aria-hidden="true">{item.icon}</span>{item.label}
               </a>
             </li>
           ))}
         </ul>
         
-        <div className="hidden md:flex items-center gap-2 font-syne-mono text-[11px] text-port-text-muted">
-          <div className="w-2 h-2 rounded-full bg-port-teal shadow-[0_0_10px_#00F5C4] animate-pulse-glow" />
-          Available for work
+        <div className="hidden xl:flex items-center gap-2 font-syne-mono text-[9px] text-port-text-muted tracking-[0.08em] uppercase">
+          <span className="game-status-dot" />
+          Open to quests
         </div>
 
         <button 
@@ -238,7 +276,7 @@ function Nav() {
           aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-navigation"
-          className="md:hidden relative z-[110] flex flex-col justify-center items-center w-[32px] h-[32px] gap-[6px] cursor-pointer bg-transparent border-none outline-none"
+          className="game-menu-toggle md:hidden relative z-[110] flex flex-col justify-center items-center w-[38px] h-[36px] gap-[5px] cursor-pointer"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           <div className={`w-[24px] h-[2px] bg-port-text-primary transition-all duration-300 ${isMenuOpen ? 'rotate-45 translate-y-[8px]' : ''}`} />
@@ -247,23 +285,22 @@ function Nav() {
         </button>
       </nav>
 
-      <div id="mobile-navigation" aria-hidden={!isMenuOpen} inert={!isMenuOpen} className={`fixed inset-0 bg-[#080B10]/98 backdrop-blur-xl flex flex-col items-center justify-center transition-all duration-500 md:hidden z-[105] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-        <ul className="flex flex-col gap-[36px] list-none text-center p-0 m-0">
-          {['About', 'Work', 'Experience', 'Arsenal', 'Contact'].map((item, idx) => (
-            <li key={item} style={{ transitionDelay: `${idx * 100}ms` }} className={`transition-transform duration-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-              <a 
-                href={`#${item.toLowerCase()}`} 
+      <div id="mobile-navigation" aria-hidden={!isMenuOpen} inert={!isMenuOpen} className={`game-mobile-menu fixed inset-0 flex flex-col items-center justify-center transition-all duration-500 md:hidden z-[105] ${isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <ul className="flex flex-col gap-5 list-none text-center p-0 m-0">
+          {links.map((item, idx) => (
+            <li key={item.id} style={{ transitionDelay: `${idx * 70}ms` }} className={`transition-transform duration-500 ${isMenuOpen ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+              <a
+                href={`#${item.id}`}
                 onClick={() => setIsMenuOpen(false)}
-                className="font-syne text-[36px] font-[800] tracking-[-1px] text-port-text-primary hover:text-port-teal transition-colors duration-200 no-underline"
+                className="game-mobile-link font-syne text-[28px] font-[800] no-underline"
               >
-                {item}
+                <span aria-hidden="true">{item.icon}</span>{item.label}
               </a>
             </li>
           ))}
         </ul>
-        <div className={`absolute bottom-[60px] flex items-center gap-2 font-syne-mono text-[11px] text-port-text-muted transition-opacity duration-500 delay-500 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
-          <div className="w-2 h-2 rounded-full bg-port-teal shadow-[0_0_10px_#00F5C4] animate-pulse-glow" />
-          Available for work
+        <div className={`absolute bottom-10 flex items-center gap-2 font-syne-mono text-[10px] text-port-text-muted uppercase tracking-widest transition-opacity duration-500 delay-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
+          <span className="game-status-dot" /> Open to quests
         </div>
       </div>
     </>
@@ -282,52 +319,65 @@ function HeroSection() {
   }, []);
 
   return (
-    <section className="relative z-10 min-h-screen flex flex-col justify-center pt-[80px]" id="hero">
-      <div className="max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col md:flex-row items-center justify-between gap-[60px]">
+    <section className="game-hero relative z-10 min-h-screen flex flex-col justify-center pt-[100px] pb-12" id="hero">
+      <div className="game-hero-layout max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col md:flex-row items-center justify-between gap-10 md:gap-[60px]">
         
         <div className={`w-full pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
-          <p className="font-syne-mono text-[12px] text-port-teal tracking-[0.15em] uppercase mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
-            // Full Stack · AI · Game Dev
+          <p className="game-eyebrow font-syne-mono text-[10px] sm:text-[11px] tracking-[0.12em] uppercase mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
+            PLAYER 01 <span>•</span> BINUS COMPUTER SCIENCE
           </p>
           
-          <h1 className="font-syne text-[32px] sm:text-[40px] md:text-[48px] lg:text-[56px] font-[800] leading-[1.1] md:leading-[1.0] tracking-[-1px] md:tracking-[-2px] mb-[24px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s] break-words">
-            <span className="text-port-text-muted font-normal text-[0.7em] tracking-[-1px]">&lt; </span>
-            Hello!
+          <h1 className="game-hero-title font-syne text-[clamp(44px,8vw,88px)] font-[800] leading-[0.98] tracking-[-0.06em] mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s] break-words">
+            <span>Lintang</span>
             <br />
-            I'm
-            <br />
-            <span className="text-port-teal break-words">Lintang</span>
-            <br />
-            <span className="text-port-teal break-words">Anggowoyuono</span>
-            <span className="text-port-text-muted font-normal text-[0.7em] tracking-[-1px]"> /&gt;</span>
+            <span>Anggowoyuono</span>
           </h1>
           
-          <p className="text-[14px] text-port-text-dim leading-[1.8] max-w-[440px] mb-[44px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.7s]">
-            Computer Science student at BINUS University, building web applications and exploring language models.
+          <p className="game-hero-copy text-[14px] sm:text-[16px] leading-[1.8] max-w-[480px] mb-8 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.7s]">
+            Full Stack • AI • Game Dev<br />
+            I build useful things with code, curiosity, and a little player energy.
           </p>
           
           <div className="relative w-full">
             <div className="flex items-center opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.9s]">
               <div className="flex gap-[16px] flex-wrap">
-                <a href="/cv-lintang-anggowoyuono.pdf" target="_blank" rel="noreferrer" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
-                  [ Download CV ]
+                <a href="#work" className="game-button game-button-primary font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 font-[500] inline-flex items-center gap-3 no-underline">
+                  <span aria-hidden="true">▶</span> Start exploring
                 </a>
-                <a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="font-syne-mono text-[12px] tracking-[0.12em] bg-transparent text-port-text-primary border border-port-grid py-[14px] px-[28px] inline-flex items-center gap-[8px] transition-all duration-200 hover:border-port-teal hover:text-port-teal hover:-translate-y-px">
-                  GitHub ↗
+                <a href="/cv-lintang-anggowoyuono.pdf" target="_blank" rel="noreferrer" className="game-button game-button-secondary font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 inline-flex items-center gap-2 no-underline">
+                  Resume ↓
                 </a>
               </div>
             </div>
 
             {isDesktop && (
-              <div className="mt-[40px] flex items-center gap-[12px] font-syne-mono text-[10px] text-port-text-muted tracking-[0.15em] uppercase opacity-0 animate-[fadeUp_0.6s_ease_forwards_1.2s]">
-                <div className="w-[40px] h-px bg-port-grid relative overflow-hidden">
-                  <div className="absolute top-0 left-[-100%] w-full h-full bg-port-teal animate-scanline" />
-                </div>
-                scroll to explore
+              <div className="game-scroll-hint mt-8 flex items-center gap-3 font-syne-mono text-[9px] tracking-[0.12em] uppercase opacity-0 animate-[fadeUp_0.6s_ease_forwards_1.2s]">
+                <span className="game-scroll-arrow">↓</span> Scroll to continue
               </div>
             )}
 
           </div>
+        </div>
+
+        <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
+          <div className="game-avatar-card relative p-3 sm:p-4">
+            <div className="flex items-center justify-between mb-3 px-1">
+              <span className="game-pixel-label">PLAYER CARD</span>
+              <span className="game-pixel-label game-pixel-label-accent">LV. 03</span>
+            </div>
+            <div className="game-avatar-window relative overflow-hidden">
+              <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
+              <div className="game-avatar-scanline" />
+              <span className="game-avatar-corner avatar-corner-tl" />
+              <span className="game-avatar-corner avatar-corner-br" />
+            </div>
+            <div className="flex items-center justify-between mt-3 px-1">
+              <span className="font-syne text-[15px] font-[800]">LINTANG A.</span>
+              <span className="game-player-status"><i /> Online</span>
+            </div>
+          </div>
+          <div className="game-floating-token token-star" aria-hidden="true">✦</div>
+          <div className="game-floating-token token-heart" aria-hidden="true">♥</div>
         </div>
 
       </div>
@@ -337,19 +387,17 @@ function HeroSection() {
 
 function AboutSection() {
   return (
-    <section className="relative z-10 py-[100px]" id="about">
+    <section className="game-section relative z-10 py-20 md:py-28" id="about">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
-        <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
-          01 / About
+        <p className="game-section-label font-syne-mono text-[9px] sm:text-[10px] tracking-[0.12em] uppercase mb-4 reveal-item" data-delay="0">
+          <span className="game-label-icon">01</span> Character Profile
         </p>
         <div className="grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-[80px] items-start">
           <div className="reveal-item" data-delay="100">
-            <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[32px]">
-              The mind
-              <br />
-              behind the code.
+            <h2 className="game-section-title font-syne text-[clamp(32px,4vw,52px)] font-[800] leading-[1.02] mb-8">
+              Meet the<br />player.
             </h2>
-            <div className="mt-[32px]">
+            <div className="game-profile-stats mt-8">
               {[
                 { label: "Name", value: "Lintang Anggowoyuono" },
                 { label: "Location", value: "Jakarta, Indonesia" },
@@ -357,16 +405,16 @@ function AboutSection() {
                 { label: "Focus", value: "Full Stack & AI Systems" },
                 { label: "Community", value: "HIMTI" },
               ].map((item, i) => (
-                <div className={`flex flex-col gap-[4px] py-[20px] border-b border-port-grid ${i === 0 ? 'border-t' : ''}`} key={item.label}>
-                  <span className="font-syne-mono text-[10px] text-port-text-muted uppercase tracking-[0.12em]">{item.label}</span>
-                  <span className="font-syne text-[15px] font-[700] text-port-text-primary">{item.value}</span>
+                <div className="game-stat-row flex flex-col gap-1 py-3" key={item.label}>
+                  <span className="game-pixel-label">{item.label}</span>
+                  <span className="font-syne text-[15px] font-[700]">{item.value}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="reveal-item flex flex-col gap-8" data-delay="200">
-            <div className="w-full max-w-[300px] aspect-square rounded-[4px] overflow-hidden border border-port-grid relative">
+            <div className="game-about-photo w-full max-w-[260px] aspect-square overflow-hidden relative">
               <img 
                 src="/lintang.jpeg" 
                 alt="Lintang Anggowoyuono" 
@@ -374,15 +422,15 @@ function AboutSection() {
               />
             </div>
 
-            <div className="text-[15px] text-port-text-dim leading-[1.9] space-y-[20px]">
+            <div className="game-panel game-about-copy text-[14px] sm:text-[15px] leading-[1.9] space-y-4 p-5 sm:p-7">
               <p>
                 My interest in software began in an elementary school <strong className="text-port-text-primary font-[500]">game development</strong> club, where I saw how code could bring creativity and logic together. I went on to study <strong className="text-port-text-primary font-[500]">Software Engineering</strong> in vocational high school and now study Computer Science at BINUS University, exploring software engineering, artificial intelligence, and user-centered design.
               </p>
               <p>
-                I have worked on interactive web applications, organizational platforms, and <span className="text-port-teal">AI projects</span> in agriculture and natural language processing. I enjoy developing <strong className="text-port-text-primary font-[500]">React interfaces</strong>, integrating <strong className="text-port-text-primary font-[500]">machine learning models</strong>, and designing products that are reliable and easy to use.
+                I have worked on interactive web applications, organizational platforms, and <span className="game-highlight">AI projects</span> in agriculture and natural language processing. I enjoy developing <strong>React interfaces</strong>, integrating <strong>machine learning models</strong>, and designing products that are reliable and easy to use.
               </p>
               <p>
-                I believe technology works best when it is <strong className="text-port-text-primary font-[500]">accessible, useful, and built with people in mind</strong>.
+                I believe technology works best when it is <strong>accessible, useful, and built with people in mind</strong>.
               </p>
             </div>
           </div>
@@ -394,40 +442,42 @@ function AboutSection() {
 
 function ProjectsSection() {
   return (
-    <section className="relative z-10 py-[100px]" id="work">
+    <section className="game-section relative z-10 py-20 md:py-28" id="work">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
-        <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
-          02 / Selected Work
+        <p className="game-section-label font-syne-mono text-[9px] sm:text-[10px] tracking-[0.12em] uppercase mb-4 reveal-item" data-delay="0">
+          <span className="game-label-icon">02</span> Quest Log / Selected Projects
         </p>
-        <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[32px] reveal-item" data-delay="100">
-          Projects that
-          <br />
-          shipped.
-        </h2>
-        <div className="flex flex-col">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <h2 className="game-section-title font-syne text-[clamp(32px,4vw,52px)] font-[800] leading-[1.02] reveal-item" data-delay="100">Projects unlocked.</h2>
+          <span className="game-count-badge font-syne-mono text-[9px] uppercase tracking-[0.08em]">{PROJECTS.length} quests available</span>
+        </div>
+        <div className="game-project-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {PROJECTS.map((p, i) => (
             <a 
               href={p.link} 
               target="_blank" 
               rel="noreferrer" 
-              className="group grid grid-cols-[48px_1fr] md:grid-cols-[80px_1fr_auto] gap-x-[40px] items-start py-[44px] border-b border-port-grid transition-colors duration-300 hover:bg-port-surface/55 cursor-pointer first:border-t reveal-item no-underline block" 
+              className={`game-panel game-project-card group cursor-pointer reveal-item no-underline block p-5 sm:p-6 ${p.featured ? 'is-featured' : ''}`}
               data-delay={String(i * 80 + 150)} 
               key={p.num}
             >
-              <p className="font-syne-mono text-[12px] text-port-text-muted pt-[4px] tracking-[0.08em]">[ {p.num} ]</p>
+              <div className="flex items-center justify-between mb-5">
+                <span className="game-pixel-label">QUEST {p.num}</span>
+                <span className="game-project-status">UNLOCKED</span>
+              </div>
               <div>
                 <div className="flex flex-wrap gap-[8px] mb-[12px]">
                   {p.tags.map((t) => (
-                    <span className={`font-syne-mono text-[10px] tracking-[0.1em] uppercase px-[10px] py-[4px] rounded-[2px] ${p.featured ? 'bg-port-teal/10 text-port-teal border border-port-teal/20' : 'bg-port-grid text-port-text-muted'}`} key={t}>
+                    <span className="game-tag font-syne-mono text-[9px] tracking-[0.08em] uppercase px-2.5 py-1" key={t}>
                       {t}
                     </span>
                   ))}
                 </div>
-                <h3 className="font-syne text-[clamp(22px,2.5vw,32px)] font-[800] tracking-[-1px] text-port-text-primary mb-[12px] transition-colors duration-200 group-hover:text-port-teal">{p.name}</h3>
-                <p className="text-[14px] text-port-text-dim leading-[1.8] max-w-[560px]">{p.desc}</p>
-                <p className="font-syne-mono text-[11px] text-port-text-muted mt-[16px] tracking-[0.05em]">stack: {p.stack}</p>
+                <h3 className="game-card-title font-syne text-[clamp(22px,2.5vw,30px)] font-[800] mb-2 transition-colors duration-200">{p.name}</h3>
+                <p className="text-[13px] text-port-text-dim leading-[1.8]">{p.desc}</p>
+                <p className="game-stack font-syne-mono text-[9px] mt-5 tracking-[0.04em]">ITEMS: {p.stack}</p>
               </div>
-              <span className="hidden md:block text-[28px] text-port-grid transition-all duration-250 pt-[4px] group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-port-teal" aria-hidden="true">↗</span>
+              <span className="game-card-action font-syne-mono text-[9px] uppercase tracking-widest mt-5 inline-flex items-center gap-2">View quest <span aria-hidden="true">↗</span></span>
             </a>
           ))}
         </div>
@@ -507,31 +557,29 @@ function ExperienceSection() {
   }, [modalState.isOpen, modalState.proofs]);
 
   return (
-    <section className="relative z-10 py-[100px]" id="experience">
+    <section className="game-section relative z-10 py-20 md:py-28" id="experience">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
-        <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
-          03 / Experience
+        <p className="game-section-label font-syne-mono text-[9px] sm:text-[10px] tracking-[0.12em] uppercase mb-4 reveal-item" data-delay="0">
+          <span className="game-label-icon">03</span> Career / Milestones
         </p>
-        <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[56px] reveal-item" data-delay="100">
-          The
-          <br />
-          Journey.
+        <h2 className="game-section-title font-syne text-[clamp(32px,4vw,52px)] font-[800] leading-[1.02] mb-10 reveal-item" data-delay="100">
+          Quest log.
         </h2>
 
-        <div className="relative max-w-[960px] pl-8">
+        <div className="game-quest-list relative max-w-[1040px] pl-6 sm:pl-9">
           <div
             className="absolute left-[5px] top-2 bottom-2 w-px"
-            style={{ background: "linear-gradient(to bottom, #00F5C4, #1A2235 80%)" }}
+            style={{ background: "linear-gradient(to bottom, #ff917d, #c8ef76 65%, #151d35 100%)" }}
           />
 
           <div className="flex flex-col gap-[64px]">
             {EXPERIENCE.map((item, i) => (
-              <div className="relative reveal-item" data-delay={String(i * 100 + 150)} key={item.role}>
+              <div className="game-quest-entry relative reveal-item" data-delay={String(i * 100 + 150)} key={item.role}>
                 <div
                   className={`absolute -left-8 top-1 w-[11px] h-[11px] rounded-full bg-port-bg border-2 ${
                     item.current ? "border-port-teal" : "border-port-text-muted"
                   }`}
-                  style={{ boxShadow: "0 0 0 4px #080B10" }}
+                  style={{ boxShadow: "0 0 0 4px #151d35" }}
                 >
                   {item.current && (
                     <span
@@ -541,39 +589,39 @@ function ExperienceSection() {
                   )}
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-start gap-[40px]">
+                <div className="game-panel game-quest-card flex flex-col md:flex-row justify-between items-start gap-6 md:gap-8 p-5 sm:p-7">
                   <div className="flex-1">
                     <div className="flex justify-between items-baseline flex-wrap gap-2 mb-[6px]">
-                      <span className="font-syne text-[22px] font-[700] text-port-text-primary">
+                      <span className="game-card-title font-syne text-[21px] font-[700]">
                         {item.role}
                       </span>
-                      <span className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.05em] whitespace-nowrap">
+                      <span className="game-period font-syne-mono text-[9px] tracking-[0.04em] whitespace-nowrap">
                         {item.period}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-[10px] mb-[18px]">
-                      <span className="text-[14px] text-port-teal font-[500]">{item.org}</span>
-                      <span className="font-syne-mono text-[9px] tracking-[0.08em] uppercase px-[9px] py-[3px] rounded-[2px] bg-port-violet/10 text-[#A394F5] border border-port-violet/30">
+                      <span className="game-highlight text-[13px] font-[600]">{item.org}</span>
+                      <span className="game-tag game-tag-coral font-syne-mono text-[8px] tracking-[0.08em] uppercase px-2 py-1">
                         {item.tag}
                       </span>
                     </div>
 
-                    <p className="text-[14px] text-port-text-dim leading-[1.75] mb-[20px] max-w-[600px]">
+                    <p className="text-[13px] text-port-text-dim leading-[1.75] mb-4 max-w-[600px]">
                       {item.desc}
                     </p>
 
                     <ul className="flex flex-col gap-[10px]">
                       {item.bullets.map((b) => (
-                        <li key={b} className="text-[13px] text-port-text-dim leading-[1.6] pl-[20px] relative">
-                          <span className="absolute left-0 top-0 text-port-teal font-[800]">›</span>
+                        <li key={b} className="game-quest-bullet text-[12px] text-port-text-dim leading-[1.6] pl-5 relative">
+                          <span className="absolute left-0 top-0 font-[800]">✦</span>
                           {b}
                         </li>
                       ))}
                     </ul>
 
-                    <p className="font-syne-mono text-[11px] text-port-text-muted mt-[20px] tracking-[0.04em]">
-                      stack: {item.stack}
+                    <p className="game-stack font-syne-mono text-[9px] mt-4 tracking-[0.04em]">
+                      LOOT: {item.stack}
                     </p>
                   </div>
 
@@ -583,7 +631,7 @@ function ExperienceSection() {
                         type="button"
                         aria-label={`Open ${item.org} gallery`}
                         onClick={() => openModal(item.proofs)}
-                        className="relative w-full h-[130px] rounded-[4px] bg-port-surface border border-port-grid flex items-center justify-center group cursor-pointer overflow-hidden transition-all duration-300 hover:border-port-teal hover:-translate-y-1"
+                        className="game-proof-button relative w-full h-[130px] md:w-[190px] rounded-lg flex items-center justify-center group cursor-pointer overflow-hidden transition-all duration-300"
                       >
                         <img 
                           src={item.proofs[0].src} 
@@ -596,8 +644,8 @@ function ExperienceSection() {
                         />
 
                         {item.proofs.length > 1 && (
-                          <div className="absolute bottom-2 left-2 bg-[#080B10]/80 backdrop-blur-md border border-port-grid px-[6px] py-[2px] rounded text-[9px] font-syne-mono text-port-text-primary z-10">
-                            1 / {item.proofs.length}
+                          <div className="game-proof-count absolute bottom-2 left-2 px-2 py-1 rounded text-[9px] font-syne-mono z-10">
+                            +{item.proofs.length - 1} files
                           </div>
                         )}
 
@@ -609,7 +657,7 @@ function ExperienceSection() {
                         </svg>
                       </button>
 
-                      <div className="flex items-center gap-[6px] font-syne-mono text-[10px] text-port-text-muted tracking-[0.1em] uppercase pl-1 md:pr-1">
+                      <div className="game-proof-label flex items-center gap-[6px] font-syne-mono text-[9px] tracking-[0.08em] uppercase pl-1 md:pr-1">
                         <svg className="w-[14px] h-[14px] text-port-text-dim" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                         </svg>
@@ -631,7 +679,7 @@ function ExperienceSection() {
           aria-modal="true"
           aria-label={modalState.proofs[modalState.currentIndex].label}
           data-gallery-dialog
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10 bg-[#080B10]/95 backdrop-blur-xl transition-opacity duration-300"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 md:p-10 bg-[#151d35]/95 backdrop-blur-xl transition-opacity duration-300"
           onClick={closeModal}
         >
           <button 
@@ -727,61 +775,41 @@ function ExperienceSection() {
 
 function ArsenalSection() {
   return (
-    <section className="relative z-10 py-[100px]" id="arsenal">
+    <section className="game-section relative z-10 py-20 md:py-28" id="arsenal">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
-        <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[16px] flex items-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 reveal-item" data-delay="0">
-          04 / Tech Arsenal
+        <p className="game-section-label font-syne-mono text-[9px] sm:text-[10px] tracking-[0.12em] uppercase mb-4 reveal-item" data-delay="0">
+          <span className="game-label-icon">04</span> Player Inventory
         </p>
-        <h2 className="font-syne text-[clamp(32px,4vw,52px)] font-[800] tracking-[-1.5px] leading-[1.05] text-port-text-primary mb-[32px] reveal-item" data-delay="100">
-          The stack.
+        <h2 className="game-section-title font-syne text-[clamp(32px,4vw,52px)] font-[800] leading-[1.02] mb-8 reveal-item" data-delay="100">
+          Tools equipped.
         </h2>
 
-        <div className="bg-port-surface border border-port-grid rounded-[4px] overflow-hidden reveal-item" data-delay="200">
-          <div className="bg-port-surface-alt border-b border-port-grid py-[12px] px-[20px] flex items-center gap-[8px]">
-            <div className="w-[10px] h-[10px] rounded-full bg-[#FF5F57]" />
-            <div className="w-[10px] h-[10px] rounded-full bg-[#FEBC2E]" />
-            <div className="w-[10px] h-[10px] rounded-full bg-[#28C840]" />
-            <span className="font-syne-mono text-[11px] text-port-text-muted ml-[12px] tracking-[0.08em]">lintang@dev — ~/arsenal</span>
+        <div className="game-panel game-inventory-panel overflow-hidden reveal-item" data-delay="200">
+          <div className="game-panel-header py-3 px-4 sm:px-6 flex items-center justify-between gap-3">
+            <span className="game-pixel-label">LINTANG.EXE / INVENTORY</span>
+            <span className="game-count-badge font-syne-mono text-[8px] uppercase tracking-[0.08em]">{Object.values(SKILLS).flat().length} items</span>
           </div>
-          <div className="py-[32px] px-[40px]">
-            <div className="font-syne-mono text-[13px] mb-[20px] leading-[1.5]">
-              <span className="text-port-teal select-none">$ </span>
-              <span className="text-port-text-dim">ls --category core stack</span>
-            </div>
-            <div className="flex flex-wrap gap-[8px] mt-[6px] md:pl-[16px]">
-              {SKILLS.core.map((s) => (
-                <span className="font-syne-mono text-[11px] tracking-[0.08em] px-[14px] py-[6px] rounded-[2px] transition-transform duration-150 hover:-translate-y-[2px] cursor-default bg-port-teal/10 text-port-teal border border-port-teal/25" key={s}>{s}</span>
-              ))}
-            </div>
-
-            <div className="font-syne-mono text-[13px] mb-[20px] leading-[1.5] mt-[24px]">
-              <span className="text-port-teal select-none">$ </span>
-              <span className="text-port-text-dim">ls --category ai and ml</span>
-            </div>
-            <div className="flex flex-wrap gap-[8px] mt-[6px] md:pl-[16px]">
-              {SKILLS.ai.map((s) => (
-                <span className="font-syne-mono text-[11px] tracking-[0.08em] px-[14px] py-[6px] rounded-[2px] transition-transform duration-150 hover:-translate-y-[2px] cursor-default bg-port-violet/10 text-[#A394F5] border border-port-violet/30" key={s}>{s}</span>
-              ))}
-            </div>
-
-            <div className="font-syne-mono text-[13px] mb-[20px] leading-[1.5] mt-[24px]">
-              <span className="text-port-teal select-none">$ </span>
-              <span className="text-port-text-dim">ls --category tools and design</span>
-            </div>
-            <div className="flex flex-wrap gap-[8px] mt-[6px] md:pl-[16px]">
-              {SKILLS.tools.map((s) => (
-                <span className="font-syne-mono text-[11px] tracking-[0.08em] px-[14px] py-[6px] rounded-[2px] transition-transform duration-150 hover:-translate-y-[2px] cursor-default bg-port-grid text-port-text-dim border border-port-grid" key={s}>{s}</span>
-              ))}
-            </div>
-
-            <div className="font-syne-mono text-[13px] mb-[20px] leading-[1.5] mt-[28px]">
-              <span className="text-port-teal select-none">$ </span>
-              <span className="text-port-text-dim">status</span>
-            </div>
-            <div className="font-syne-mono text-[13px] leading-[1.5] md:pl-[16px]">
-              <span className="text-port-teal">→ </span>
-              <span className="text-[#8A9BB5]">Currently exploring: game development and new technologies.</span>
-              <span className="inline-block w-[8px] h-[14px] bg-port-teal align-[-2px] animate-blink" />
+          <div className="grid md:grid-cols-3 gap-6 p-4 sm:p-6 md:p-7">
+            {[
+              { title: "Core Gear", key: "core", icon: "✦" },
+              { title: "AI / ML", key: "ai", icon: "◈" },
+              { title: "Tools", key: "tools", icon: "⬡" },
+            ].map((category) => (
+              <div className="game-inventory-category" key={category.key}>
+                <h3 className="game-inventory-heading font-syne text-[17px] font-[800] mb-4 flex items-center gap-2">
+                  <span aria-hidden="true">{category.icon}</span>{category.title}
+                </h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {SKILLS[category.key].map((skill) => (
+                    <span className="game-inventory-item font-syne-mono text-[9px] px-2.5 py-2" key={skill}>{skill}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="game-status-message md:col-span-3 flex flex-wrap items-center gap-3 px-4 py-3">
+              <span className="game-status-dot" />
+              <span className="game-pixel-label">CURRENT SIDE QUEST</span>
+              <span className="text-[12px]">Exploring game development and new technologies.</span>
             </div>
           </div>
         </div>
@@ -792,26 +820,23 @@ function ArsenalSection() {
 
 function ContactSection() {
   return (
-    <section className="relative z-10 py-[100px]" id="contact">
+    <section className="game-section relative z-10 py-20 md:py-28" id="contact">
       <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
         <div className="max-w-[700px] mx-auto text-center">
-          <p className="font-syne-mono text-[11px] tracking-[0.2em] uppercase text-port-teal mb-[28px] flex items-center justify-center gap-[12px] after:content-[''] after:block after:h-px after:w-[60px] after:bg-port-teal after:opacity-40 before:content-[''] before:block before:h-px before:w-[60px] before:bg-port-teal before:opacity-40 reveal-item" data-delay="0">
-            05 / Contact
+          <p className="game-section-label justify-center font-syne-mono text-[9px] sm:text-[10px] tracking-[0.12em] uppercase mb-5 reveal-item" data-delay="0">
+            <span className="game-label-icon">05</span> Next Quest
           </p>
-          <h2 className="font-syne text-[clamp(36px,5vw,72px)] font-[800] tracking-[-3px] leading-[0.95] text-port-text-primary mb-[28px] reveal-item" data-delay="100">
-            Let's build something
-            <br />
-            <span className="text-port-teal">worth shipping.</span>
+          <h2 className="game-section-title font-syne text-[clamp(36px,5vw,72px)] font-[800] leading-[0.98] mb-6 reveal-item" data-delay="100">
+            Ready for the<br />next level?
           </h2>
           <p className="text-[14px] text-port-text-dim leading-[1.8] mb-[48px] max-w-[480px] mx-auto reveal-item" data-delay="200">
-            Have a project idea, an AI feature to discuss, or a tricky engineering
-            problem? Send me a message.
+            Have a project idea, an AI feature to discuss, or a tricky engineering problem? Let's talk.
           </p>
           <div className="flex justify-center gap-[16px] flex-wrap reveal-item" data-delay="300">
-            <a href="mailto:lintanganggowo@gmail.com" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
-              [ Send a message ]
+            <a href="mailto:lintanganggowo@gmail.com" className="game-button game-button-primary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 font-[500] inline-flex items-center gap-3 no-underline">
+              <span aria-hidden="true">✉</span> Send a message
             </a>
-            <a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="font-syne-mono text-[12px] tracking-[0.12em] bg-transparent text-port-text-primary border border-port-grid py-[14px] px-[28px] inline-flex items-center gap-[8px] transition-all duration-200 hover:border-port-teal hover:text-port-teal hover:-translate-y-px">
+            <a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="game-button game-button-secondary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 inline-flex items-center gap-2 no-underline">
               GitHub ↗
             </a>
           </div>
@@ -823,14 +848,14 @@ function ContactSection() {
 
 function Footer() {
   return (
-    <footer className="relative z-10 border-t border-port-grid py-[32px] px-6 md:px-[60px] flex flex-col md:flex-row justify-between items-center gap-[16px] text-center md:text-left">
+    <footer className="game-footer relative z-10 border-t py-[32px] px-6 md:px-[60px] flex flex-col md:flex-row justify-between items-center gap-[16px] text-center md:text-left">
       <p className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.05em]">
         © 2026 Lintang Anggowoyuono. Designed &amp; engineered from scratch.
       </p>
       <ul className="flex gap-[24px] list-none">
-        <li><a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">GitHub</a></li>
-        <li><a href="https://www.linkedin.com/in/lintang-anggowoyuono/" target="_blank" rel="noreferrer" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">LinkedIn</a></li>
-        <li><a href="mailto:lintanganggowo@gmail.com" className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.08em] hover:text-port-teal transition-colors duration-200">Email</a></li>
+        <li><a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="game-footer-link font-syne-mono text-[11px] tracking-[0.08em]">GitHub</a></li>
+        <li><a href="https://www.linkedin.com/in/lintang-anggowoyuono/" target="_blank" rel="noreferrer" className="game-footer-link font-syne-mono text-[11px] tracking-[0.08em]">LinkedIn</a></li>
+        <li><a href="mailto:lintanganggowo@gmail.com" className="game-footer-link font-syne-mono text-[11px] tracking-[0.08em]">Email</a></li>
       </ul>
     </footer>
   );
@@ -839,40 +864,22 @@ function Footer() {
 // ROOT APP
 export default function App() {
   useScrollReveal();
-  const [showOrbScene, setShowOrbScene] = useState(
-    typeof window !== "undefined" ? window.innerWidth >= 768 : false
-  );
-
-  useEffect(() => {
-    const updateSceneVisibility = () => setShowOrbScene(window.innerWidth >= 768);
-    window.addEventListener("resize", updateSceneVisibility);
-    return () => window.removeEventListener("resize", updateSceneVisibility);
-  }, []);
 
   return (
-    <div className="relative w-full overflow-x-hidden min-h-screen">
-      <div className="fixed inset-0 opacity-45 pointer-events-none z-0" aria-hidden="true" style={{ backgroundImage: 'linear-gradient(#1A2235 1px, transparent 1px), linear-gradient(90deg, #1A2235 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
-      <div className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" style={{ background: 'radial-gradient(ellipse 80% 80% at 50% 50%, transparent 30%, #080B10 100%)' }} />
-      {showOrbScene && (
-        <div className="fixed inset-0 pointer-events-none z-[1] opacity-40" aria-hidden="true">
-          <Suspense fallback={null}>
-            <OrbScene />
-          </Suspense>
-        </div>
-      )}
-
+    <div className="game-page relative w-full overflow-x-hidden min-h-screen">
+      <GameWorldBackground />
       <Nav />
       <main>
         <HeroSection />
-        <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
+        <div className="game-section-break" />
         <AboutSection />
-        <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
+        <div className="game-section-break" />
         <ProjectsSection />
-        <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
+        <div className="game-section-break" />
         <ExperienceSection />
-        <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
+        <div className="game-section-break" />
         <ArsenalSection />
-        <div className="h-px bg-gradient-to-r from-transparent via-port-grid to-transparent m-0" />
+        <div className="game-section-break" />
         <ContactSection />
       </main>
       <Footer />
