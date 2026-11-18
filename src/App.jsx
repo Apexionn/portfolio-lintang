@@ -393,26 +393,24 @@ function HeroSection() {
         </div>
 
         <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
-          <div className="game-avatar-card character-sheet relative p-3 sm:p-4">
-            <div className="character-sheet-header flex items-center justify-between gap-3 mb-3">
-              <span className="character-card-kicker">Lintang Anggowoyuono</span>
-              <span className="character-card-index">ADVENTURER</span>
-            </div>
-            <div className="character-art-layout">
-              <aside className="character-ability-rail" aria-label="Abilities">
-                <div className="character-ability"><b>FS</b><span>Full Stack</span></div>
-                <div className="character-ability"><b>AI</b><span>AI</span></div>
-                <div className="character-ability"><b>GD</b><span>Game Dev</span></div>
-              </aside>
-              <div className="game-avatar-window character-portrait relative overflow-hidden">
-                <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
-                <div className="character-portrait-shade" />
-              </div>
+          <div className="game-avatar-card character-sheet relative">
+            <header className="character-sheet-header">
+              <span className="character-card-index">CHARACTER · 01</span>
+              <h2 className="character-name">Lintang<br />Anggowoyuono</h2>
+              <p className="character-class-label"><span aria-hidden="true">✦</span> Bard</p>
+            </header>
+            <div className="character-portrait relative overflow-hidden">
+              <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
+              <div className="character-portrait-shade" />
+              <span className="character-portrait-caption">BINUS UNIVERSITY</span>
             </div>
             <div className="character-info">
-              <span className="character-class-label">CLASS</span>
-              <h2 className="character-name">Code Artificer</h2>
-              <p className="character-affiliation"><span>GUILD</span> BINUS UNIVERSITY</p>
+              <div className="character-section-label"><span>CALLING</span><span className="character-rule" /></div>
+              <p className="character-specialties">Full Stack <i>·</i> AI <i>·</i> Game Development</p>
+              <div className="character-card-colophon">
+                <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M9 6v14.5a3 3 0 1 1-2-2.83V9l16-3v14.5a3 3 0 1 1-2-2.83V8L9 10.2"/><path d="M6 25c5 3 15 3 20 0"/></svg>
+                <span>THE WAYFARER'S SONG</span>
+              </div>
             </div>
             <div className="character-frame-ornaments" aria-hidden="true">
               {["top-left", "top-right", "bottom-left", "bottom-right"].map((corner) => (
