@@ -24,12 +24,14 @@ function CornerOrnaments() {
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--southwest" viewBox="0 0 64 64" fill="none">
-        <path d="M14 18c7 8 11 17 11 27v8M25 39l15-5M40 12v22m0-22 8-2v18M48 27c0 3-2 5-5 5s-4-2-3-4" />
-        <path d="M19 31c-3-2-5-5-5-9M26 45c4 1 7 3 9 6" />
+        <path d="M23 43V16l23-5v27" />
+        <path d="M23 22l23-5M46 11c7-2 11-2 15 1v10c-4-3-8-3-15-1" />
+        <ellipse cx="17" cy="47" rx="7" ry="4" transform="rotate(-22 17 47)" />
+        <ellipse cx="40" cy="42" rx="7" ry="4" transform="rotate(-22 40 42)" />
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--southeast" viewBox="0 0 64 64" fill="none">
-        <path d="M51 12c-7 10-13 19-17 30-2 5-5 9-10 12M43 23c5 0 9 3 11 8-5 1-9-1-12-5M37 34c-5 2-10 1-14-3 4-4 9-4 14-1M31 44c3 3 4 7 2 11-4-2-6-6-6-10M25 49c-3 4-7 6-12 5 2-5 5-8 10-9" />
+        <path d="M12 53c12-9 22-20 37-40M22 45c-6 1-10-2-12-7 6-2 11 0 14 5M31 35c-5-3-6-8-4-13 6 3 8 7 7 12M40 25c-2-5 0-10 5-13 3 5 2 10-2 14" />
       </svg>
     </div>
   );
