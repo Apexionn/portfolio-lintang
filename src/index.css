@@ -65,24 +65,30 @@
   .game-avatar-corner { position:absolute;width:14px;height:14px;border-color:#ff917d;border-style:solid; }
   .avatar-corner-tl { top:7px;left:7px;border-width:2px 0 0 2px; }
   .avatar-corner-br { bottom:7px;right:7px;border-width:0 2px 2px 0; }
-  .character-sheet { transform:none;overflow:hidden;color:#f2eadf;background:#191715;border:1px solid #87443d;border-radius:5px;box-shadow:0 8px 24px #080b1090; }
-  .character-sheet-header { min-height:24px;color:#b7a897; }
-  .character-card-kicker { font:600 8px/1.4 'Syne Mono',monospace;letter-spacing:.16em;text-transform:uppercase; }
-  .character-card-index { color:#d27b68;font:10px Georgia,serif; }
-  .character-card-index { color:#d1bfa7;font:600 7px 'Syne Mono',monospace;letter-spacing:.14em; }
-  .character-art-layout { display:grid;grid-template-columns:58px minmax(0,1fr);gap:8px; }
-  .character-ability-rail { display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:5px 4px;border:1px solid #52352f;background:#151412; }
-  .character-ability { display:flex;flex-direction:column;align-items:center;gap:4px;color:#c8b6a3;font:600 6px/1.2 'Syne Mono',monospace;letter-spacing:.04em;text-align:center; }
-  .character-ability b { display:grid;place-items:center;width:31px;height:31px;border:1px solid #ae6b58;transform:rotate(45deg);color:#f0dfc3;background:#211a17;font:700 9px Georgia,serif; }
-  .character-ability b span { transform:rotate(-45deg); }
-  .character-portrait { aspect-ratio:4/4.1;border:1px solid #87443d;border-radius:2px;background:#241e1b; }
+  .character-sheet { isolation:isolate;transform:none;overflow:hidden;color:#38271e;background-color:#e9dec5;background-image:radial-gradient(ellipse at 18% 12%,rgba(255,252,240,.58),transparent 44%),radial-gradient(ellipse at 83% 75%,rgba(119,82,49,.065),transparent 55%);border:1px solid #3e2a20;border-radius:4px;box-shadow:0 7px 18px #080b1070,0 0 0 2px #9b7a4d; }
+  .character-sheet::before { content:'';position:absolute;z-index:0;inset:5px;border:1px solid #98794e;pointer-events:none; }
+  .character-sheet-header { position:relative;z-index:1;min-height:34px;padding:5px 9px;border:1px solid #41231f;background:#542a25;color:#f2e6d0;box-shadow:inset 0 0 0 1px #805143; }
+  .character-card-kicker { color:#f1e4c9;font:600 14px/1.2 Palatino,'Palatino Linotype','Book Antiqua',Georgia,serif;letter-spacing:.015em; }
+  .character-card-index { color:#d8c8a8;font:600 8px 'Syne Mono',monospace;letter-spacing:.1em; }
+  .character-art-layout { position:relative;z-index:1;display:grid;grid-template-columns:64px minmax(0,1fr);gap:8px; }
+  .character-ability-rail { display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:8px 4px;border-right:1px solid #a99168; }
+  .character-ability { display:flex;flex-direction:column;align-items:center;gap:5px;color:#584435;font:600 9px/1.2 Palatino,'Palatino Linotype',Georgia,serif;text-align:center; }
+  .character-ability b { display:grid;place-items:center;width:32px;height:36px;clip-path:polygon(50% 0,90% 12%,86% 62%,50% 100%,14% 62%,10% 12%);color:#f2e8d3;background:#405340;font:700 9px Palatino,'Palatino Linotype',Georgia,serif; }
+  .character-portrait { aspect-ratio:4/4.1;border:1px solid #442b22;border-radius:1px;background:#d2c1a2; }
   .character-portrait img { object-position:center 38%; }
-  .character-portrait-shade { position:absolute;inset:0;background:linear-gradient(180deg,transparent 58%,rgba(17,13,12,.68));pointer-events:none; }
-  .character-info { padding:12px 3px 2px;border-top:1px solid #87443d;margin-top:10px; }
-  .character-class-label { color:#d27b68;font:600 7px 'Syne Mono',monospace;letter-spacing:.16em; }
-  .character-name { color:#f3e7d5;font:600 clamp(19px,2.2vw,24px)/1.15 Georgia,serif;letter-spacing:-.015em;margin-top:4px; }
-  .character-affiliation { color:#d8c39b;font:700 8px/1.5 'Syne Mono',monospace;letter-spacing:.08em;margin-top:5px; }
-  .character-affiliation span { color:#d27b68;margin-right:7px; }
+  .character-portrait-shade { position:absolute;inset:0;background:linear-gradient(180deg,transparent 72%,rgba(24,19,15,.36));pointer-events:none; }
+  .character-info { position:relative;z-index:1;padding:11px 23px 8px;border-top:1px solid #98794e;margin-top:9px; }
+  .character-class-label { color:#7c3e31;font:700 7px 'Syne Mono',monospace;letter-spacing:.16em; }
+  .character-name { color:#3a2920;font:600 clamp(20px,2.2vw,25px)/1.12 Palatino,'Palatino Linotype','Book Antiqua',Georgia,serif;letter-spacing:-.015em;margin-top:3px; }
+  .character-affiliation { color:#544331;font:600 9px/1.5 'Syne Mono',monospace;letter-spacing:.06em;margin-top:6px; }
+  .character-affiliation span { color:#7c3e31;margin-right:7px; }
+  .character-frame-ornaments { position:absolute;z-index:3;inset:0;pointer-events:none; }
+  .character-frame-corner { position:absolute;width:30px;height:30px;color:#8c6c3d; }
+  .character-frame-corner svg { display:block;width:100%;height:100%;stroke:currentColor;stroke-width:1;stroke-linecap:round;stroke-linejoin:round; }
+  .character-frame-corner.top-left { top:5px;left:5px; }
+  .character-frame-corner.top-right { top:5px;right:5px;transform:scaleX(-1); }
+  .character-frame-corner.bottom-left { bottom:5px;left:5px;transform:scaleY(-1); }
+  .character-frame-corner.bottom-right { bottom:5px;right:5px;transform:scale(-1); }
   .game-pixel-label-accent { color:#c8ef76; }
   .game-player-status { display:flex;align-items:center;gap:6px;color:#c8ef76;font:10px 'Syne Mono',monospace; }
   .game-player-status i { width:7px;height:7px; }
@@ -130,7 +136,7 @@
   @keyframes cloud-drift { from { transform:translateX(-8px); } to { transform:translateX(18px); } }
   @media (max-width:767px) {
     .game-hero-layout { min-height:unset;gap:54px;padding-top:28px; }
-    .game-avatar-stage { width:min(250px,72vw);margin:0 auto 18px; }
+    .game-avatar-stage { width:min(330px,88vw);margin:0 auto 18px; }
     .game-hero-title { font-size:clamp(34px,9vw,48px); }
     .game-world-art { opacity:.58; }
     .game-section-break { margin:0 24px; }

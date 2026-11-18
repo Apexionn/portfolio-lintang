@@ -400,9 +400,9 @@ function HeroSection() {
             </div>
             <div className="character-art-layout">
               <aside className="character-ability-rail" aria-label="Abilities">
-                <div className="character-ability"><b><span>FS</span></b><span>FULL STACK</span></div>
-                <div className="character-ability"><b><span>AI</span></b><span>AI</span></div>
-                <div className="character-ability"><b><span>GD</span></b><span>GAME DEV</span></div>
+                <div className="character-ability"><b>FS</b><span>Full Stack</span></div>
+                <div className="character-ability"><b>AI</b><span>AI</span></div>
+                <div className="character-ability"><b>GD</b><span>Game Dev</span></div>
               </aside>
               <div className="game-avatar-window character-portrait relative overflow-hidden">
                 <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
@@ -413,6 +413,16 @@ function HeroSection() {
               <span className="character-class-label">CLASS</span>
               <h2 className="character-name">Code Artificer</h2>
               <p className="character-affiliation"><span>GUILD</span> BINUS UNIVERSITY</p>
+            </div>
+            <div className="character-frame-ornaments" aria-hidden="true">
+              {["top-left", "top-right", "bottom-left", "bottom-right"].map((corner) => (
+                <span className={`character-frame-corner ${corner}`} key={corner}>
+                  <svg viewBox="0 0 32 32" fill="none">
+                    <path d="M2 30V12Q2 2 12 2H30M6 22C13 21 20 14 22 6M15 4C14 10 19 15 27 16" />
+                    <path d="M6 13C10 13 13 10 13 6" />
+                  </svg>
+                </span>
+              ))}
             </div>
           </div>
         </div>
