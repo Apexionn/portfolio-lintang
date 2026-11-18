@@ -129,19 +129,17 @@ const EXPERIENCE = [
     ],
   },
   {
-    role: "Frontend Developer Intern",
+    role: "Backend Developer Intern",
     org: "PT Asuransi Bintang Tbk",
     tag: "Internship",
     period: "Aug 2023 to Oct 2023",
     current: false,
-    desc: "Built responsive interfaces for a room booking system and worked with backend developers to integrate APIs and manage booking data.",
+    desc: "Developed and led the implementation of backend systems for an efficient room booking management system. Optimized performance and maintained data integrity to improve user experience and operational efficiency.",
     bullets: [
-      "Developed responsive user interface components for the room booking system",
-      "Improved application usability and consistency across different devices and screen sizes",
-      "Integrated front-end features with RESTful APIs to display and manage booking data",
-      "Assisted in testing, debugging, and optimizing front-end performance",
+      "Built backend functionality to support room booking workflows",
+      "Improved system performance while maintaining reliable, consistent booking data",
     ],
-    stack: "TailwindCSS · Laravel · Postman",
+    stack: "Laravel · REST APIs · Postman",
     proofs: [
       {
         src: "/asbin.jpeg",
