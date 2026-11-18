@@ -1,6 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import CharacterCard from "./components/CharacterCard";
+
+const AdventureScene = lazy(() => import("./AdventureScene"));
 
 // DATA
 const PROJECTS = [
@@ -226,31 +228,11 @@ function useScrollReveal() {
 function GameWorldBackground() {
   return (
     <div className="game-world-background fixed inset-0 pointer-events-none z-0" aria-hidden="true">
-      <svg className="game-world-art absolute inset-0 w-full h-full" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" shapeRendering="crispEdges">
-        <defs>
-          <pattern id="game-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-            <path d="M48 0H0V48" fill="none" stroke="#b9c8e8" strokeOpacity=".045" strokeWidth="1" />
-          </pattern>
-        </defs>
-        <rect width="1440" height="900" fill="url(#game-grid)" />
-        <g className="game-cloud cloud-one" fill="#536486" opacity=".34">
-          <path d="M1130 170h32v-24h48v-24h72v24h48v24h48v48h-248z" />
-          <path d="M120 330h32v-24h48v-24h72v24h48v24h32v48H120z" />
-        </g>
-        <g fill="#d7e2ff" opacity=".55">
-          <path d="M200 130h8v8h-8zM390 215h6v6h-6zM900 110h8v8h-8zM1040 320h6v6h-6zM720 260h7v7h-7zM1320 390h6v6h-6zM560 100h5v5h-5z" />
-        </g>
-        <g className="game-platform platform-left">
-          <path d="M0 746h80v-24h48v-24h128v24h48v24h64v24H0z" fill="#24304d" />
-          <path d="M0 746h80v-24h48v-24h128v24h48v24h64" fill="none" stroke="#7182a7" strokeWidth="4" />
-          <path d="M46 772h28v28H46zM146 772h28v28h-28zM246 772h28v28h-28z" fill="#354565" />
-        </g>
-        <g className="game-platform platform-right">
-          <path d="M1010 820h72v-24h56v-24h120v24h54v24h128v80h-430z" fill="#24304d" />
-          <path d="M1010 820h72v-24h56v-24h120v24h54v24h128" fill="none" stroke="#7182a7" strokeWidth="4" />
-          <path d="M1080 844h28v28h-28zM1190 844h28v28h-28zM1300 844h28v28h-28z" fill="#354565" />
-        </g>
-      </svg>
+      <div className="game-world-canvas absolute inset-0" aria-hidden="true">
+        <Suspense fallback={null}>
+          <AdventureScene />
+        </Suspense>
+      </div>
       <div className="game-world-vignette absolute inset-0" />
     </div>
   );
