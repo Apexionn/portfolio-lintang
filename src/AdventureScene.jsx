@@ -30,7 +30,7 @@ const terrainHeight = (x, z) =>
   0.08 * Math.sin(z * 0.34);
 const pathCenter = (z) => Math.sin(z * 0.14) * 2.15 + Math.sin(z * 0.31) * 0.52;
 
-export default function OrbScene() {
+export default function AdventureScene() {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function OrbScene() {
     }
 
     const scene = new Scene();
-    scene.fog = new FogExp2(0x18253a, 0.026);
+    scene.fog = new FogExp2(0x829da0, 0.018);
     const camera = new PerspectiveCamera(48, 1, 0.1, 100);
     const cameraPosition = new Vector3(0, 5.1, 12.8);
     const cameraTarget = new Vector3(0, 0.2, -5.4);
@@ -67,11 +67,11 @@ export default function OrbScene() {
     const ownMaterial = (material) => (materials.add(material), material);
     const standard = (color, roughness = 1) => ownMaterial(new MeshStandardMaterial({ color, roughness, metalness: 0 }));
 
-    scene.add(new AmbientLight(0xc4ced0, 1.6));
-    const sunLight = new DirectionalLight(0xffdfb2, 1.65);
+    scene.add(new AmbientLight(0xe0e1d1, 2));
+    const sunLight = new DirectionalLight(0xffe0b0, 2.1);
     sunLight.position.set(-8, 14, 6);
     scene.add(sunLight);
-    const fillLight = new DirectionalLight(0x8ca5bd, 0.7);
+    const fillLight = new DirectionalLight(0xb1c7c2, 0.9);
     fillLight.position.set(8, 8, -20);
     scene.add(fillLight);
 
@@ -80,11 +80,11 @@ export default function OrbScene() {
     const terrainPositions = [];
     const terrainIndices = [];
     const columns = 56;
-    const rows = 76;
+    const rows = 92;
     for (let row = 0; row <= rows; row++) {
-      const z = 15 - (row / rows) * 66;
+      const z = 15 - (row / rows) * 103;
       for (let column = 0; column <= columns; column++) {
-        const x = -19 + (column / columns) * 38;
+        const x = -32 + (column / columns) * 64;
         terrainPositions.push(x, terrainHeight(x, z), z);
         if (row < rows && column < columns) {
           const a = row * (columns + 1) + column;
@@ -96,19 +96,19 @@ export default function OrbScene() {
     terrainGeometry.setAttribute("position", new BufferAttribute(new Float32Array(terrainPositions), 3));
     terrainGeometry.setIndex(terrainIndices);
     terrainGeometry.computeVertexNormals();
-    const ground = new Mesh(terrainGeometry, standard(0x334b42));
+    const ground = new Mesh(terrainGeometry, standard(0x526c58));
     ground.frustumCulled = false;
     scene.add(ground);
 
     // A single tessellated ribbon gives the eye a calm route through the landscape.
-    const makeRibbon = (halfWidth, lift, startZ = 15, endZ = -51, segments = 150) => {
+    const makeRibbon = (halfWidth, lift, startZ = 15, endZ = -53, segments = 160) => {
       const geometry = ownGeometry(new BufferGeometry());
       const positions = [];
       const indices = [];
       for (let i = 0; i <= segments; i++) {
         const z = startZ + (endZ - startZ) * (i / segments);
         const x = pathCenter(z);
-        const taper = 0.86 + 0.14 * Math.sin((i / segments) * Math.PI);
+        const taper = 0.08 + 0.92 * Math.sin((i / segments) * Math.PI);
         const width = halfWidth * taper;
         positions.push(x - width, terrainHeight(x - width, z) + lift, z);
         positions.push(x + width, terrainHeight(x + width, z) + lift, z);
@@ -130,8 +130,8 @@ export default function OrbScene() {
     scene.add(trailSurface);
 
     // Distant layered ridges and a few nearer rock forms establish scale and depth.
-    const mountainGeometry = ownGeometry(new ConeGeometry(1, 1, 5, 1));
-    const mountainMats = [standard(0x52616a), standard(0x46575e), standard(0x607078)];
+    const mountainGeometry = ownGeometry(new ConeGeometry(1, 1, 6, 1));
+    const mountainMats = [standard(0x708486), standard(0x647a7e), standard(0x859595)];
     const rockGeometry = ownGeometry(new SphereGeometry(1, 7, 5));
     const rockMat = standard(0x596052);
     const seeded = (seed) => {
@@ -142,47 +142,51 @@ export default function OrbScene() {
       };
     };
     const random = seeded(31841);
-    for (let i = 0; i < 16; i++) {
+    for (let i = 0; i < 12; i++) {
       const side = i % 2 ? 1 : -1;
-      const x = side * (4.5 + random() * 11);
-      const z = -25 - random() * 14;
-      const height = 6 + random() * 8;
+      const slot = Math.floor((i % 6) / 2);
+      const x = side * (9 + slot * 8 + random() * 0.5);
+      const z = -64 - Math.floor(i / 6) * 11 - random() * 2;
+      const height = 8 + random() * 5;
+      const baseY = terrainHeight(x, z);
       const mountain = new Mesh(mountainGeometry, mountainMats[i % mountainMats.length]);
-      mountain.position.set(x, height * 0.42 - 0.1, z);
-      mountain.scale.set(4 + random() * 3, height, 3.2 + random() * 2.4);
+      mountain.position.set(x, baseY + height * 0.5, z);
+      mountain.scale.set(3.2 + random() * 0.7, height, 3 + random() * 1.2);
       mountain.rotation.y = random() * Math.PI;
       scene.add(mountain);
     }
-    for (let i = 0; i < 17; i++) {
-      const z = 8 - random() * 51;
+    for (let i = 0; i < 14; i++) {
+      const z = 5 - random() * 60;
       const side = i % 2 ? 1 : -1;
-      const x = pathCenter(z) + side * (3.2 + random() * 8.6);
+      const x = pathCenter(z) + side * (11 + random() * 4.5);
       const rock = new Mesh(rockGeometry, rockMat);
-      const scale = 0.45 + random() * 1.15;
-      rock.position.set(x, terrainHeight(x, z) + scale * 0.35, z);
-      rock.scale.set(scale * 1.4, scale * 0.65, scale);
+      const scale = 0.35 + random() * 0.7;
+      rock.position.set(x, terrainHeight(x, z) + scale * 0.55, z);
+      rock.scale.set(scale * 1.25, scale * 0.55, scale);
       rock.rotation.y = random() * Math.PI;
       scene.add(rock);
     }
 
     // Low-poly pines share the same geometry/material through instancing.
-    const treeCount = 96;
+    const treeCount = 44;
     const trunkGeometry = ownGeometry(new CylinderGeometry(0.1, 0.15, 1, 5));
     const crownGeometry = ownGeometry(new ConeGeometry(0.46, 1.12, 5, 1));
     const trunkMaterial = standard(0x51463a);
-    const crownMaterials = [standard(0x29483f), standard(0x355447), standard(0x3b5948)];
+    const crownMaterials = [standard(0x41674f), standard(0x4d7457), standard(0x587b5d)];
     const trunks = new InstancedMesh(trunkGeometry, trunkMaterial, treeCount);
     const crowns = crownMaterials.map((material) => new InstancedMesh(crownGeometry, material, treeCount));
     const dummy = new Group();
     const matrix = new Matrix4();
     let placed = 0;
     for (let i = 0; i < treeCount; i++) {
-      const z = 3 - random() * 54;
+      const row = Math.floor(i / 2);
       const side = i % 2 ? 1 : -1;
-      const distance = 5.2 + random() * (z < -20 ? 9.2 : 6.2);
+      const z = 7 - row * 2.15 + (side > 0 ? -0.75 : 0);
+      const distance = 5.8 + (row % 5 === 0 ? 2.4 : 0) + random() * 0.7;
+      if (side > 0 && Math.abs(z + 12) < 3.2) continue;
       const x = pathCenter(z) + side * distance;
-      const height = 1.35 + random() * 1.65;
-      const scale = 0.66 + random() * 0.48;
+      const height = 1.45 + random() * 0.8;
+      const scale = 0.76 + random() * 0.22;
       const y = terrainHeight(x, z);
       dummy.position.set(x, y + height * 0.24, z);
       dummy.scale.set(scale, height * 0.5, scale);
@@ -233,15 +237,15 @@ export default function OrbScene() {
       ownGeometry(new SphereGeometry(1.15, 12, 8)),
       ownMaterial(new MeshBasicMaterial({ color: 0xd7aa77 }))
     );
-    sun.position.set(-7, 9, -36);
+    sun.position.set(-14, 13, -61);
     scene.add(sun);
 
-    const moteCount = 52;
+    const moteCount = 38;
     const motePositions = new Float32Array(moteCount * 3);
     for (let i = 0; i < moteCount; i++) {
       motePositions[i * 3] = (random() - 0.5) * 26;
       motePositions[i * 3 + 1] = 0.7 + random() * 6;
-      motePositions[i * 3 + 2] = 8 - random() * 52;
+      motePositions[i * 3 + 2] = 8 - random() * 78;
     }
     const moteGeometry = ownGeometry(new BufferGeometry());
     moteGeometry.setAttribute("position", new BufferAttribute(motePositions, 3));
