@@ -33,6 +33,39 @@ const PROJECTS = [
     featured: false,
     link: "https://github.com/Apexionn/AI-Detection-Gambling-Promotion",
   },
+  {
+    num: "04",
+    name: "Booking Room Meeting",
+    subtitle: "Meeting Room Booking Backend",
+    tags: ["Backend", "Laravel", "Room Booking"],
+    stack: "Laravel · PHP · MySQL · REST API",
+    desc: "A backend system for managing meeting room bookings, built to support efficient reservations and keep booking data consistent.",
+    featured: false,
+    link: "https://github.com/Apexionn/Booking-Room-Meeting",
+  },
+  {
+    num: "05",
+    name: "Pengaduan Masyarakat",
+    subtitle: "Public Complaint Platform",
+    tags: ["Full Stack", "Web", "Android"],
+    stack: "Laravel · PHP · Blade · Flutter · Dart · HTTP API",
+    desc: "A public complaint platform available as a web app and an Android app. The two clients provide different ways to access the same community reporting service.",
+    featured: false,
+    links: [
+      { label: "Web App", url: "https://github.com/Apexionn/PengaduanMasyarakat" },
+      { label: "Android App", url: "https://github.com/Apexionn/pengaduan_flutter" },
+    ],
+  },
+  {
+    num: "06",
+    name: "Cashier Application",
+    subtitle: "Game Store Point of Sale",
+    tags: ["Full Stack", "Laravel", "Store System"],
+    stack: "Laravel · PHP · Blade · MySQL",
+    desc: "A full stack cashier application for a game store, bringing its sales workflow into a web-based system.",
+    featured: false,
+    link: "https://github.com/Apexionn/Cashier-Application",
+  },
 ];
 
 const SKILLS = {
@@ -445,11 +478,8 @@ function ProjectsSection() {
         </div>
         <div className="game-project-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {PROJECTS.map((p, i) => (
-            <a 
-              href={p.link} 
-              target="_blank" 
-              rel="noreferrer" 
-              className={`game-panel game-project-card group cursor-pointer reveal-item no-underline block p-5 sm:p-6 ${p.featured ? 'is-featured' : ''}`}
+            <article
+              className={`game-panel game-project-card group reveal-item p-5 sm:p-6 ${p.featured ? 'is-featured' : ''}`}
               data-delay={String(i * 80 + 150)} 
               key={p.num}
             >
@@ -469,8 +499,20 @@ function ProjectsSection() {
                 <p className="text-[13px] text-port-text-dim leading-[1.8]">{p.desc}</p>
                 <p className="game-stack font-syne-mono text-[9px] mt-5 tracking-[0.04em]">ITEMS: {p.stack}</p>
               </div>
-              <span className="game-card-action font-syne-mono text-[9px] uppercase tracking-widest mt-5 inline-flex items-center gap-2">View quest <span aria-hidden="true">↗</span></span>
-            </a>
+              <div className="game-project-actions mt-5 flex flex-wrap gap-x-5 gap-y-3">
+                {(p.links || [{ label: "View quest", url: p.link }]).map((projectLink) => (
+                  <a
+                    className="game-card-action font-syne-mono text-[9px] uppercase tracking-widest inline-flex items-center gap-2 no-underline"
+                    href={projectLink.url}
+                    key={projectLink.url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    {projectLink.label} <span aria-hidden="true">↗</span>
+                  </a>
+                ))}
+              </div>
+            </article>
           ))}
         </div>
       </div>
