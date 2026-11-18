@@ -20,17 +20,17 @@ const PROJECTS = [
     subtitle: "Agricultural Intelligence Platform",
     tags: ["AI ML", "Web App"],
     stack: "Python · Scikit learn · React",
-    desc: "Web based AI application that takes environmental sensor data and outputs crop yield predictions with precision fertilizer recommendations. Real machine learning in production, not a demo.",
+    desc: "An AI web application that uses environmental sensor data to predict crop yields and recommend fertilizer. The project combines a React interface with machine learning models built in Python.",
     featured: false,
     link: "https://github.com/Apexionn/frontend_ai",
   },
   {
     num: "03",
     name: "IndoBERT vs GPT",
-    subtitle: "NLP Research Few Shot Prompting",
+    subtitle: "Indonesian NLP: Few-Shot Prompting",
     tags: ["AI Research", "NLP", "LLMs"],
     stack: "Python · IndoBERT · OpenAI API · HuggingFace · Jupyter",
-    desc: "A rigorous comparative analysis of IndoBERT and OpenAI models on Indonesian language detection tasks. Explored few shot prompting limits, cross model accuracy deltas, and what it means to build AI for non English corpora.",
+    desc: "A comparison of IndoBERT and OpenAI models on Indonesian-language detection tasks. The study examines few-shot prompting and differences in model accuracy for Indonesian text.",
     featured: false,
     link: "https://github.com/Apexionn/AI-Detection-Gambling-Promotion",
   },
@@ -48,8 +48,8 @@ const EXPERIENCE = [
     org: "Codeavour 7.0 International Finale",
     tag: "Volunteer",
     period: "May 2026",
-    current: true,
-    desc: "Coordinated registration operations and managed participant check in during the international technology competition event.",
+    current: false,
+    desc: "Coordinated registration and participant check-in for the Codeavour 7.0 International Finale.",
     bullets: [
       "Collaborated with committee members to ensure smooth event execution",
       "Received a Certificate of Recognition and Letter of Appreciation for outstanding contribution",
@@ -72,12 +72,12 @@ const EXPERIENCE = [
     role: "Web Development Division Coordinator",
     org: "HIMTI BINUS",
     tag: "Leadership",
-    period: "May 2025 to April 2025",
-    current: true,
-    desc: "Leading a small team building and maintaining web platforms for the organization, setting code standards and coordinating sprint delivery.",
+    period: "May 2025 to April 2026",
+    current: false,
+    desc: "Led a web development team building and maintaining platforms for the organization, setting code standards and coordinating project delivery.",
     bullets: [
-      "Coordinated a 5 person dev team across two concurrent projects",
-      "Introduced a shared component library, cutting build time ~30%",
+      "Coordinated a five-person development team across two projects",
+      "Introduced a shared component library, reducing build time by approximately 30%",
     ],
     stack: "React · Figma",
     proofs: [
@@ -114,10 +114,10 @@ const EXPERIENCE = [
     tag: "Contract",
     period: "Jan 2024 to Aug 2024",
     current: false,
-    desc: "Developed and implemented responsive and user friendly interfaces for a banking application. Focused on creating a consistent and visually appealing style across the platform, ensuring accessibility and seamless user experience.",
+    desc: "Built responsive interfaces for a banking application, focusing on consistent visual styling, accessibility, and a smooth experience across user journeys.",
     bullets: [
-      "Engineered core frontend features to improve overall platform accessibility",
-      "Established cohesive visual styling to unify the interface across multiple user journeys",
+      "Built frontend features to improve accessibility across the platform",
+      "Applied consistent visual styling across multiple user journeys",
     ],
     stack: "React · TypeScript · Tailwind · Bitbucket",
     proofs: [
@@ -134,7 +134,7 @@ const EXPERIENCE = [
     tag: "Internship",
     period: "Aug 2023 to Oct 2023",
     current: false,
-    desc: "Contributed to the development of a room booking management system by building responsive and user-friendly interfaces. Collaborated with back-end developers to integrate APIs, improved user experience, and ensured smooth functionality across the application.",
+    desc: "Built responsive interfaces for a room booking system and worked with backend developers to integrate APIs and manage booking data.",
     bullets: [
       "Developed responsive user interface components for the room booking system",
       "Improved application usability and consistency across different devices and screen sizes",
@@ -457,7 +457,7 @@ function HeroSection() {
           </h1>
           
           <p className="text-[14px] text-port-text-dim leading-[1.8] max-w-[440px] mb-[44px] opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.7s]">
-            CS student at BINUS University. Shipping production-ready apps and training language models
+            Computer Science student at BINUS University, building web applications and exploring language models.
           </p>
           
           <div className="relative w-full">
@@ -536,13 +536,13 @@ function AboutSection() {
 
             <div className="text-[15px] text-port-text-dim leading-[1.9] space-y-[20px]">
               <p>
-                My journey began in elementary school through a <strong className="text-port-text-primary font-[500]">game development</strong> club, where I discovered how software could bring creativity and logic together. That curiosity led me to pursue <strong className="text-port-text-primary font-[500]">Software Engineering</strong> in vocational high school and eventually Computer Science at BINUS University, where I continue to explore the intersection of software engineering, artificial intelligence, and user centered design.
+                My interest in software began in an elementary school <strong className="text-port-text-primary font-[500]">game development</strong> club, where I saw how code could bring creativity and logic together. I went on to study <strong className="text-port-text-primary font-[500]">Software Engineering</strong> in vocational high school and now study Computer Science at BINUS University, exploring software engineering, artificial intelligence, and user-centered design.
               </p>
               <p>
-                Over the years, I have worked on projects ranging from interactive web applications and organizational platforms to <span className="text-port-teal">AI powered solutions</span> in agriculture and natural language processing. Whether I'm developing <strong className="text-port-text-primary font-[500]">React frontends</strong>, integrating <strong className="text-port-text-primary font-[500]">machine learning models</strong>, or designing intuitive user experiences, I enjoy creating products that are both technically reliable and easy to use.
+                I have worked on interactive web applications, organizational platforms, and <span className="text-port-teal">AI projects</span> in agriculture and natural language processing. I enjoy developing <strong className="text-port-text-primary font-[500]">React interfaces</strong>, integrating <strong className="text-port-text-primary font-[500]">machine learning models</strong>, and designing products that are reliable and easy to use.
               </p>
               <p>
-                I believe the best technology is not only functional but also <strong className="text-port-text-primary font-[500]">accessible, impactful, and built with people in mind</strong>.
+                I believe technology works best when it is <strong className="text-port-text-primary font-[500]">accessible, useful, and built with people in mind</strong>.
               </p>
             </div>
           </div>
@@ -911,7 +911,7 @@ function ArsenalSection() {
             </div>
             <div className="font-syne-mono text-[13px] leading-[1.5] md:pl-[16px]">
               <span className="text-port-teal">→ </span>
-              <span className="text-[#8A9BB5]">Always learning. Currently exploring: Experience New Stuff & Game Development.</span>
+              <span className="text-[#8A9BB5]">Currently exploring: game development and new technologies.</span>
               <span className="inline-block w-[8px] h-[14px] bg-port-teal align-[-2px] animate-blink" />
             </div>
           </div>
@@ -935,8 +935,8 @@ function ContactSection() {
             <span className="text-port-teal">worth shipping.</span>
           </h2>
           <p className="text-[14px] text-port-text-dim leading-[1.8] mb-[48px] max-w-[480px] mx-auto reveal-item" data-delay="200">
-            Whether it's a system architecture, an AI feature, or just a
-            conversation about hard problems my inbox is open.
+            Have a project idea, an AI feature to discuss, or a tricky engineering
+            problem? Send me a message.
           </p>
           <div className="flex justify-center gap-[16px] flex-wrap reveal-item" data-delay="300">
             <a href="mailto:lintanganggowo@gmail.com" className="font-syne-mono text-[12px] tracking-[0.12em] bg-port-teal text-port-bg py-[14px] px-[28px] font-[500] inline-block transition-all duration-200 hover:opacity-85 hover:-translate-y-px" style={{ clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))' }}>
