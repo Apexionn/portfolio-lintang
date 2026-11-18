@@ -395,29 +395,22 @@ function HeroSection() {
         <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
           <div className="game-avatar-card character-sheet relative p-3 sm:p-4">
             <div className="character-sheet-header flex items-center justify-between gap-3 mb-3">
-              <span className="character-card-kicker">LINTANG A.</span>
-              <span className="character-level-badge"><span aria-hidden="true">✦</span> LV. 03</span>
+              <span className="character-card-kicker">CHARACTER CARD</span>
+              <span className="character-card-index">01</span>
             </div>
             <div className="game-avatar-window character-portrait relative overflow-hidden">
               <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
-              <span className="game-avatar-corner avatar-corner-tl" />
-              <span className="game-avatar-corner avatar-corner-br" />
             </div>
-            <div className="character-type-banner flex items-center justify-between gap-3">
-              <span>CODE ARTIFICER</span>
-              <span className="character-school">ARCANE CRAFT <i aria-hidden="true">✦</i></span>
-            </div>
-            <div className="character-rules-panel">
-              <p className="character-flavor-line">WEB <i>◆</i> AI <i>◆</i> GAME DEV</p>
-              <p className="character-description">A curious builder crafting useful things with code, from full-stack systems to applied AI.</p>
-              <div className="character-sheet-footer">
-                <span><b>GUILD</b> BINUS COMPUTER SCIENCE</span>
-                <span className="character-quest-status"><i /> OPEN TO QUESTS</span>
+            <div className="character-info">
+              <h2 className="character-name">Lintang Anggowoyuono</h2>
+              <p className="character-affiliation">Computer Science <span>·</span> BINUS University</p>
+              <div className="character-skills" aria-label="Areas of focus">
+                <span>Full Stack</span>
+                <span>AI</span>
+                <span>Game Development</span>
               </div>
             </div>
           </div>
-          <div className="game-floating-token token-star" aria-hidden="true">✦</div>
-          <div className="game-floating-token token-heart" aria-hidden="true">✥</div>
         </div>
 
       </div>
