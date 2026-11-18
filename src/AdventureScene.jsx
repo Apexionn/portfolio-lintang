@@ -3,10 +3,12 @@ import {
   AmbientLight,
   BufferAttribute,
   BufferGeometry,
+  BoxGeometry,
   Color,
   ConeGeometry,
   CylinderGeometry,
   DirectionalLight,
+  ExtrudeGeometry,
   FogExp2,
   Group,
   InstancedMesh,
@@ -18,6 +20,8 @@ import {
   Points,
   PointsMaterial,
   Scene,
+  Shape,
+  ShapeGeometry,
   SphereGeometry,
   Vector3,
   WebGLRenderer,
@@ -129,9 +133,35 @@ export default function AdventureScene() {
     trailSurface.frustumCulled = false;
     scene.add(trailSurface);
 
-    // Distant layered ridges and a few nearer rock forms establish scale and depth.
-    const mountainGeometry = ownGeometry(new ConeGeometry(1, 1, 6, 1));
-    const mountainMats = [standard(0x708486), standard(0x647a7e), standard(0x859595)];
+    // Irregular extruded ridge profiles read as a continuous mountain range, not isolated cones.
+    const ridgeProfiles = [
+      [[-0.5, 0], [-0.41, 0.22], [-0.34, 0.18], [-0.27, 0.45], [-0.19, 0.3], [-0.11, 0.75], [-0.03, 0.12], [0.04, 0.16], [0.12, 0.47], [0.22, 0.93], [0.3, 0.49], [0.37, 0.68], [0.44, 0.2], [0.5, 0]],
+      [[-0.5, 0], [-0.42, 0.32], [-0.34, 0.72], [-0.25, 0.36], [-0.15, 0.59], [-0.07, 0.22], [0.04, 0.15], [0.14, 0.65], [0.24, 0.83], [0.32, 0.31], [0.4, 0.58], [0.46, 0.2], [0.5, 0]],
+    ];
+    const mountainGeometries = ridgeProfiles.map((profile) => {
+      const silhouette = new Shape();
+      silhouette.moveTo(-0.5, 0);
+      profile.forEach(([x, y]) => silhouette.lineTo(x, y));
+      silhouette.lineTo(0.5, 0);
+      silhouette.closePath();
+      return ownGeometry(new ExtrudeGeometry(silhouette, { depth: 1, bevelEnabled: false, steps: 1 }));
+    });
+    const mountainMats = [standard(0x71868a), standard(0x5f777d)];
+    const facetShapes = [];
+    const leftRidgeFacet = new Shape();
+    leftRidgeFacet.moveTo(-0.11, 0.75);
+    leftRidgeFacet.lineTo(-0.2, 0.3);
+    leftRidgeFacet.lineTo(-0.07, 0.43);
+    leftRidgeFacet.closePath();
+    facetShapes.push(leftRidgeFacet);
+    const rightRidgeFacet = new Shape();
+    rightRidgeFacet.moveTo(0.22, 0.93);
+    rightRidgeFacet.lineTo(0.12, 0.47);
+    rightRidgeFacet.lineTo(0.27, 0.55);
+    rightRidgeFacet.closePath();
+    facetShapes.push(rightRidgeFacet);
+    const peakFacetGeometries = facetShapes.map((shape) => ownGeometry(new ShapeGeometry(shape)));
+    const peakFacetMaterial = standard(0x9ba9a4);
     const rockGeometry = ownGeometry(new SphereGeometry(1, 7, 5));
     const rockMat = standard(0x596052);
     const seeded = (seed) => {
@@ -142,23 +172,31 @@ export default function AdventureScene() {
       };
     };
     const random = seeded(31841);
-    for (let i = 0; i < 12; i++) {
-      const side = i % 2 ? 1 : -1;
-      const slot = Math.floor((i % 6) / 2);
-      const x = side * (9 + slot * 8 + random() * 0.5);
-      const z = -64 - Math.floor(i / 6) * 11 - random() * 2;
-      const height = 8 + random() * 5;
-      const baseY = terrainHeight(x, z);
-      const mountain = new Mesh(mountainGeometry, mountainMats[i % mountainMats.length]);
-      mountain.position.set(x, baseY + height * 0.5, z);
-      mountain.scale.set(3.2 + random() * 0.7, height, 3 + random() * 1.2);
-      mountain.rotation.y = random() * Math.PI;
+    const mountainSites = [
+      { x: -18, z: -68, width: 15, height: 14, depth: 4.5, shape: 0 },
+      { x: 18, z: -70, width: 16, height: 15, depth: 4.6, shape: 1 },
+      { x: -23, z: -83, width: 16, height: 10, depth: 5.4, shape: 1 },
+      { x: 23, z: -84, width: 17, height: 11, depth: 5.5, shape: 0 },
+    ];
+    mountainSites.forEach(({ x, z, width, height, depth, shape }, index) => {
+      const mountain = new Group();
+      mountain.position.set(x, terrainHeight(x, z) - 0.04, z);
+      mountain.scale.set(width, height, depth);
+      mountain.rotation.y = index % 2 ? 0.008 : -0.012;
+      const body = new Mesh(mountainGeometries[shape], mountainMats[index % mountainMats.length]);
+      body.position.z = -0.02;
+      const facets = peakFacetGeometries.map((geometry) => {
+        const facet = new Mesh(geometry, peakFacetMaterial);
+        facet.position.z = 1.015;
+        return facet;
+      });
+      mountain.add(body, ...facets);
       scene.add(mountain);
-    }
+    });
     for (let i = 0; i < 14; i++) {
       const z = 5 - random() * 60;
       const side = i % 2 ? 1 : -1;
-      const x = pathCenter(z) + side * (11 + random() * 4.5);
+      const x = pathCenter(z) + side * (17.5 + random() * 4.5);
       const rock = new Mesh(rockGeometry, rockMat);
       const scale = 0.35 + random() * 0.7;
       rock.position.set(x, terrainHeight(x, z) + scale * 0.55, z);
@@ -166,6 +204,63 @@ export default function AdventureScene() {
       rock.rotation.y = random() * Math.PI;
       scene.add(rock);
     }
+
+    // Small trail-side homes give the open valley banks a lived-in scale.
+    const houseWallGeometry = ownGeometry(new BoxGeometry(2.1, 1.5, 1.75));
+    const houseRoofShape = new Shape();
+    houseRoofShape.moveTo(-1.38, 0);
+    houseRoofShape.lineTo(0, 0.95);
+    houseRoofShape.lineTo(1.38, 0);
+    houseRoofShape.closePath();
+    const houseRoofGeometry = ownGeometry(new ExtrudeGeometry(houseRoofShape, {
+      depth: 1.92,
+      bevelEnabled: false,
+      steps: 1,
+    }));
+    houseRoofGeometry.translate(0, 0, -0.96);
+    const houseDoorGeometry = ownGeometry(new BoxGeometry(0.44, 0.88, 0.08));
+    const houseWindowFrameGeometry = ownGeometry(new BoxGeometry(0.42, 0.43, 0.07));
+    const houseWindowGeometry = ownGeometry(new BoxGeometry(0.29, 0.3, 0.035));
+    const houseStepGeometry = ownGeometry(new BoxGeometry(0.64, 0.14, 0.32));
+    const chimneyGeometry = ownGeometry(new BoxGeometry(0.28, 0.58, 0.3));
+    const houseWallMaterials = [standard(0x9f967b), standard(0xb1a17f), standard(0x8f927d)];
+    const houseRoofMaterials = [standard(0x654b42), standard(0x53615a), standard(0x786052)];
+    const darkTimberMaterial = standard(0x493e34);
+    const houseWindowMaterial = ownMaterial(new MeshBasicMaterial({ color: 0xe8c58a }));
+    const houseSites = [
+      { z: -16, side: -1, distance: 22, scale: 0.68 },
+      { z: -27, side: 1, distance: 23, scale: 0.62 },
+      { z: -38, side: -1, distance: 22.5, scale: 0.72 },
+      { z: -49, side: 1, distance: 24, scale: 0.66 },
+    ];
+    houseSites.forEach(({ z, side, distance, scale }, index) => {
+      const x = pathCenter(z) + side * distance;
+      const home = new Group();
+      home.position.set(x, terrainHeight(x, z), z);
+      home.rotation.y = side > 0 ? -Math.PI / 2 : Math.PI / 2;
+      home.scale.setScalar(scale);
+
+      const walls = new Mesh(houseWallGeometry, houseWallMaterials[index % houseWallMaterials.length]);
+      walls.position.y = 0.75;
+      const roof = new Mesh(houseRoofGeometry, houseRoofMaterials[index % houseRoofMaterials.length]);
+      roof.position.y = 1.43;
+      const door = new Mesh(houseDoorGeometry, darkTimberMaterial);
+      door.position.set(0, 0.44, 0.91);
+      const step = new Mesh(houseStepGeometry, houseWallMaterials[index % houseWallMaterials.length]);
+      step.position.set(0, 0.07, 1.08);
+      const chimney = new Mesh(chimneyGeometry, houseWallMaterials[index % houseWallMaterials.length]);
+      chimney.position.set(-0.72, 1.98, -0.26);
+      home.add(walls, roof, door, step, chimney);
+
+      for (const windowSide of [-1, 1]) {
+        const frame = new Mesh(houseWindowFrameGeometry, darkTimberMaterial);
+        frame.position.set(windowSide * 0.61, 0.97, 0.91);
+        const pane = new Mesh(houseWindowGeometry, houseWindowMaterial);
+        pane.position.set(windowSide * 0.61, 0.97, 0.965);
+        home.add(frame, pane);
+      }
+      scene.add(home);
+    });
 
     // Low-poly pines share the same geometry/material through instancing.
     const treeCount = 44;
