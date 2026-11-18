@@ -237,19 +237,19 @@
 
 .bard-card__corner {
   position: absolute;
-  width: 46px;
-  height: 46px;
-  overflow: visible;
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
   stroke: currentColor;
   stroke-width: 1;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
-.bard-card__corner--northwest { top: 3px; left: 3px; }
-.bard-card__corner--northeast { top: 3px; right: 3px; }
-.bard-card__corner--southwest { bottom: 3px; left: 3px; }
-.bard-card__corner--southeast { right: 3px; bottom: 3px; }
+.bard-card__corner--northwest { top: 10px; left: 10px; }
+.bard-card__corner--northeast { top: 10px; right: 10px; }
+.bard-card__corner--southwest { bottom: 10px; left: 10px; }
+.bard-card__corner--southeast { right: 10px; bottom: 10px; }
 
 @media (hover: hover) and (pointer: fine) {
   .bard-card:hover {
@@ -268,7 +268,11 @@
   .bard-card__portrait-frame { margin-inline: 5px; }
   .bard-card__details { padding-inline: 15px; }
   .bard-card__calling p { font-size: 12px; }
-  .bard-card__corner { width: 40px; height: 40px; }
+  .bard-card__corner { width: 37px; height: 37px; }
+  .bard-card__corner--northwest { top: 10px; left: 9px; }
+  .bard-card__corner--northeast { top: 10px; right: 9px; }
+  .bard-card__corner--southwest { bottom: 10px; left: 9px; }
+  .bard-card__corner--southeast { right: 9px; bottom: 10px; }
 }
 
 @media (hover: none), (prefers-reduced-motion: reduce) {

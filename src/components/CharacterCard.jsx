@@ -15,23 +15,23 @@ function CornerOrnaments() {
   return (
     <div className="bard-card__ornaments" aria-hidden="true">
       <svg className="bard-card__corner bard-card__corner--northwest" viewBox="0 0 64 64" fill="none">
-        <path d="M3 61V20Q3 3 20 3h41M9 48c11-3 17-13 19-27M13 35c8-1 14-7 16-15M17 26c-1-6 2-10 7-13M27 21c5-4 10-4 14-1M23 30c5 0 9 3 10 8M12 46c-4 1-7 4-8 8" />
-        <path d="M20 13c-1 4 0 7 3 9M35 12c1 4 4 6 8 6M27 40c-4 1-6 4-6 8" />
+        <path d="M8 56c3-11 11-19 21-26C39 23 45 17 48 8M15 46c-2-7-1-13 2-19M22 39c7 2 13 1 19-3M29 32c-1-7 1-13 5-18M37 25c6 0 11-2 15-6" />
+        <path d="M16 36c-3-2-5-5-5-9M22 31c-1-4 0-7 3-10M35 20c3 1 6 1 9 0M28 41c-3 3-4 6-4 10M43 35c3 2 5 4 6 7" />
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--northeast" viewBox="0 0 64 64" fill="none">
-        <path d="M3 3h41q17 0 17 17v41M11 12c-1 10 1 24 5 33 2 5 5 8 9 8s7-3 9-8c4-9 6-23 5-33M11 12c5 2 9 2 14 0 5 2 9 2 14 0M15 24c7 3 13 3 20 0M17 36c6 2 10 2 16 0M20 47h10" />
-        <path d="M17 16l16 37M37 16L21 53" />
+        <path d="M24 10c-9 3-11 14-8 26 3 11 9 20 16 21 7-1 13-10 16-21 3-12 1-23-8-26M19 17c8 4 18 4 26 0M17 26c9 4 21 4 30 0M18 36c8 3 20 3 28 0M21 46c7 2 15 2 22 0" />
+        <path d="m22 14 18 38M42 14 24 52M20 52h24" />
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--southwest" viewBox="0 0 64 64" fill="none">
-        <path d="M3 3v41q0 17 17 17h41M10 53c9-4 14-13 15-26M16 49c7-1 12-6 14-13M14 39c-4 0-7 2-9 5M27 24c2-5 6-8 11-8M25 32c5 0 9 3 11 7M31 44c5-2 10-2 15 1" />
-        <path d="M39 12v10m0-10 8-2v9M47 19c0 3-2 5-5 5s-4-2-3-4M20 47c-3 2-5 5-5 9" />
+        <path d="M9 12c13 4 18 13 13 23-4 8-9 14-7 22M17 43c8-3 15-2 22 2M24 32c7 1 13-1 18-6M31 23c1-6 4-10 9-13M35 50c5 1 9 4 12 8" />
+        <path d="M38 14v13m0-13 9-2v12M47 24c0 3-2 5-5 5s-5-2-4-4M12 28c-3-2-4-5-4-8M24 47c-2 3-3 6-2 9" />
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--southeast" viewBox="0 0 64 64" fill="none">
-        <path d="M61 3v41q0 17-17 17H3M54 10c-4 9-13 14-26 15M50 16c-1 7-6 12-13 14M40 14c0-4 2-7 5-9M25 27c-5 2-8 6-8 11M32 25c0 5 3 9 7 11M44 31c-2 5-2 10 1 15" />
-        <path d="M53 39c-4 0-7 2-9 5M47 20c2-3 5-5 9-5M13 55c4-1 7 0 9 3" />
+        <path d="M55 9c-6 11-14 18-25 24C19 39 13 45 10 55M46 18c2 6 1 12-2 18M38 27c-7-2-13-1-19 3M31 33c1 7-1 13-5 18M23 40c-6 0-11 2-15 6" />
+        <path d="M48 28c3 2 5 5 5 9M42 33c1 4 0 7-3 10M29 44c-3-1-6-1-9 0M36 23c3-3 4-6 4-10M21 50c-3-2-5-4-6-7" />
       </svg>
     </div>
   );
