@@ -20,16 +20,16 @@ function CornerOrnaments() {
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--northeast" viewBox="0 0 64 64" fill="none">
-        <path d="M21 15c-6 8-5 22 0 32 3 6 8 10 11 11 4-1 9-5 12-11 5-10 6-24 0-32M21 15c6 3 18 3 23 0M24 23l16 29M40 23 24 52M24 31c5 3 11 3 16 0" />
+        <path d="M21 16c-5 8-4 20 1 30 3 6 7 10 10 11 4-1 8-5 11-11 5-10 6-22 1-30M21 16c6 3 16 3 22 0M24 25v23m8-26v31m8-28v23M23 35c6 3 12 3 18 0M22 47c6 3 14 3 20 0" />
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--southwest" viewBox="0 0 64 64" fill="none">
-        <path d="M13 12c7 9 11 19 9 29-1 7-4 12-3 19M21 39c7-1 13 1 18 6M24 30c6 1 11-1 15-5" />
-        <path d="M40 13v13m0-13 8-2v11M48 22c0 3-2 5-5 5s-4-2-3-4M13 25c-3-2-4-5-4-9" />
+        <path d="M14 18c7 8 11 17 11 27v8M25 39l15-5M40 12v22m0-22 8-2v18M48 27c0 3-2 5-5 5s-4-2-3-4" />
+        <path d="M19 31c-3-2-5-5-5-9M26 45c4 1 7 3 9 6" />
       </svg>
 
       <svg className="bard-card__corner bard-card__corner--southeast" viewBox="0 0 64 64" fill="none">
-        <path d="M52 11c-7 10-13 20-16 33-1 5-4 9-9 12M45 21c5 1 9 5 10 11-6 0-10-3-12-8M40 31c-6 3-12 2-17-2 4-5 10-6 16-3M35 42c4 3 5 7 4 12-5-2-7-5-8-10M29 47c-3 5-8 7-14 6 2-6 6-9 12-10" />
+        <path d="M51 12c-7 10-13 19-17 30-2 5-5 9-10 12M43 23c5 0 9 3 11 8-5 1-9-1-12-5M37 34c-5 2-10 1-14-3 4-4 9-4 14-1M31 44c3 3 4 7 2 11-4-2-6-6-6-10M25 49c-3 4-7 6-12 5 2-5 5-8 10-9" />
       </svg>
     </div>
   );

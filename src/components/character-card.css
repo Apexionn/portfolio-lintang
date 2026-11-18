@@ -235,19 +235,20 @@
 
 .bard-card__corner {
   position: absolute;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   overflow: hidden;
   stroke: currentColor;
-  stroke-width: .9;
+  stroke-width: 1.05;
   stroke-linecap: round;
   stroke-linejoin: round;
+  opacity: .84;
 }
 
-.bard-card__corner--northwest { top: 12px; left: 12px; }
-.bard-card__corner--northeast { top: 12px; right: 12px; }
-.bard-card__corner--southwest { bottom: 12px; left: 12px; }
-.bard-card__corner--southeast { right: 12px; bottom: 12px; }
+.bard-card__corner--northwest { top: 17px; left: 17px; }
+.bard-card__corner--northeast { top: 17px; right: 17px; }
+.bard-card__corner--southwest { bottom: 17px; left: 17px; }
+.bard-card__corner--southeast { right: 17px; bottom: 17px; }
 
 @media (hover: hover) and (pointer: fine) {
   .bard-card:hover {
@@ -265,11 +266,11 @@
   .bard-card__portrait-frame { margin-inline: 5px; }
   .bard-card__details { padding-inline: 15px; }
   .bard-card__calling p { font-size: 12px; }
-  .bard-card__corner { width: 32px; height: 32px; }
-  .bard-card__corner--northwest { top: 11px; left: 11px; }
-  .bard-card__corner--northeast { top: 11px; right: 11px; }
-  .bard-card__corner--southwest { bottom: 11px; left: 11px; }
-  .bard-card__corner--southeast { right: 11px; bottom: 11px; }
+  .bard-card__corner { width: 29px; height: 29px; }
+  .bard-card__corner--northwest { top: 14px; left: 14px; }
+  .bard-card__corner--northeast { top: 14px; right: 14px; }
+  .bard-card__corner--southwest { bottom: 14px; left: 14px; }
+  .bard-card__corner--southeast { right: 14px; bottom: 14px; }
 }
 
 @media (hover: none), (prefers-reduced-motion: reduce) {
