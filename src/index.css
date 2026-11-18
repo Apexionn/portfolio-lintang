@@ -65,31 +65,33 @@
   .game-avatar-corner { position:absolute;width:14px;height:14px;border-color:#ff917d;border-style:solid; }
   .avatar-corner-tl { top:7px;left:7px;border-width:2px 0 0 2px; }
   .avatar-corner-br { bottom:7px;right:7px;border-width:0 2px 2px 0; }
-  .character-sheet { transform:rotate(1deg); overflow:visible; color:#342718; background:radial-gradient(ellipse at 50% 18%,#fff8e4 0%,#f2e5c4 60%,#e8d7b0 100%); border:3px solid #9a713d; border-radius:14px; box-shadow:7px 8px 0 #0b1122, inset 0 0 0 2px #fff6df; }
-  .character-sheet::before { content:'';position:absolute;inset:6px;border:1px solid #b99661;border-radius:7px;pointer-events:none; }
-  .character-sheet-header, .character-identity, .character-specialties { position:relative;z-index:1; }
-  .character-card-kicker { color:#72532e;font:700 9px Georgia,serif;letter-spacing:.13em; }
-  .character-level-badge { color:#f8edcf;background:#344b3c;border:1px solid #ab854d;border-radius:4px;padding:5px 7px;font:700 8px 'Syne Mono',monospace;white-space:nowrap; }
-  .character-level-badge span { color:#e7c778; }
-  .character-portrait { aspect-ratio:4/4.15;border:3px solid #ab854d;border-radius:6px;background:#ddcba3;box-shadow:inset 0 0 0 2px #f8edcf; }
+  .character-sheet { transform:rotate(1deg);overflow:visible;color:#f7ead0;background:radial-gradient(ellipse at 50% 35%,#28221d 0%,#171411 72%);border:3px solid #d45b48;border-radius:13px;box-shadow:0 0 0 2px #211712,7px 9px 0 #0b1122,inset 0 0 0 2px #6c3027; }
+  .character-sheet::before { content:'';position:absolute;inset:6px;border:1px solid #b68a52;border-radius:6px;pointer-events:none; }
+  .character-sheet-header { position:relative;z-index:1;min-height:38px;padding:5px 9px;border:2px solid #e17853;border-radius:7px;background:linear-gradient(105deg,#722d29,#a63e32 56%,#642721);box-shadow:inset 0 0 0 2px #351815,0 2px 0 #0b0908; }
+  .character-card-kicker { color:#fff0d9;font:700 18px/1 Georgia,serif;text-shadow:1px 2px #321713;letter-spacing:.01em; }
+  .character-level-badge { color:#f5dfb9;background:#2b201b;border:1px solid #d2aa6c;border-radius:50%;width:31px;height:31px;display:grid;place-items:center;font:700 7px 'Syne Mono',monospace;white-space:nowrap; }
+  .character-level-badge span { display:none; }
+  .character-portrait { aspect-ratio:4/4.05;border:3px solid #d45b48;border-radius:3px;background:#221915;box-shadow:inset 0 0 0 2px #291b15; }
   .character-portrait img { object-position:center 38%; }
-  .character-portrait::after { content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 65%,rgba(50,37,20,.18));pointer-events:none; }
-  .character-sheet .game-avatar-corner { border-color:#f3d895;width:17px;height:17px; }
-  .character-identity { border-bottom:1px solid #cbb487;padding-bottom:9px; }
-  .character-name { color:#392919;font:700 20px/1.1 Georgia,serif;letter-spacing:.015em; }
-  .character-class { color:#74552e;font:700 7px/1.6 'Syne Mono',monospace;letter-spacing:.08em;margin-top:4px; }
-  .character-class span { color:#ad7745; }
-  .character-sigil { color:#a07a43;font:30px/1 Georgia,serif; }
-  .character-specialties { display:flex;align-items:center;justify-content:space-between;gap:8px; }
-  .character-specialties-label { color:#8b693b;font:700 7px 'Press Start 2P',monospace; }
-  .character-specialties-list { color:#3b4d3e;font:700 8px 'Syne Mono',monospace;letter-spacing:.04em;white-space:nowrap; }
-  .character-specialties-list i { color:#a9844b;font-style:normal;font-size:6px;padding:0 3px; }
+  .character-portrait::after { content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(20,13,10,.06) 45%,rgba(20,13,10,.55));pointer-events:none; }
+  .character-sheet .game-avatar-corner { border-color:#efb96c;width:17px;height:17px; }
+  .character-type-banner { position:relative;z-index:2;margin:-14px 4px 0;padding:7px 10px;border:2px solid #ed7752;border-radius:8px;background:linear-gradient(100deg,#211713,#0d0d0c 65%,#2a1b13);box-shadow:inset 0 0 0 2px #42231b,0 3px 0 #080807;color:#fff0d9;font:700 15px/1.1 Georgia,serif; }
+  .character-school { color:#e2c58c;font:700 7px 'Syne Mono',monospace;letter-spacing:.06em;white-space:nowrap; }
+  .character-school i { color:#f4d68d;font-style:normal;font-size:13px;padding-left:4px; }
+  .character-rules-panel { position:relative;z-index:1;margin:4px 4px 0;padding:13px 11px 9px;border:2px solid #d45b48;border-radius:4px;background:linear-gradient(rgba(15,14,12,.88),rgba(13,13,12,.94)),repeating-linear-gradient(0deg,#65402a 0 1px,transparent 1px 5px);box-shadow:inset 0 0 0 2px #302018; }
+  .character-flavor-line { color:#f0d59c;font:700 11px/1.4 Georgia,serif;letter-spacing:.07em; }
+  .character-flavor-line i { color:#df7450;font-style:normal;font-size:7px;padding:0 4px; }
+  .character-description { color:#e6dcc8;font:12px/1.45 Georgia,serif;margin-top:6px; }
+  .character-sheet-footer { display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px;padding-top:7px;border-top:1px solid #70513b;color:#d9c19b;font:700 6px 'Syne Mono',monospace;letter-spacing:.04em; }
+  .character-sheet-footer b { color:#e07a5a;font-size:6px;margin-right:4px; }
+  .character-quest-status { display:flex;align-items:center;gap:4px;white-space:nowrap;color:#e1ca91; }
+  .character-quest-status i { width:6px;height:6px;border-radius:50%;background:#b8c276;box-shadow:0 0 7px #b8c276; }
   .game-pixel-label-accent { color:#c8ef76; }
   .game-player-status { display:flex;align-items:center;gap:6px;color:#c8ef76;font:10px 'Syne Mono',monospace; }
   .game-player-status i { width:7px;height:7px; }
   .game-floating-token { position:absolute;display:grid;place-items:center;width:42px;height:42px;border:2px solid #f6efd9;border-radius:9px;box-shadow:3px 4px 0 #0b1122;font-size:22px; }
-  .token-star { top:-17px;right:-20px;color:#fff2cb;background:#49614b;border-color:#d4b36c;transform:rotate(8deg); }
-  .token-heart { bottom:40px;left:-22px;color:#fff0df;background:#8b3f3c;border-color:#e2c58a;transform:rotate(-9deg); }
+  .token-star { top:-17px;right:-20px;color:#fff2cb;background:#6d3029;border-color:#e9b867;transform:rotate(8deg); }
+  .token-heart { bottom:35px;left:-22px;color:#f4d68d;background:#2b211a;border-color:#e9b867;transform:rotate(-9deg); }
   .game-section { scroll-margin-top:76px; }
   .game-section-label { display:flex;align-items:center;gap:10px;color:#ffb2a3; }
   .game-label-icon { display:grid;place-items:center;width:28px;height:24px;background:#ff917d;color:#172039;border-radius:5px;font:10px 'Press Start 2P',monospace; }

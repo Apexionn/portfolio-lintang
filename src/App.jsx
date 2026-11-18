@@ -394,8 +394,8 @@ function HeroSection() {
 
         <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
           <div className="game-avatar-card character-sheet relative p-3 sm:p-4">
-            <div className="character-sheet-header flex items-center justify-between gap-3 mb-3 px-1">
-              <span className="character-card-kicker">ADVENTURER PROFILE</span>
+            <div className="character-sheet-header flex items-center justify-between gap-3 mb-3">
+              <span className="character-card-kicker">LINTANG A.</span>
               <span className="character-level-badge"><span aria-hidden="true">✦</span> LV. 03</span>
             </div>
             <div className="game-avatar-window character-portrait relative overflow-hidden">
@@ -403,20 +403,21 @@ function HeroSection() {
               <span className="game-avatar-corner avatar-corner-tl" />
               <span className="game-avatar-corner avatar-corner-br" />
             </div>
-            <div className="character-identity flex items-center justify-between gap-3 mt-3 px-1">
-              <div className="min-w-0">
-                <p className="character-name">Lintang A.</p>
-                <p className="character-class">CODE ARTIFICER <span>·</span> BINUS GUILD</p>
-              </div>
-              <span className="character-sigil" aria-hidden="true">✧</span>
+            <div className="character-type-banner flex items-center justify-between gap-3">
+              <span>CODE ARTIFICER</span>
+              <span className="character-school">ARCANE CRAFT <i aria-hidden="true">✦</i></span>
             </div>
-            <div className="character-specialties mt-3 px-1 pt-3">
-              <span className="character-specialties-label">SPECIALTIES</span>
-              <span className="character-specialties-list">WEB <i>◆</i> AI <i>◆</i> GAME DEV</span>
+            <div className="character-rules-panel">
+              <p className="character-flavor-line">WEB <i>◆</i> AI <i>◆</i> GAME DEV</p>
+              <p className="character-description">A curious builder crafting useful things with code, from full-stack systems to applied AI.</p>
+              <div className="character-sheet-footer">
+                <span><b>GUILD</b> BINUS COMPUTER SCIENCE</span>
+                <span className="character-quest-status"><i /> OPEN TO QUESTS</span>
+              </div>
             </div>
           </div>
           <div className="game-floating-token token-star" aria-hidden="true">✦</div>
-          <div className="game-floating-token token-heart" aria-hidden="true">♥</div>
+          <div className="game-floating-token token-heart" aria-hidden="true">✥</div>
         </div>
 
       </div>
