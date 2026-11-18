@@ -345,6 +345,29 @@ function HeroSection() {
     typeof window !== "undefined" ? window.innerWidth >= 1024 : false
   );
 
+  const handleCardPointerMove = (event) => {
+    if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const card = event.currentTarget;
+    const bounds = card.getBoundingClientRect();
+    const x = (event.clientX - bounds.left) / bounds.width;
+    const y = (event.clientY - bounds.top) / bounds.height;
+
+    card.style.setProperty("--card-rotate-x", `${((0.5 - y) * 10).toFixed(2)}deg`);
+    card.style.setProperty("--card-rotate-y", `${((x - 0.5) * 12).toFixed(2)}deg`);
+    card.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
+    card.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
+    card.style.setProperty("--foil-opacity", "0.72");
+  };
+
+  const handleCardPointerLeave = (event) => {
+    const card = event.currentTarget;
+    card.style.setProperty("--card-rotate-x", "0deg");
+    card.style.setProperty("--card-rotate-y", "0deg");
+    card.style.setProperty("--foil-x", "50%");
+    card.style.setProperty("--foil-y", "50%");
+    card.style.setProperty("--foil-opacity", "0");
+  };
+
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
@@ -393,7 +416,11 @@ function HeroSection() {
         </div>
 
         <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
-          <div className="game-avatar-card character-sheet relative">
+          <div
+            className="game-avatar-card character-sheet relative"
+            onPointerMove={handleCardPointerMove}
+            onPointerLeave={handleCardPointerLeave}
+          >
             <header className="character-sheet-header">
               <span className="character-card-index">CHARACTER · 01</span>
               <h2 className="character-name">Lintang<br />Anggowoyuono</h2>

@@ -65,8 +65,10 @@
   .game-avatar-corner { position:absolute;width:14px;height:14px;border-color:#ff917d;border-style:solid; }
   .avatar-corner-tl { top:7px;left:7px;border-width:2px 0 0 2px; }
   .avatar-corner-br { bottom:7px;right:7px;border-width:0 2px 2px 0; }
-  .character-sheet { isolation:isolate;transform:none;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:2/3;padding:9px;color:#30231d;background-color:#e8d8b5;background-image:radial-gradient(ellipse at 16% 8%,rgba(255,249,230,.55),transparent 42%),radial-gradient(ellipse at 88% 82%,rgba(97,61,37,.09),transparent 52%);border:1px solid #38271f;border-radius:3px;box-shadow:0 7px 18px #080b1070,0 0 0 2px #b08a4a; }
+  .character-sheet { isolation:isolate;transform:perspective(1100px) rotateX(var(--card-rotate-x,0deg)) rotateY(var(--card-rotate-y,0deg));transform-style:preserve-3d;will-change:transform;transition:transform 180ms ease-out,box-shadow 220ms ease-out;overflow:hidden;display:flex;flex-direction:column;aspect-ratio:2/3;padding:9px;color:#30231d;background-color:#e8d8b5;background-image:radial-gradient(ellipse at 16% 8%,rgba(255,249,230,.55),transparent 42%),radial-gradient(ellipse at 88% 82%,rgba(97,61,37,.09),transparent 52%);border:1px solid #38271f;border-radius:3px;box-shadow:0 7px 18px #080b1070,0 0 0 2px #b08a4a; }
+  .character-sheet:hover { box-shadow:0 15px 32px #080b1080,0 0 0 2px #b08a4a; }
   .character-sheet::before { content:'';position:absolute;z-index:3;inset:5px;border:1px solid rgba(85,58,38,.75);pointer-events:none; }
+  .character-sheet::after { content:'';position:absolute;z-index:2;inset:0;opacity:var(--foil-opacity,0);background:radial-gradient(ellipse 62% 42% at var(--foil-x,50%) var(--foil-y,50%),rgba(194,235,255,.35),rgba(150,143,255,.17) 34%,rgba(112,210,193,.12) 58%,transparent 82%),linear-gradient(128deg,transparent 20%,rgba(189,163,255,.08) 37%,rgba(255,255,255,.38) 48%,rgba(119,220,231,.13) 56%,transparent 73%),repeating-linear-gradient(115deg,rgba(255,255,255,.055) 0 1px,transparent 1px 4px);mix-blend-mode:screen;pointer-events:none;transition:opacity 180ms ease-out; }
   .character-sheet-header { position:relative;z-index:1;flex:none;min-height:75px;padding:5px 10px 9px 22px;color:#f2e8d3;background:#652e37;border-bottom:2px solid #b08a4a; }
   .character-card-index { display:block;color:#ddcba9;font:600 8px/1.2 'Syne Mono',monospace;letter-spacing:.13em;text-transform:uppercase; }
   .character-name { color:#f4e8ce;font:600 clamp(18px,2.1vw,23px)/.98 Palatino,'Palatino Linotype','Book Antiqua',Georgia,serif;letter-spacing:-.02em;margin-top:7px; }
@@ -90,6 +92,11 @@
   .character-frame-corner.top-right { top:5px;right:5px;transform:scaleX(-1); }
   .character-frame-corner.bottom-left { bottom:5px;left:5px;transform:scaleY(-1); }
   .character-frame-corner.bottom-right { bottom:5px;right:5px;transform:scale(-1); }
+  @media (hover:none), (prefers-reduced-motion:reduce) {
+    .character-sheet { transform:none;transition:none;will-change:auto; }
+    .character-sheet:hover { box-shadow:0 7px 18px #080b1070,0 0 0 2px #b08a4a; }
+    .character-sheet::after { display:none; }
+  }
   .game-pixel-label-accent { color:#c8ef76; }
   .game-player-status { display:flex;align-items:center;gap:6px;color:#c8ef76;font:10px 'Syne Mono',monospace; }
   .game-player-status i { width:7px;height:7px; }
