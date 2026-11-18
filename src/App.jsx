@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import CharacterCard from "./components/CharacterCard";
 
 // DATA
 const PROJECTS = [
@@ -345,29 +346,6 @@ function HeroSection() {
     typeof window !== "undefined" ? window.innerWidth >= 1024 : false
   );
 
-  const handleCardPointerMove = (event) => {
-    if (event.pointerType !== "mouse" || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const card = event.currentTarget;
-    const bounds = card.getBoundingClientRect();
-    const x = (event.clientX - bounds.left) / bounds.width;
-    const y = (event.clientY - bounds.top) / bounds.height;
-
-    card.style.setProperty("--card-rotate-x", `${((0.5 - y) * 10).toFixed(2)}deg`);
-    card.style.setProperty("--card-rotate-y", `${((x - 0.5) * 12).toFixed(2)}deg`);
-    card.style.setProperty("--foil-x", `${(x * 100).toFixed(1)}%`);
-    card.style.setProperty("--foil-y", `${(y * 100).toFixed(1)}%`);
-    card.style.setProperty("--foil-opacity", "0.72");
-  };
-
-  const handleCardPointerLeave = (event) => {
-    const card = event.currentTarget;
-    card.style.setProperty("--card-rotate-x", "0deg");
-    card.style.setProperty("--card-rotate-y", "0deg");
-    card.style.setProperty("--foil-x", "50%");
-    card.style.setProperty("--foil-y", "50%");
-    card.style.setProperty("--foil-opacity", "0");
-  };
-
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener("resize", handleResize);
@@ -415,41 +393,8 @@ function HeroSection() {
           </div>
         </div>
 
-        <div className="game-avatar-stage relative flex-none w-[220px] sm:w-[280px] md:w-[330px] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
-          <div
-            className="game-avatar-card character-sheet relative"
-            onPointerMove={handleCardPointerMove}
-            onPointerLeave={handleCardPointerLeave}
-          >
-            <header className="character-sheet-header">
-              <span className="character-card-index">CHARACTER · 01</span>
-              <h2 className="character-name">Lintang<br />Anggowoyuono</h2>
-              <p className="character-class-label"><span aria-hidden="true">✦</span> Bard</p>
-            </header>
-            <div className="character-portrait relative overflow-hidden">
-              <img src="/lintang.jpeg" alt="Lintang Anggowoyuono" className="w-full h-full object-cover object-center" />
-              <div className="character-portrait-shade" />
-              <span className="character-portrait-caption">BINUS UNIVERSITY</span>
-            </div>
-            <div className="character-info">
-              <div className="character-section-label"><span>CALLING</span><span className="character-rule" /></div>
-              <p className="character-specialties">Full Stack <i>·</i> AI <i>·</i> Game Development</p>
-              <div className="character-card-colophon">
-                <svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M9 6v14.5a3 3 0 1 1-2-2.83V9l16-3v14.5a3 3 0 1 1-2-2.83V8L9 10.2"/><path d="M6 25c5 3 15 3 20 0"/></svg>
-                <span>THE WAYFARER'S SONG</span>
-              </div>
-            </div>
-            <div className="character-frame-ornaments" aria-hidden="true">
-              {["top-left", "top-right", "bottom-left", "bottom-right"].map((corner) => (
-                <span className={`character-frame-corner ${corner}`} key={corner}>
-                  <svg viewBox="0 0 32 32" fill="none">
-                    <path d="M2 30V12Q2 2 12 2H30M6 22C13 21 20 14 22 6M15 4C14 10 19 15 27 16" />
-                    <path d="M6 13C10 13 13 10 13 6" />
-                  </svg>
-                </span>
-              ))}
-            </div>
-          </div>
+        <div className="game-avatar-stage relative flex-none w-[min(330px,calc(100vw-3rem))] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
+          <CharacterCard />
         </div>
 
       </div>

@@ -1,0 +1,277 @@
+.bard-card {
+  --paper: #eadbb9;
+  --ink: #382920;
+  --oxblood: #6b3037;
+  --antique-gold: #a17b43;
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  padding: 13px;
+  overflow: hidden;
+  color: var(--ink);
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse at 18% 7%, rgba(255, 251, 232, .62), transparent 42%),
+    radial-gradient(ellipse at 89% 84%, rgba(113, 77, 41, .1), transparent 48%),
+    linear-gradient(112deg, rgba(255, 248, 224, .19), transparent 46%, rgba(121, 86, 51, .055));
+  border: 1px solid #34241d;
+  border-radius: 2px;
+  box-shadow:
+    0 1px 0 #bd9b61,
+    0 3px 0 #58402e,
+    0 10px 24px rgba(7, 9, 16, .44),
+    inset 0 0 0 2px rgba(255, 248, 225, .6);
+  transform: perspective(1400px) rotateX(var(--card-rotate-x, 0deg)) rotateY(var(--card-rotate-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 240ms ease-out, box-shadow 240ms ease-out;
+}
+
+.bard-card::before,
+.bard-card::after {
+  position: absolute;
+  content: "";
+  pointer-events: none;
+}
+
+.bard-card::before {
+  z-index: 5;
+  inset: 7px;
+  border: 1px solid rgba(111, 78, 40, .76);
+  box-shadow: inset 0 0 0 1px rgba(255, 249, 226, .5);
+}
+
+.bard-card::after {
+  z-index: 3;
+  inset: 0;
+  opacity: var(--foil-opacity, 0);
+  background:
+    radial-gradient(ellipse 55% 38% at var(--foil-x, 50%) var(--foil-y, 50%), rgba(210, 221, 224, .26), rgba(190, 166, 199, .11) 42%, transparent 78%),
+    linear-gradient(128deg, transparent 25%, rgba(255, 255, 255, .2) 49%, rgba(199, 183, 204, .08) 59%, transparent 76%);
+  mix-blend-mode: soft-light;
+  transition: opacity 220ms ease-out;
+}
+
+.bard-card__grain {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: url("/parchment-grain.svg") center / 100% 100% no-repeat;
+  opacity: .22;
+  pointer-events: none;
+}
+
+.bard-card__identity,
+.bard-card__portrait-frame,
+.bard-card__details {
+  position: relative;
+  z-index: 2;
+}
+
+.bard-card__identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 105px;
+  padding: 7px 28px 9px;
+  text-align: center;
+}
+
+.bard-card__edition {
+  color: #775e3c;
+  font: 500 8px/1.2 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-variant: small-caps;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.bard-card__edition span {
+  padding: 0 4px;
+  color: var(--oxblood);
+}
+
+.bard-card__name {
+  margin: 4px 0 0;
+  color: #30231d;
+  font: 400 clamp(27px, 2.65vw, 33px)/.96 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  letter-spacing: .005em;
+  text-wrap: balance;
+}
+
+.bard-card__class {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 7px 0 0;
+  color: var(--oxblood);
+  font: italic 400 15px/1.1 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  letter-spacing: .025em;
+}
+
+.bard-card__class-rule {
+  width: 25px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--antique-gold));
+}
+
+.bard-card__class-rule:last-child {
+  transform: scaleX(-1);
+}
+
+.bard-card__portrait-frame {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  margin: 0 7px;
+  padding: 5px 5px 0;
+  background: linear-gradient(145deg, #f1e5c9, #c4a36b 35%, #815e38 36%, #e8d9b8 41%, #e4d3ad);
+  border: 1px solid #805e36;
+  box-shadow: 0 1px 2px rgba(58, 39, 25, .42), inset 0 0 0 1px rgba(255, 248, 220, .62);
+}
+
+.bard-card__portrait-mat {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: #6f4c32;
+  border: 1px solid #503522;
+  box-shadow: inset 0 0 0 3px rgba(39, 28, 20, .2);
+}
+
+.bard-card__portrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 35%;
+  filter: saturate(.83) sepia(.08) contrast(.98);
+}
+
+.bard-card__guild {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 27px;
+  color: #3f3024;
+  font: 400 12px/1.1 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+}
+
+.bard-card__guild span {
+  color: #785938;
+  font: 500 8px/1 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-variant: small-caps;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.bard-card__details {
+  padding: 9px 19px 4px;
+  text-align: center;
+}
+
+.bard-card__label {
+  display: block;
+  color: #785938;
+  font: 500 9px/1.2 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  font-variant: small-caps;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.bard-card__calling p {
+  margin: 4px 0 0;
+  color: #35271f;
+  font: 400 clamp(12px, 1.15vw, 14px)/1.2 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  text-wrap: balance;
+}
+
+.bard-card__calling i {
+  color: var(--oxblood);
+  font-style: normal;
+}
+
+.bard-card__rule {
+  display: block;
+  width: 100%;
+  height: 23px;
+  margin: 3px auto 1px;
+  overflow: visible;
+  fill: none;
+  stroke: #9b7949;
+  stroke-width: .85;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bard-card__epithet {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 1px 0 0;
+  color: #6a3c35;
+  font: italic 400 14px/1.1 "IM Fell English", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+}
+
+.bard-card__lyre {
+  width: 15px;
+  height: 18px;
+  fill: none;
+  stroke: #9b7949;
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bard-card__ornaments {
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  color: #967441;
+  pointer-events: none;
+}
+
+.bard-card__corner {
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  overflow: visible;
+  stroke: currentColor;
+  stroke-width: 1;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.bard-card__corner--northwest { top: 3px; left: 3px; }
+.bard-card__corner--northeast { top: 3px; right: 3px; }
+.bard-card__corner--southwest { bottom: 3px; left: 3px; }
+.bard-card__corner--southeast { right: 3px; bottom: 3px; }
+
+@media (hover: hover) and (pointer: fine) {
+  .bard-card:hover {
+    box-shadow:
+      0 1px 0 #bd9b61,
+      0 4px 0 #58402e,
+      0 16px 30px rgba(7, 9, 16, .48),
+      inset 0 0 0 2px rgba(255, 248, 225, .6);
+  }
+}
+
+@media (max-width: 420px) {
+  .bard-card { padding: 11px; }
+  .bard-card__identity { min-height: 96px; padding-inline: 22px; }
+  .bard-card__name { font-size: clamp(24px, 7.4vw, 30px); }
+  .bard-card__portrait-frame { margin-inline: 5px; }
+  .bard-card__details { padding-inline: 15px; }
+  .bard-card__calling p { font-size: 12px; }
+  .bard-card__corner { width: 40px; height: 40px; }
+}
+
+@media (hover: none), (prefers-reduced-motion: reduce) {
+  .bard-card { transform: none; transition: none; }
+  .bard-card::after { display: none; }
+}
