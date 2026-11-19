@@ -181,7 +181,8 @@ function drawCloud(ctx, x, y, variant = 0) {
 function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, detail = 2, snow = true, profileOverride = null) {
   const profile = profileOverride || MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
   const peakPoints = profile.map(([position, rise]) => [x + position * width, baseY - rise * height]);
-  fillPoly(ctx, [[x, baseY], ...peakPoints, [x + width, baseY]], color);
+  const terrainBottom = ctx.canvas.height;
+  fillPoly(ctx, [[x, terrainBottom], ...peakPoints, [x + width, terrainBottom]], color);
 
   profile.forEach(([position, rise], index) => {
     if (index === 0 || index === profile.length - 1) return;
@@ -200,8 +201,8 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
       if (detail > 0 && rise < 0.5) return;
       const lightAmount = detail === 0 ? 0.07 : detail === 1 ? 0.12 : 0.2;
       const shadeAmount = detail === 0 ? 0.1 : detail === 1 ? 0.18 : 0.28;
-      fillPoly(ctx, [[previousX, previousY], [summitX, summitY], [summitX, baseY], [previousX, baseY]], mixHex(color, "#d8d6c9", lightAmount));
-      fillPoly(ctx, [[summitX, summitY], [nextX, nextY], [nextX, baseY], [summitX, baseY]], mixHex(color, "#1c2934", shadeAmount));
+      fillPoly(ctx, [[previousX, previousY], [summitX, summitY], [summitX, terrainBottom], [previousX, terrainBottom]], mixHex(color, "#d8d6c9", lightAmount));
+      fillPoly(ctx, [[summitX, summitY], [nextX, nextY], [nextX, terrainBottom], [summitX, terrainBottom]], mixHex(color, "#1c2934", shadeAmount));
 
       if (detail > 0) {
         const cluster = Math.max(2, Math.round(width * (detail === 1 ? 0.008 : 0.014)));
@@ -251,7 +252,7 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
 
 function drawHillRange(ctx, x, baseY, width, height, color) {
   const points = HILL_PROFILE.map(([position, rise]) => [x + position * width, baseY - rise * height]);
-  fillPoly(ctx, [[x, baseY], ...points, [x + width, baseY]], color);
+  fillPoly(ctx, [[x, ctx.canvas.height], ...points, [x + width, ctx.canvas.height]], color);
 }
 
 function drawTree(ctx, x, baseY, scale, palette, pine = true) {
