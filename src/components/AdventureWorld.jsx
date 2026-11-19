@@ -34,6 +34,14 @@ const AREAS = [
   { name: "Final Camp", sky: ["#303d66", "#e9a071"], hills: "#4a5564", ground: "#414c4c", far: "#626d81" },
 ];
 
+const MOUNTAIN_PROFILES = [
+  [[0, 0.12], [0.12, 0.32], [0.23, 0.19], [0.4, 0.86], [0.49, 0.57], [0.61, 0.26], [0.75, 0.71], [0.84, 0.38], [0.94, 0.5], [1, 0.14]],
+  [[0, 0.14], [0.13, 0.28], [0.29, 0.72], [0.4, 0.43], [0.53, 0.9], [0.65, 0.31], [0.79, 0.62], [0.9, 0.24], [1, 0.12]],
+  [[0, 0.11], [0.16, 0.37], [0.27, 0.2], [0.45, 0.76], [0.56, 0.42], [0.7, 0.88], [0.82, 0.34], [0.93, 0.55], [1, 0.16]],
+];
+
+const HILL_PROFILE = [[0, 0.28], [0.12, 0.34], [0.27, 0.2], [0.43, 0.4], [0.58, 0.26], [0.75, 0.36], [0.9, 0.24], [1, 0.3]];
+
 const BARD_WIDTH = 24;
 const BARD_HEIGHT = 32;
 
@@ -166,19 +174,45 @@ function drawCloud(ctx, x, y, variant = 0) {
   pixel(ctx, x + 5, y + 9, 18, 1, "#c3d0cb");
 }
 
-function drawRidge(ctx, x, baseY, width, height, color, seed) {
-  const steps = 14;
-  const points = [[x, baseY]];
-  let value = seed;
-  for (let i = 0; i <= steps; i++) {
-    value = (value * 1664525 + 1013904223) >>> 0;
-    const peak = (value % 100) / 100;
-    const px = x + (width / steps) * i;
-    const py = baseY - height * (0.22 + peak * 0.7);
-    points.push([px, py], [px + width / steps * 0.45, py]);
-  }
-  points.push([x + width, baseY]);
-  fillPoly(ctx, points, color);
+function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex) {
+  const profile = MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
+  const peakPoints = profile.map(([position, rise]) => [x + position * width, baseY - rise * height]);
+  fillPoly(ctx, [[x, baseY], ...peakPoints, [x + width, baseY]], color);
+
+  profile.forEach(([position, rise], index) => {
+    if (index === 0 || index === profile.length - 1) return;
+    if (rise <= profile[index - 1][1] || rise <= profile[index + 1][1]) return;
+
+    const summitX = x + position * width;
+    const summitY = baseY - rise * height;
+    const leftX = x + profile[index - 1][0] * width;
+    const rightX = x + profile[index + 1][0] * width;
+    const leftColor = mixHex(color, "#d3d5cf", 0.13);
+    const rightColor = mixHex(color, "#263344", 0.2);
+    fillPoly(ctx, [[leftX, baseY], [summitX, summitY], [summitX, baseY]], leftColor);
+    fillPoly(ctx, [[summitX, summitY], [rightX, baseY], [summitX, baseY]], rightColor);
+
+    if (rise < 0.68) return;
+    const shoulderY = baseY - rise * height * 0.72;
+    const capSide = width * 0.013;
+    const snow = "#d8ded8";
+    fillPoly(ctx, [
+      [summitX - capSide * 2, shoulderY],
+      [summitX - capSide * 1.25, shoulderY - height * 0.05],
+      [summitX - capSide * 0.85, shoulderY + height * 0.08],
+      [summitX - capSide * 0.38, shoulderY - height * 0.1],
+      [summitX, summitY],
+      [summitX + capSide * 0.48, summitY + height * 0.12],
+      [summitX + capSide * 0.86, shoulderY - height * 0.13],
+      [summitX + capSide * 1.2, shoulderY + height * 0.04],
+      [summitX + capSide * 1.9, shoulderY],
+    ], snow);
+  });
+}
+
+function drawHillRange(ctx, x, baseY, width, height, color) {
+  const points = HILL_PROFILE.map(([position, rise]) => [x + position * width, baseY - rise * height]);
+  fillPoly(ctx, [[x, baseY], ...points, [x + width, baseY]], color);
 }
 
 function drawTree(ctx, x, baseY, scale, palette, pine = true) {
@@ -423,8 +457,8 @@ export default function AdventureWorld() {
       const farEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.22 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = farStart; area <= farEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.22;
-        drawRidge(context, x, groundY - 64, AREA_WIDTH + 8, 44, AREAS[area].far, 731 + area * 913);
-        drawRidge(context, x, groundY - 27, AREA_WIDTH + 8, 28, AREAS[area].hills, 1597 + area * 419);
+        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, AREAS[area].far, area);
+        drawHillRange(context, x, groundY - 27, AREA_WIDTH + 8, 28, AREAS[area].hills);
       }
 
       drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails);
