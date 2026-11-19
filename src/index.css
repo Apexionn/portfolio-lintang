@@ -27,11 +27,8 @@
 @layer components {
   .game-page { isolation: isolate; }
   .game-world-background { background: linear-gradient(180deg, #7199a7 0%, #bdad91 37%, #718676 59%, #263d39 100%); }
-  .game-world-canvas { opacity: 1; }
-  .game-world-canvas canvas { display:block; }
-  .game-world-vignette { background: linear-gradient(90deg, rgba(21,29,53,.37), rgba(21,29,53,.12) 25%, rgba(21,29,53,.08) 72%, rgba(21,29,53,.3)), linear-gradient(180deg, rgba(21,29,53,.08), rgba(21,29,53,.1) 42%, rgba(21,29,53,.23)); }
-  .game-cloud { animation: cloud-drift 32s ease-in-out infinite alternate; }
-  .game-platform { opacity: .55; }
+  .game-world-art { opacity: .92; }
+  .game-world-vignette { background: linear-gradient(90deg, rgba(21,29,53,.38), rgba(21,29,53,.14) 25%, rgba(21,29,53,.1) 72%, rgba(21,29,53,.32)), linear-gradient(180deg, rgba(21,29,53,.06), rgba(21,29,53,.08) 42%, rgba(21,29,53,.24)); }
   .game-nav { background: rgba(25,35,62,.92); border: 2px solid #7182a7; border-radius: 12px; box-shadow: 0 5px 0 #0d1326, 0 14px 36px #080d1a88; backdrop-filter: blur(12px); }
   .game-logo { color: #f6efd9; text-decoration: none; }
   .game-logo span { color: #ff917d; }
@@ -104,19 +101,17 @@
   .game-footer { border-color:#62708f; }
   .game-footer-link { color:#aebbd6;transition:color .2s; }
   .game-footer-link:hover { color:#c8ef76; }
-  @keyframes cloud-drift { from { transform:translateX(-8px); } to { transform:translateX(18px); } }
   @media (max-width:767px) {
     .game-hero-layout { min-height:unset;gap:54px;padding-top:28px; }
     .game-avatar-stage { width:min(330px,88vw);margin:0 auto 18px; }
     .game-hero-title { font-size:clamp(34px,9vw,48px); }
-    .game-world-canvas { opacity:.9; }
+    .game-world-art { opacity:.76; }
     .game-section-break { margin:0 24px; }
     .game-project-card { min-height:unset; }
     .game-quest-entry::before { left:-25px; }
     .game-quest-list::before { left:5px; }
   }
   @media (prefers-reduced-motion:reduce) {
-    .game-cloud { animation:none; }
     .game-button,.game-project-card,.game-nav-link { transition:none; }
   }
 }

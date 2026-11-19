@@ -1,8 +1,7 @@
-import { Suspense, lazy, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import CharacterCard from "./components/CharacterCard";
-
-const AdventureScene = lazy(() => import("./AdventureScene"));
+import AdventureIllustration from "./components/AdventureIllustration";
 
 // DATA
 const PROJECTS = [
@@ -228,11 +227,7 @@ function useScrollReveal() {
 function GameWorldBackground() {
   return (
     <div className="game-world-background fixed inset-0 pointer-events-none z-0" aria-hidden="true">
-      <div className="game-world-canvas absolute inset-0" aria-hidden="true">
-        <Suspense fallback={null}>
-          <AdventureScene />
-        </Suspense>
-      </div>
+      <AdventureIllustration />
       <div className="game-world-vignette absolute inset-0" />
     </div>
   );
