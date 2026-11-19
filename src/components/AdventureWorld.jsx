@@ -1,0 +1,523 @@
+import { useEffect, useRef } from "react";
+
+const AREA_WIDTH = 760;
+const SECTION_IDS = ["hero", "about", "work", "experience", "arsenal", "contact"];
+const PALETTE = {
+  transparent: null,
+  outline: "#302d38",
+  hat: "#426b50",
+  hatLight: "#71905b",
+  hair: "#694735",
+  skin: "#e6b77f",
+  skinShade: "#bd805f",
+  shirt: "#e6d3a2",
+  shirtShade: "#b6a077",
+  leather: "#654a3c",
+  leatherLight: "#a7794c",
+  gold: "#d7ae62",
+  boot: "#473b37",
+  lute: "#a96b42",
+  luteLight: "#d39a55",
+  forest: "#294b43",
+  forestLight: "#42684d",
+  forestShade: "#1e3b39",
+  grass: "#658356",
+  dirt: "#81694b",
+};
+
+const AREAS = [
+  { name: "Forest Entrance", sky: ["#6295aa", "#c4c6a2"], hills: "#647f70", ground: "#506d4d", far: "#627d7c" },
+  { name: "Enchanted Forest", sky: ["#617b9b", "#b5afaa"], hills: "#536b67", ground: "#415d4d", far: "#647782" },
+  { name: "Ancient Ruins", sky: ["#728b9a", "#cab08e"], hills: "#6d7c70", ground: "#5c694d", far: "#788786" },
+  { name: "Medieval Village", sky: ["#7c9ba1", "#dfbf8d"], hills: "#78856b", ground: "#65724f", far: "#8a9580" },
+  { name: "Wizard's Tower", sky: ["#564f78", "#b589a2"], hills: "#55576c", ground: "#454c54", far: "#77728e" },
+  { name: "Final Camp", sky: ["#303d66", "#e9a071"], hills: "#4a5564", ground: "#414c4c", far: "#626d81" },
+];
+
+const BARD_BASE = [
+  ".......CCC........",
+  "......CCCCC.......",
+  "......CCHHH.......",
+  ".....CCHSSHH......",
+  ".....CHSSSSHH.....",
+  ".....CHSSSSSHH....",
+  "......CHHHHHH.....",
+  "...LL..CVVVVV.....",
+  "..LII..CVVVVV.....",
+  "..LII..CVVVVV.....",
+  "...I...VVTTTV.....",
+  "...I...VVTTTV.....",
+  "...I...VVTTTV.....",
+  "...I...VVTTTV.....",
+  ".......GGGGGG.....",
+];
+
+const LIMB_FRAMES = [
+  [
+    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
+    [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"],
+    [6, 21, 4, 2, "boot"], [12, 21, 4, 2, "boot"],
+    [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
+  ],
+  [
+    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
+    [5, 18, 3, 3, "outline"], [13, 18, 3, 3, "outline"],
+    [4, 21, 4, 2, "boot"], [13, 21, 4, 2, "boot"],
+    [13, 11, 3, 2, "shirt"], [15, 10, 2, 2, "skin"],
+  ],
+  [
+    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
+    [8, 18, 3, 3, "outline"], [11, 18, 3, 3, "outline"],
+    [8, 21, 4, 2, "boot"], [10, 21, 4, 2, "boot"],
+    [13, 11, 3, 2, "shirt"], [14, 12, 2, 2, "skin"],
+  ],
+  [
+    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
+    [10, 18, 3, 3, "outline"], [8, 18, 3, 3, "outline"],
+    [11, 21, 4, 2, "boot"], [7, 21, 4, 2, "boot"],
+    [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
+  ],
+];
+
+const IDLE_FRAMES = [
+  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [6, 21, 4, 2, "boot"], [12, 21, 4, 2, "boot"], [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"]],
+  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [6, 21, 4, 2, "boot"], [12, 21, 4, 2, "boot"], [13, 10, 3, 2, "shirt"], [15, 11, 2, 2, "skin"], [11, 9, 3, 1, "hatLight"]],
+];
+
+const pixel = (ctx, x, y, width, height, color) => {
+  if (!color) return;
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(width)), Math.max(1, Math.round(height)));
+};
+
+const fillPoly = (ctx, points, color) => {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(Math.round(points[0][0]), Math.round(points[0][1]));
+  points.slice(1).forEach(([x, y]) => ctx.lineTo(Math.round(x), Math.round(y)));
+  ctx.closePath();
+  ctx.fill();
+};
+
+function mixHex(a, b, amount) {
+  const from = Number.parseInt(a.slice(1), 16);
+  const to = Number.parseInt(b.slice(1), 16);
+  const channel = (shift) => Math.round(((from >> shift) & 255) + (((to >> shift) & 255) - ((from >> shift) & 255)) * amount);
+  return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function themeAt(worldX) {
+  const segment = Math.max(0, Math.min(AREAS.length - 1, worldX / AREA_WIDTH));
+  const index = Math.floor(segment);
+  const next = Math.min(index + 1, AREAS.length - 1);
+  const local = segment - index;
+  const blend = Math.max(0, Math.min(1, (local - 0.58) / 0.42));
+  return Object.fromEntries(["sky", "hills", "ground", "far"].map((key) => {
+    if (key === "sky") return [key, [mixHex(AREAS[index][key][0], AREAS[next][key][0], blend), mixHex(AREAS[index][key][1], AREAS[next][key][1], blend)]];
+    return [key, mixHex(AREAS[index][key], AREAS[next][key], blend)];
+  }));
+}
+
+function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale = 1) {
+  const spriteWidth = 18 * scale;
+  ctx.save();
+  ctx.translate(Math.round(x), Math.round(groundY - 24 * scale));
+  if (direction < 0) {
+    ctx.translate(spriteWidth, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.scale(scale, scale);
+
+  const lute = PALETTE.lute;
+  pixel(ctx, 2, 8, 1, 8, PALETTE.outline);
+  pixel(ctx, 3, 7, 1, 8, PALETTE.leatherLight);
+  pixel(ctx, 1, 12, 4, 5, PALETTE.outline);
+  pixel(ctx, 2, 12, 3, 4, lute);
+  pixel(ctx, 2, 13, 1, 2, PALETTE.luteLight);
+  pixel(ctx, 4, 8, 1, 5, PALETTE.gold);
+
+  pixel(ctx, 4, 10, 4, 7, PALETTE.outline);
+  pixel(ctx, 5, 11, 3, 5, PALETTE.leather);
+  pixel(ctx, 5, 12, 1, 2, PALETTE.leatherLight);
+
+  BARD_BASE.forEach((row, rowIndex) => {
+    [...row.padEnd(18, ".").slice(0, 18)].forEach((code, col) => {
+      if (code === ".") return;
+      const colors = {
+        C: PALETTE.hat,
+        H: PALETTE.hair,
+        S: PALETTE.skin,
+        V: PALETTE.leather,
+        T: PALETTE.shirt,
+        G: PALETTE.gold,
+      };
+      pixel(ctx, col, rowIndex, 1, 1, colors[code]);
+    });
+  });
+  pixel(ctx, 9, 4, 3, 1, PALETTE.skinShade);
+  pixel(ctx, 13, 5, 1, 1, PALETTE.outline);
+  pixel(ctx, 12, 1, 2, 1, PALETTE.hatLight);
+  pixel(ctx, 6, 3, 3, 1, PALETTE.hatLight);
+
+  const limbs = animation === "walk" ? LIMB_FRAMES[frame % LIMB_FRAMES.length] : IDLE_FRAMES[idleBeat % IDLE_FRAMES.length];
+  limbs.forEach(([px, py, width, height, color]) => pixel(ctx, px, py, width, height, PALETTE[color]));
+  pixel(ctx, 9, 16, 3, 1, PALETTE.shirtShade);
+  pixel(ctx, 11, 10, 1, 5, PALETTE.shirtShade);
+  ctx.restore();
+}
+
+function drawCloud(ctx, x, y, variant = 0) {
+  const color = variant ? "#dfe2d4" : "#e8e8dd";
+  pixel(ctx, x + 4, y + 2, 18, 3, color);
+  pixel(ctx, x + 1, y + 5, 26, 4, color);
+  pixel(ctx, x + 6, y + 1, 8, 3, color);
+  pixel(ctx, x + 22, y + 4, 8, 4, color);
+  pixel(ctx, x + 5, y + 9, 18, 1, "#c3d0cb");
+}
+
+function drawRidge(ctx, x, baseY, width, height, color, seed) {
+  const steps = 14;
+  const points = [[x, baseY]];
+  let value = seed;
+  for (let i = 0; i <= steps; i++) {
+    value = (value * 1664525 + 1013904223) >>> 0;
+    const peak = (value % 100) / 100;
+    const px = x + (width / steps) * i;
+    const py = baseY - height * (0.22 + peak * 0.7);
+    points.push([px, py], [px + width / steps * 0.45, py]);
+  }
+  points.push([x + width, baseY]);
+  fillPoly(ctx, points, color);
+}
+
+function drawTree(ctx, x, baseY, scale, palette, pine = true) {
+  const unit = scale;
+  pixel(ctx, x + 9 * unit, baseY - 11 * unit, 5 * unit, 12 * unit, "#574638");
+  if (pine) {
+    pixel(ctx, x + 4 * unit, baseY - 20 * unit, 15 * unit, 5 * unit, palette[0]);
+    pixel(ctx, x + 6 * unit, baseY - 28 * unit, 11 * unit, 7 * unit, palette[1]);
+    pixel(ctx, x + 8 * unit, baseY - 35 * unit, 7 * unit, 7 * unit, palette[2]);
+    pixel(ctx, x + 10 * unit, baseY - 40 * unit, 3 * unit, 6 * unit, palette[2]);
+    pixel(ctx, x + 8 * unit, baseY - 25 * unit, 3 * unit, 3 * unit, "#7d9662");
+  } else {
+    pixel(ctx, x + 4 * unit, baseY - 30 * unit, 16 * unit, 12 * unit, palette[0]);
+    pixel(ctx, x + 1 * unit, baseY - 24 * unit, 22 * unit, 9 * unit, palette[1]);
+    pixel(ctx, x + 6 * unit, baseY - 35 * unit, 12 * unit, 9 * unit, palette[2]);
+    pixel(ctx, x + 3 * unit, baseY - 18 * unit, 6 * unit, 4 * unit, palette[2]);
+  }
+}
+
+function drawMushroom(ctx, x, y, color, scale = 1) {
+  pixel(ctx, x + 4 * scale, y + 5 * scale, 3 * scale, 6 * scale, "#e0d4b0");
+  pixel(ctx, x + 1 * scale, y + 2 * scale, 9 * scale, 4 * scale, color);
+  pixel(ctx, x + 3 * scale, y, 5 * scale, 3 * scale, color);
+  pixel(ctx, x + 3 * scale, y + 3 * scale, scale, scale, "#f1d8aa");
+  pixel(ctx, x + 7 * scale, y + 4 * scale, scale, scale, "#f1d8aa");
+}
+
+function drawHouse(ctx, x, baseY, scale, wall = "#a99875", roof = "#704d45") {
+  pixel(ctx, x + 4 * scale, baseY - 20 * scale, 28 * scale, 20 * scale, wall);
+  pixel(ctx, x + 1 * scale, baseY - 23 * scale, 34 * scale, 5 * scale, roof);
+  pixel(ctx, x + 5 * scale, baseY - 28 * scale, 26 * scale, 6 * scale, roof);
+  pixel(ctx, x + 11 * scale, baseY - 33 * scale, 14 * scale, 6 * scale, roof);
+  pixel(ctx, x + 17 * scale, baseY - 39 * scale, 3 * scale, 7 * scale, roof);
+  pixel(ctx, x + 14 * scale, baseY - 11 * scale, 7 * scale, 11 * scale, "#493d38");
+  pixel(ctx, x + 7 * scale, baseY - 16 * scale, 5 * scale, 5 * scale, "#d9b46f");
+  pixel(ctx, x + 25 * scale, baseY - 16 * scale, 5 * scale, 5 * scale, "#d9b46f");
+  pixel(ctx, x + 9 * scale, baseY - 16 * scale, scale, 5 * scale, "#594a3d");
+  pixel(ctx, x + 27 * scale, baseY - 16 * scale, scale, 5 * scale, "#594a3d");
+  pixel(ctx, x + 1 * scale, baseY - 1 * scale, 34 * scale, 2 * scale, "#574739");
+}
+
+function drawRuin(ctx, x, baseY, scale = 1) {
+  const stone = "#8b8b7b";
+  pixel(ctx, x, baseY - 34 * scale, 7 * scale, 35 * scale, stone);
+  pixel(ctx, x + 48 * scale, baseY - 27 * scale, 7 * scale, 28 * scale, stone);
+  pixel(ctx, x - 3 * scale, baseY - 37 * scale, 13 * scale, 6 * scale, "#a3a18b");
+  pixel(ctx, x + 44 * scale, baseY - 31 * scale, 14 * scale, 6 * scale, "#a3a18b");
+  pixel(ctx, x + 7 * scale, baseY - 35 * scale, 13 * scale, 5 * scale, stone);
+  pixel(ctx, x + 20 * scale, baseY - 31 * scale, 13 * scale, 5 * scale, stone);
+  pixel(ctx, x + 33 * scale, baseY - 35 * scale, 12 * scale, 5 * scale, stone);
+  pixel(ctx, x + 11 * scale, baseY - 20 * scale, 6 * scale, 2 * scale, "#626c68");
+  pixel(ctx, x + 49 * scale, baseY - 17 * scale, 6 * scale, 2 * scale, "#626c68");
+}
+
+function drawTower(ctx, x, baseY, scale = 1) {
+  pixel(ctx, x + 8 * scale, baseY - 48 * scale, 42 * scale, 49 * scale, "#665c79");
+  pixel(ctx, x + 4 * scale, baseY - 52 * scale, 50 * scale, 6 * scale, "#9886a2");
+  pixel(ctx, x + 11 * scale, baseY - 60 * scale, 36 * scale, 9 * scale, "#6e627f");
+  pixel(ctx, x + 17 * scale, baseY - 68 * scale, 24 * scale, 9 * scale, "#82708f");
+  pixel(ctx, x + 24 * scale, baseY - 79 * scale, 10 * scale, 12 * scale, "#594f72");
+  pixel(ctx, x + 15 * scale, baseY - 37 * scale, 7 * scale, 11 * scale, "#e8c57d");
+  pixel(ctx, x + 35 * scale, baseY - 37 * scale, 7 * scale, 11 * scale, "#e8c57d");
+  pixel(ctx, x + 25 * scale, baseY - 17 * scale, 9 * scale, 17 * scale, "#3e3a4a");
+  pixel(ctx, x + 28 * scale, baseY - 75 * scale, 2 * scale, 4 * scale, "#e7d7a2");
+}
+
+function drawCastle(ctx, x, baseY, scale = 1) {
+  const stone = "#73778a";
+  pixel(ctx, x + 12 * scale, baseY - 32 * scale, 66 * scale, 33 * scale, stone);
+  pixel(ctx, x, baseY - 50 * scale, 22 * scale, 51 * scale, "#85879a");
+  pixel(ctx, x + 68 * scale, baseY - 45 * scale, 20 * scale, 46 * scale, "#85879a");
+  pixel(ctx, x - 3 * scale, baseY - 54 * scale, 28 * scale, 7 * scale, "#9c9aaa");
+  pixel(ctx, x + 65 * scale, baseY - 50 * scale, 26 * scale, 7 * scale, "#9c9aaa");
+  for (let i = 0; i < 4; i++) pixel(ctx, x + (8 + i * 20) * scale, baseY - 40 * scale, 6 * scale, 9 * scale, "#ecc77a");
+  pixel(ctx, x + 38 * scale, baseY - 20 * scale, 14 * scale, 21 * scale, "#3d3941");
+}
+
+function drawCampfire(ctx, x, baseY, beat = 0) {
+  pixel(ctx, x + 2, baseY - 2, 22, 4, "#57463b");
+  pixel(ctx, x + 7, baseY - 5, 14, 3, "#78513c");
+  pixel(ctx, x + 9, baseY - 11 - beat, 10, 9 + beat, "#e38c48");
+  pixel(ctx, x + 12, baseY - 15 - beat, 5, 8 + beat, "#f4ca69");
+  pixel(ctx, x + 13, baseY - 10, 3, 5, "#fff0ad");
+}
+
+function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
+  const first = Math.max(0, Math.floor(cameraX / AREA_WIDTH) - 1);
+  const last = Math.min(AREAS.length - 1, Math.floor((cameraX + width) / AREA_WIDTH) + 1);
+  for (let area = first; area <= last; area++) {
+    const start = area * AREA_WIDTH;
+    const xAt = (offset) => Math.round(start + offset - cameraX);
+    const base = groundY - 9;
+    if (area === 0) {
+      [90, 265, 480, 660].forEach((offset, i) => drawTree(ctx, xAt(offset), base + (i % 2) * 3, 0.82 + (i % 3) * 0.12, ["#24463f", "#31594b", "#426a50"]));
+      drawHouse(ctx, xAt(550), base, 0.6, "#94876d", "#664943");
+    } else if (area === 1) {
+      [110, 360, 620].forEach((offset, i) => drawTree(ctx, xAt(offset), base, 1.22 + i * 0.12, ["#283f50", "#3f5a64", "#536e70"], false));
+      if (!reducedDetails) {
+        drawMushroom(ctx, xAt(245), base - 5, "#bc7773", 1.2);
+        drawMushroom(ctx, xAt(285), base - 2, "#d9a65e", 0.9);
+        pixel(ctx, xAt(465), base - 4, 120, 4, "#725f4a");
+        pixel(ctx, xAt(465), base - 12, 4, 10, "#715d4a");
+        pixel(ctx, xAt(580), base - 12, 4, 10, "#715d4a");
+        pixel(ctx, xAt(466), base - 2, 118, 2, "#b38c5c");
+      }
+    } else if (area === 2) {
+      drawRuin(ctx, xAt(145), base, 0.9);
+      drawRuin(ctx, xAt(470), base + 2, 0.72);
+      pixel(ctx, xAt(300), base - 8, 38, 8, "#8b8b7b");
+      pixel(ctx, xAt(313), base - 24, 9, 18, "#8b8b7b");
+      pixel(ctx, xAt(326), base - 17, 8, 11, "#8b8b7b");
+    } else if (area === 3) {
+      drawHouse(ctx, xAt(105), base, 0.72, "#a99875", "#714e45");
+      drawHouse(ctx, xAt(365), base + 2, 0.86, "#b0a17e", "#596254");
+      drawHouse(ctx, xAt(625), base, 0.64, "#9b8c70", "#76554a");
+      if (!reducedDetails) {
+        [220, 510].forEach((offset) => {
+          const x = xAt(offset);
+          pixel(ctx, x, base - 27, 3, 25, "#57463b");
+          pixel(ctx, x - 5, base - 29, 13, 3, "#8e6946");
+          pixel(ctx, x - 2, base - 24, 7, 8, "#e0b467");
+        });
+        pixel(ctx, xAt(45), base - 2, 620, 3, "#6d513d");
+        for (let fence = 0; fence < 8; fence++) pixel(ctx, xAt(55 + fence * 75), base - 14, 3, 14, "#806348");
+      }
+    } else if (area === 4) {
+      drawTower(ctx, xAt(338), base, 1.05);
+      if (!reducedDetails) {
+        [[260, -58], [540, -73], [605, -45]].forEach(([offset, rise], i) => {
+          const crystalX = xAt(offset);
+          pixel(ctx, crystalX, base + rise, 3, 8, i % 2 ? "#c79ad0" : "#9dd2db");
+          pixel(ctx, crystalX - 3, base + rise + 3, 9, 3, i % 2 ? "#9b79bb" : "#79aebe");
+        });
+      }
+    } else {
+      drawCastle(ctx, xAt(420), base, 0.9);
+      drawCampfire(ctx, xAt(600), base, 0);
+      pixel(ctx, xAt(555), base - 3, 22, 3, "#584a42");
+    }
+  }
+}
+
+function drawBardScene(ctx, x, groundY, direction, moving, frame, idleBeat, scale) {
+  const spriteWidth = 18 * scale;
+  pixel(ctx, x + 1, groundY + 1, spriteWidth - 2, 2, "#28363a");
+  drawBard(ctx, x, groundY, direction, moving ? "walk" : "idle", frame, idleBeat, scale);
+}
+
+function getWorldX(scrollY, waypoints) {
+  if (waypoints.length < 2) return 64;
+  if (scrollY <= waypoints[0].scroll) return waypoints[0].worldX;
+  for (let i = 1; i < waypoints.length; i++) {
+    const next = waypoints[i];
+    if (scrollY <= next.scroll) {
+      const previous = waypoints[i - 1];
+      const span = Math.max(1, next.scroll - previous.scroll);
+      const t = Math.max(0, Math.min(1, (scrollY - previous.scroll) / span));
+      return previous.worldX + (next.worldX - previous.worldX) * t;
+    }
+  }
+  return waypoints.at(-1).worldX;
+}
+
+export default function AdventureWorld() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const context = canvas?.getContext("2d", { alpha: false, desynchronized: true });
+    if (!canvas || !context) return undefined;
+
+    let viewportWidth = 1;
+    let viewportHeight = 1;
+    let waypoints = [];
+    let targetWorldX = 64;
+    let currentWorldX = 64;
+    let cameraX = 0;
+    let direction = 1;
+    let lastFrame = 0;
+    let lastScrollAt = 0;
+    let animationFrame = null;
+    const idleBeat = 0;
+    let reducedDetails = false;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+    const readWaypoints = () => {
+      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const sections = SECTION_IDS.map((id, index) => {
+        const section = document.getElementById(id);
+        const scroll = section ? section.getBoundingClientRect().top + window.scrollY : maxScroll * index / (SECTION_IDS.length - 1);
+        return { scroll, worldX: 64 + index * AREA_WIDTH };
+      }).filter((point) => Number.isFinite(point.scroll)).sort((a, b) => a.scroll - b.scroll);
+      const finalPoint = { scroll: maxScroll, worldX: 64 + (AREAS.length - 1) * AREA_WIDTH + AREA_WIDTH * 0.74 };
+      if (!sections.length || sections.at(-1).scroll < maxScroll) sections.push(finalPoint);
+      else sections[sections.length - 1] = { ...sections.at(-1), ...finalPoint };
+      waypoints = sections;
+      targetWorldX = getWorldX(window.scrollY, waypoints);
+      if (reducedMotion.matches) currentWorldX = targetWorldX;
+    };
+
+    const resize = () => {
+      const bounds = canvas.getBoundingClientRect();
+      viewportWidth = Math.max(1, Math.ceil(bounds.width / 3));
+      viewportHeight = Math.max(1, Math.ceil(bounds.height / 3));
+      reducedDetails = viewportWidth < 155;
+      canvas.width = viewportWidth;
+      canvas.height = viewportHeight;
+      context.imageSmoothingEnabled = false;
+      readWaypoints();
+      requestRender();
+    };
+
+    const render = (time = performance.now()) => {
+      animationFrame = null;
+      if (document.visibilityState !== "visible") return;
+      const reduced = reducedMotion.matches;
+      const delta = Math.min((time - (lastFrame || time)) / 1000, 0.06);
+      lastFrame = time;
+      if (reduced) currentWorldX = targetWorldX;
+      else currentWorldX += (targetWorldX - currentWorldX) * (1 - Math.exp(-delta * 13));
+
+      const cameraFollowOffset = Math.max(0, viewportWidth - 10);
+      const maxCamera = Math.max(0, 64 + (AREAS.length - 1) * AREA_WIDTH + AREA_WIDTH * 0.74 - cameraFollowOffset);
+      const targetCamera = Math.max(0, Math.min(maxCamera, currentWorldX - cameraFollowOffset));
+      if (reduced) cameraX = targetCamera;
+      else cameraX += (targetCamera - cameraX) * (1 - Math.exp(-delta * 11));
+
+      const centerTheme = themeAt(currentWorldX);
+      const skyGradient = context.createLinearGradient(0, 0, 0, viewportHeight);
+      skyGradient.addColorStop(0, centerTheme.sky[0]);
+      skyGradient.addColorStop(0.63, centerTheme.sky[1]);
+      skyGradient.addColorStop(1, centerTheme.far);
+      context.fillStyle = skyGradient;
+      context.fillRect(0, 0, viewportWidth, viewportHeight);
+
+      const groundY = viewportHeight - 12;
+      const cloudStart = Math.floor((cameraX * 0.1) / 245) - 1;
+      const cloudEnd = Math.ceil((cameraX * 0.1 + viewportWidth) / 245) + 1;
+      for (let i = cloudStart; i <= cloudEnd; i++) {
+        drawCloud(context, i * 245 - cameraX * 0.1, 24 + ((i * 37) % 38), Math.abs(i) % 2);
+      }
+
+      const farStart = Math.max(0, Math.floor((cameraX * 0.22) / AREA_WIDTH) - 1);
+      const farEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.22 + viewportWidth) / AREA_WIDTH) + 1);
+      for (let area = farStart; area <= farEnd; area++) {
+        const x = area * AREA_WIDTH - cameraX * 0.22;
+        drawRidge(context, x, groundY - 64, AREA_WIDTH + 8, 44, AREAS[area].far, 731 + area * 913);
+        drawRidge(context, x, groundY - 27, AREA_WIDTH + 8, 28, AREAS[area].hills, 1597 + area * 419);
+      }
+
+      drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails);
+
+      const groundGradient = context.createLinearGradient(0, groundY - 16, 0, viewportHeight);
+      groundGradient.addColorStop(0, centerTheme.ground);
+      groundGradient.addColorStop(1, mixHex(centerTheme.ground, "#26383c", 0.46));
+      context.fillStyle = groundGradient;
+      context.fillRect(0, groundY - 10, viewportWidth, viewportHeight - groundY + 10);
+      pixel(context, 0, groundY - 11, viewportWidth, 4, "#82925e");
+      pixel(context, 0, groundY - 7, viewportWidth, 3, "#b39a68");
+      pixel(context, 0, groundY - 4, viewportWidth, 27, "#806849");
+      pixel(context, 0, groundY - 4, viewportWidth, 3, "#9a8059");
+
+      const grassStart = Math.floor(cameraX / 47) - 1;
+      const grassEnd = Math.ceil((cameraX + viewportWidth) / 47) + 1;
+      for (let i = grassStart; i <= grassEnd; i++) {
+        const x = i * 47 - cameraX;
+        pixel(context, x, groundY - 14 - (i % 3) * 2, 2, 5, "#a0a96a");
+        pixel(context, x + 4, groundY - 12, 2, 4, "#708b55");
+        if (!reducedDetails && i % 4 === 0) pixel(context, x + 8, groundY + 12, 2, 2, "#d5bd79");
+      }
+
+      const playerX = currentWorldX - cameraX - 9;
+      const isMoving = !reduced && (Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
+      const frameIndex = Math.floor(time / 95) % LIMB_FRAMES.length;
+      drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, reducedDetails ? 0.82 : 1);
+
+      const stillMoving = Math.abs(targetWorldX - currentWorldX) > 0.22 || Math.abs(targetCamera - cameraX) > 0.25;
+      if (!reduced && stillMoving) {
+        requestRender();
+      }
+    };
+
+    function requestRender() {
+      if (animationFrame === null) animationFrame = window.requestAnimationFrame(render);
+    }
+
+    const onScroll = () => {
+      const nextTarget = getWorldX(window.scrollY, waypoints);
+      const movement = nextTarget - targetWorldX;
+      if (Math.abs(movement) > 0.01) direction = Math.sign(movement);
+      targetWorldX = nextTarget;
+      lastScrollAt = performance.now();
+      if (reducedMotion.matches) currentWorldX = targetWorldX;
+      requestRender();
+    };
+
+    const onMotionChange = () => {
+      if (reducedMotion.matches) {
+        currentWorldX = targetWorldX;
+      }
+      requestRender();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        lastFrame = 0;
+        requestRender();
+      } else if (animationFrame !== null) {
+        window.cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
+    };
+
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(document.documentElement);
+    window.addEventListener("resize", resize, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    reducedMotion.addEventListener?.("change", onMotionChange);
+    resize();
+    onScroll();
+
+    return () => {
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", resize);
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      reducedMotion.removeEventListener?.("change", onMotionChange);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="adventure-world-canvas absolute inset-0 h-full w-full" aria-hidden="true" />;
+}

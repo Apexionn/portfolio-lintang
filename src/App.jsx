@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import CharacterCard from "./components/CharacterCard";
-import AdventureIllustration from "./components/AdventureIllustration";
+import AdventureWorld from "./components/AdventureWorld";
 
 // DATA
 const PROJECTS = [
@@ -227,7 +227,7 @@ function useScrollReveal() {
 function GameWorldBackground() {
   return (
     <div className="game-world-background fixed inset-0 pointer-events-none z-0" aria-hidden="true">
-      <AdventureIllustration />
+      <AdventureWorld />
       <div className="game-world-vignette absolute inset-0" />
     </div>
   );
