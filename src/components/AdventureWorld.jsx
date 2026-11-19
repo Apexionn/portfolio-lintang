@@ -35,12 +35,16 @@ const AREAS = [
 ];
 
 const MOUNTAIN_PROFILES = [
-  [[0, 0.12], [0.12, 0.32], [0.23, 0.19], [0.4, 0.86], [0.49, 0.57], [0.61, 0.26], [0.75, 0.71], [0.84, 0.38], [0.94, 0.5], [1, 0.14]],
-  [[0, 0.14], [0.13, 0.28], [0.29, 0.72], [0.4, 0.43], [0.53, 0.9], [0.65, 0.31], [0.79, 0.62], [0.9, 0.24], [1, 0.12]],
-  [[0, 0.11], [0.16, 0.37], [0.27, 0.2], [0.45, 0.76], [0.56, 0.42], [0.7, 0.88], [0.82, 0.34], [0.93, 0.55], [1, 0.16]],
+  [[0, 0], [0.08, 0.22], [0.17, 0.18], [0.29, 0.42], [0.36, 0.33], [0.45, 0.86], [0.51, 0.66], [0.58, 0.48], [0.7, 0.62], [0.79, 0.3], [0.9, 0.46], [1, 0]],
+  [[0, 0], [0.12, 0.27], [0.22, 0.7], [0.28, 0.52], [0.36, 0.44], [0.48, 0.88], [0.54, 0.77], [0.62, 0.38], [0.73, 0.61], [0.84, 0.46], [0.93, 0.25], [1, 0]],
+  [[0, 0], [0.11, 0.34], [0.2, 0.25], [0.31, 0.76], [0.39, 0.64], [0.48, 0.42], [0.58, 0.9], [0.64, 0.73], [0.72, 0.37], [0.82, 0.59], [0.92, 0.32], [1, 0]],
+  [[0, 0], [0.1, 0.26], [0.2, 0.64], [0.27, 0.57], [0.34, 0.68], [0.41, 0.43], [0.53, 0.78], [0.6, 0.75], [0.68, 0.7], [0.78, 0.3], [0.87, 0.41], [1, 0]],
+  [[0, 0], [0.13, 0.31], [0.25, 0.22], [0.35, 0.58], [0.42, 0.4], [0.5, 0.82], [0.57, 0.69], [0.65, 0.45], [0.76, 0.73], [0.83, 0.54], [0.91, 0.27], [1, 0]],
+  [[0, 0], [0.09, 0.38], [0.16, 0.29], [0.27, 0.5], [0.33, 0.47], [0.43, 0.8], [0.48, 0.83], [0.54, 0.79], [0.62, 0.36], [0.75, 0.68], [0.86, 0.41], [1, 0]],
 ];
 
-const HILL_PROFILE = [[0, 0.28], [0.12, 0.34], [0.27, 0.2], [0.43, 0.4], [0.58, 0.26], [0.75, 0.36], [0.9, 0.24], [1, 0.3]];
+const HILL_PROFILE = [[0, 0], [0.12, 0.34], [0.27, 0.2], [0.43, 0.4], [0.58, 0.26], [0.75, 0.36], [0.9, 0.24], [1, 0]];
+const FOREGROUND_PROFILE = [[0, 0], [0.09, 0.2], [0.18, 0.36], [0.25, 0.29], [0.36, 0.53], [0.44, 0.32], [0.55, 0.43], [0.66, 0.18], [0.78, 0.49], [0.86, 0.31], [0.94, 0.38], [1, 0]];
 
 const BARD_WIDTH = 24;
 const BARD_HEIGHT = 32;
@@ -174,39 +178,74 @@ function drawCloud(ctx, x, y, variant = 0) {
   pixel(ctx, x + 5, y + 9, 18, 1, "#c3d0cb");
 }
 
-function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex) {
-  const profile = MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
+function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, detail = 2, snow = true, profileOverride = null) {
+  const profile = profileOverride || MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
   const peakPoints = profile.map(([position, rise]) => [x + position * width, baseY - rise * height]);
   fillPoly(ctx, [[x, baseY], ...peakPoints, [x + width, baseY]], color);
 
   profile.forEach(([position, rise], index) => {
     if (index === 0 || index === profile.length - 1) return;
-    if (rise <= profile[index - 1][1] || rise <= profile[index + 1][1]) return;
-
+    const previous = profile[index - 1];
+    const next = profile[index + 1];
     const summitX = x + position * width;
     const summitY = baseY - rise * height;
-    const leftX = x + profile[index - 1][0] * width;
-    const rightX = x + profile[index + 1][0] * width;
-    const leftColor = mixHex(color, "#d3d5cf", 0.13);
-    const rightColor = mixHex(color, "#263344", 0.2);
-    fillPoly(ctx, [[leftX, baseY], [summitX, summitY], [summitX, baseY]], leftColor);
-    fillPoly(ctx, [[summitX, summitY], [rightX, baseY], [summitX, baseY]], rightColor);
+    const previousX = x + previous[0] * width;
+    const previousY = baseY - previous[1] * height;
+    const nextX = x + next[0] * width;
+    const nextY = baseY - next[1] * height;
+    const isPeak = rise > previous[1] && rise > next[1];
+    const isValley = rise < previous[1] && rise < next[1];
 
-    if (rise < 0.68) return;
-    const shoulderY = baseY - rise * height * 0.72;
-    const capSide = width * 0.013;
-    const snow = "#d8ded8";
-    fillPoly(ctx, [
-      [summitX - capSide * 2, shoulderY],
-      [summitX - capSide * 1.25, shoulderY - height * 0.05],
-      [summitX - capSide * 0.85, shoulderY + height * 0.08],
-      [summitX - capSide * 0.38, shoulderY - height * 0.1],
-      [summitX, summitY],
-      [summitX + capSide * 0.48, summitY + height * 0.12],
-      [summitX + capSide * 0.86, shoulderY - height * 0.13],
-      [summitX + capSide * 1.2, shoulderY + height * 0.04],
-      [summitX + capSide * 1.9, shoulderY],
-    ], snow);
+    if (isPeak) {
+      if (detail > 0 && rise < 0.5) return;
+      const lightAmount = detail === 0 ? 0.07 : detail === 1 ? 0.12 : 0.2;
+      const shadeAmount = detail === 0 ? 0.1 : detail === 1 ? 0.18 : 0.28;
+      fillPoly(ctx, [[previousX, previousY], [summitX, summitY], [summitX, baseY], [previousX, baseY]], mixHex(color, "#d8d6c9", lightAmount));
+      fillPoly(ctx, [[summitX, summitY], [nextX, nextY], [nextX, baseY], [summitX, baseY]], mixHex(color, "#1c2934", shadeAmount));
+
+      if (detail > 0) {
+        const cluster = Math.max(2, Math.round(width * (detail === 1 ? 0.008 : 0.014)));
+        const leftFaceX = previousX + (summitX - previousX) * 0.58;
+        const leftFaceY = previousY + (summitY - previousY) * 0.58;
+        const rightFaceX = summitX + (nextX - summitX) * 0.48;
+        const rightFaceY = summitY + (nextY - summitY) * 0.48;
+        const rockLight = mixHex(color, "#d5c8a6", detail === 1 ? 0.16 : 0.27);
+        const rockMid = mixHex(color, "#697274", 0.23);
+        const rockShade = mixHex(color, "#1d2933", detail === 1 ? 0.18 : 0.36);
+
+        pixel(ctx, leftFaceX - cluster, leftFaceY, cluster * 1.5, Math.max(2, cluster * 0.3), rockLight);
+        pixel(ctx, leftFaceX + cluster * 0.25, leftFaceY + cluster * 0.7, cluster, 2, rockMid);
+        pixel(ctx, rightFaceX, rightFaceY, cluster * 1.35, 2, rockShade);
+        pixel(ctx, rightFaceX + cluster * 0.6, rightFaceY + 3, 1, Math.max(3, cluster * 0.75), rockShade);
+        pixel(ctx, rightFaceX + cluster * 1.1, rightFaceY + cluster * 0.9, cluster * 0.9, 2, rockMid);
+      }
+
+      if (snow && rise >= 0.76) {
+        const shoulderY = baseY - rise * height * 0.73;
+        const capSide = width * (rise > 0.84 ? 0.012 : 0.009);
+        fillPoly(ctx, [
+          [summitX - capSide * 1.8, shoulderY],
+          [summitX - capSide * 1.2, shoulderY - height * 0.04],
+          [summitX - capSide * 0.78, shoulderY + height * 0.07],
+          [summitX - capSide * 0.33, summitY + height * 0.08],
+          [summitX, summitY],
+          [summitX + capSide * 0.35, summitY + height * 0.14],
+          [summitX + capSide * 0.76, shoulderY - height * 0.12],
+          [summitX + capSide * 1.08, shoulderY + height * 0.04],
+          [summitX + capSide * 1.7, shoulderY],
+        ], "#d8ded8");
+        pixel(ctx, summitX - capSide * 1.1, shoulderY + 2, capSide * 0.8, 2, "#b8c7c8");
+      }
+    } else if (isValley && detail > 0) {
+      const valleyX = x + position * width;
+      const valleyY = baseY - rise * height;
+      pixel(ctx, valleyX - 3, valleyY + 1, 6, 2, mixHex(color, "#18252f", 0.32));
+      if (detail === 2 && !snow) {
+        const scrub = mixHex(color, "#52704c", 0.38);
+        pixel(ctx, valleyX - width * 0.035, valleyY - height * 0.1, width * 0.025, 2, scrub);
+        pixel(ctx, valleyX + width * 0.012, valleyY - height * 0.17, width * 0.02, 2, scrub);
+      }
+    }
   });
 }
 
@@ -453,12 +492,28 @@ export default function AdventureWorld() {
         drawCloud(context, i * 245 - cameraX * 0.1, 24 + ((i * 37) % 38), Math.abs(i) % 2);
       }
 
-      const farStart = Math.max(0, Math.floor((cameraX * 0.22) / AREA_WIDTH) - 1);
-      const farEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.22 + viewportWidth) / AREA_WIDTH) + 1);
-      for (let area = farStart; area <= farEnd; area++) {
+      const distantStart = Math.max(0, Math.floor((cameraX * 0.1) / AREA_WIDTH) - 1);
+      const distantEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.1 + viewportWidth) / AREA_WIDTH) + 1);
+      for (let area = distantStart; area <= distantEnd; area++) {
+        const x = area * AREA_WIDTH - cameraX * 0.1;
+        const hazeColor = mixHex(AREAS[area].far, centerTheme.sky[1], 0.48);
+        drawMountainRange(context, x, groundY - 112, AREA_WIDTH + 8, 66, hazeColor, area + 2, 0, false);
+      }
+
+      const mainStart = Math.max(0, Math.floor((cameraX * 0.22) / AREA_WIDTH) - 1);
+      const mainEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.22 + viewportWidth) / AREA_WIDTH) + 1);
+      for (let area = mainStart; area <= mainEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.22;
-        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, AREAS[area].far, area);
+        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, AREAS[area].far, area, 2, true);
         drawHillRange(context, x, groundY - 27, AREA_WIDTH + 8, 28, AREAS[area].hills);
+      }
+
+      const foregroundStart = Math.max(0, Math.floor((cameraX * 0.38) / AREA_WIDTH) - 1);
+      const foregroundEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.38 + viewportWidth) / AREA_WIDTH) + 1);
+      for (let area = foregroundStart; area <= foregroundEnd; area++) {
+        const x = area * AREA_WIDTH - cameraX * 0.38;
+        const rockColor = mixHex(AREAS[area].hills, "#26383c", 0.38);
+        drawMountainRange(context, x, groundY - 4, AREA_WIDTH + 8, 52, rockColor, area + 4, 2, false, FOREGROUND_PROFILE);
       }
 
       drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails);
