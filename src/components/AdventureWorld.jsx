@@ -68,20 +68,20 @@ const LIMB_FRAMES = [
   [
     [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
     [8, 18, 3, 3, "outline"], [11, 18, 3, 3, "outline"],
-    [5, 20, 4, 2, "boot"], [11, 21, 4, 2, "boot"],
+    [6, 20, 4, 2, "boot"], [13, 21, 4, 2, "boot"],
     [13, 11, 3, 2, "shirt"], [14, 12, 2, 2, "skin"],
   ],
   [
     [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
     [10, 18, 3, 3, "outline"], [8, 18, 3, 3, "outline"],
-    [10, 20, 4, 2, "boot"], [5, 21, 4, 2, "boot"],
+    [5, 20, 4, 2, "boot"], [13, 21, 4, 2, "boot"],
     [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
   ],
 ];
 
 const IDLE_FRAMES = [
-  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [6, 21, 4, 2, "boot"], [12, 21, 4, 2, "boot"], [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"]],
-  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [6, 21, 4, 2, "boot"], [12, 21, 4, 2, "boot"], [13, 10, 3, 2, "shirt"], [15, 11, 2, 2, "skin"], [11, 9, 3, 1, "hatLight"]],
+  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [5, 21, 4, 2, "boot"], [13, 21, 4, 2, "boot"], [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"]],
+  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [5, 21, 4, 2, "boot"], [13, 21, 4, 2, "boot"], [13, 10, 3, 2, "shirt"], [15, 11, 2, 2, "skin"], [11, 9, 3, 1, "hatLight"]],
 ];
 
 const pixel = (ctx, x, y, width, height, color) => {
@@ -147,7 +147,7 @@ function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale 
         C: PALETTE.hat,
         H: PALETTE.hair,
         S: PALETTE.skin,
-        V: PALETTE.leather,
+        V: PALETTE.forest,
         T: PALETTE.shirt,
         G: PALETTE.gold,
       };
@@ -155,9 +155,16 @@ function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale 
     });
   });
   pixel(ctx, 9, 4, 3, 1, PALETTE.skinShade);
+  pixel(ctx, 12, 6, 2, 1, PALETTE.skinShade);
   pixel(ctx, 13, 5, 1, 1, PALETTE.outline);
+  pixel(ctx, 13, 0, 1, 3, PALETTE.hatLight);
   pixel(ctx, 12, 1, 2, 1, PALETTE.hatLight);
   pixel(ctx, 6, 3, 3, 1, PALETTE.hatLight);
+  pixel(ctx, 7, 8, 1, 6, PALETTE.forestShade);
+  pixel(ctx, 10, 9, 1, 5, PALETTE.forestLight);
+  pixel(ctx, 8, 11, 1, 3, PALETTE.gold);
+  pixel(ctx, 9, 11, 2, 1, PALETTE.gold);
+  pixel(ctx, 9, 12, 1, 2, PALETTE.gold);
 
   const limbs = animation === "walk" ? LIMB_FRAMES[frame % LIMB_FRAMES.length] : IDLE_FRAMES[idleBeat % IDLE_FRAMES.length];
   limbs.forEach(([px, py, width, height, color]) => pixel(ctx, px, py, width, height, PALETTE[color]));
@@ -331,7 +338,6 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
 }
 
 function drawBardScene(ctx, x, groundY, direction, moving, frame, idleBeat, scale) {
-  pixel(ctx, x + 5 * scale, groundY + 1, 8 * scale, scale, "#28363a");
   drawBard(ctx, x, groundY, direction, moving ? "walk" : "idle", frame, idleBeat, scale);
 }
 
@@ -459,10 +465,11 @@ export default function AdventureWorld() {
       }
 
       const playerScreenBias = viewportWidth < 230 ? 45 : 0;
-      const playerX = currentWorldX - cameraX - 9 - playerScreenBias;
+      const characterScale = reducedDetails ? 0.88 : 1.16;
+      const playerX = currentWorldX - cameraX - 9 * characterScale - playerScreenBias;
       const isMoving = !reduced && (Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
       const frameIndex = Math.floor(time / 190) % LIMB_FRAMES.length;
-      drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, reducedDetails ? 0.82 : 1);
+      drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, characterScale);
 
       const stillMoving = Math.abs(targetWorldX - currentWorldX) > 0.22 || Math.abs(targetCamera - cameraX) > 0.25;
       if (!reduced && stillMoving) {
