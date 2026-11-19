@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-const AREA_WIDTH = 760;
+const AREA_WIDTH = 620;
 const SECTION_IDS = ["hero", "about", "work", "experience", "arsenal", "contact"];
 const PALETTE = {
   transparent: null,
@@ -56,25 +56,25 @@ const LIMB_FRAMES = [
   [
     [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
     [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"],
-    [6, 21, 4, 2, "boot"], [12, 21, 4, 2, "boot"],
+    [6, 21, 4, 2, "boot"], [13, 20, 4, 2, "boot"],
     [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
   ],
   [
     [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
     [5, 18, 3, 3, "outline"], [13, 18, 3, 3, "outline"],
-    [4, 21, 4, 2, "boot"], [13, 21, 4, 2, "boot"],
+    [3, 21, 4, 2, "boot"], [14, 20, 4, 2, "boot"],
     [13, 11, 3, 2, "shirt"], [15, 10, 2, 2, "skin"],
   ],
   [
     [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
     [8, 18, 3, 3, "outline"], [11, 18, 3, 3, "outline"],
-    [8, 21, 4, 2, "boot"], [10, 21, 4, 2, "boot"],
+    [5, 20, 4, 2, "boot"], [11, 21, 4, 2, "boot"],
     [13, 11, 3, 2, "shirt"], [14, 12, 2, 2, "skin"],
   ],
   [
     [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
     [10, 18, 3, 3, "outline"], [8, 18, 3, 3, "outline"],
-    [11, 21, 4, 2, "boot"], [7, 21, 4, 2, "boot"],
+    [10, 20, 4, 2, "boot"], [5, 21, 4, 2, "boot"],
     [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
   ],
 ];
@@ -331,8 +331,7 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
 }
 
 function drawBardScene(ctx, x, groundY, direction, moving, frame, idleBeat, scale) {
-  const spriteWidth = 18 * scale;
-  pixel(ctx, x + 1, groundY + 1, spriteWidth - 2, 2, "#28363a");
+  pixel(ctx, x + 5 * scale, groundY + 1, 8 * scale, scale, "#28363a");
   drawBard(ctx, x, groundY, direction, moving ? "walk" : "idle", frame, idleBeat, scale);
 }
 
@@ -407,13 +406,13 @@ export default function AdventureWorld() {
       const delta = Math.min((time - (lastFrame || time)) / 1000, 0.06);
       lastFrame = time;
       if (reduced) currentWorldX = targetWorldX;
-      else currentWorldX += (targetWorldX - currentWorldX) * (1 - Math.exp(-delta * 13));
+      else currentWorldX += (targetWorldX - currentWorldX) * (1 - Math.exp(-delta * 7));
 
-      const cameraFollowOffset = Math.max(0, viewportWidth - 10);
+      const cameraFollowOffset = viewportWidth * 0.42;
       const maxCamera = Math.max(0, 64 + (AREAS.length - 1) * AREA_WIDTH + AREA_WIDTH * 0.74 - cameraFollowOffset);
       const targetCamera = Math.max(0, Math.min(maxCamera, currentWorldX - cameraFollowOffset));
       if (reduced) cameraX = targetCamera;
-      else cameraX += (targetCamera - cameraX) * (1 - Math.exp(-delta * 11));
+      else cameraX += (targetCamera - cameraX) * (1 - Math.exp(-delta * 7.5));
 
       const centerTheme = themeAt(currentWorldX);
       const skyGradient = context.createLinearGradient(0, 0, 0, viewportHeight);
@@ -459,9 +458,10 @@ export default function AdventureWorld() {
         if (!reducedDetails && i % 4 === 0) pixel(context, x + 8, groundY + 12, 2, 2, "#d5bd79");
       }
 
-      const playerX = currentWorldX - cameraX - 9;
+      const playerScreenBias = viewportWidth < 230 ? 45 : 0;
+      const playerX = currentWorldX - cameraX - 9 - playerScreenBias;
       const isMoving = !reduced && (Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
-      const frameIndex = Math.floor(time / 95) % LIMB_FRAMES.length;
+      const frameIndex = Math.floor(time / 190) % LIMB_FRAMES.length;
       drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, reducedDetails ? 0.82 : 1);
 
       const stillMoving = Math.abs(targetWorldX - currentWorldX) > 0.22 || Math.abs(targetCamera - cameraX) > 0.25;
