@@ -34,54 +34,38 @@ const AREAS = [
   { name: "Final Camp", sky: ["#303d66", "#e9a071"], hills: "#4a5564", ground: "#414c4c", far: "#626d81" },
 ];
 
-const BARD_BASE = [
-  ".......CCC........",
-  "......CCCCC.......",
-  "......CCHHH.......",
-  ".....CCHSSHH......",
-  ".....CHSSSSHH.....",
-  ".....CHSSSSSHH....",
-  "......CHHHHHH.....",
-  "...LL..CVVVVV.....",
-  "..LII..CVVVVV.....",
-  "..LII..CVVVVV.....",
-  "...I...VVTTTV.....",
-  "...I...VVTTTV.....",
-  "...I...VVTTTV.....",
-  "...I...VVTTTV.....",
-  ".......GGGGGG.....",
-];
+const BARD_WIDTH = 24;
+const BARD_HEIGHT = 32;
 
 const LIMB_FRAMES = [
   [
-    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
-    [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"],
-    [6, 21, 4, 2, "boot"], [13, 20, 4, 2, "boot"],
-    [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
+    [9, 23, 4, 4, "leather"], [14, 23, 4, 4, "leatherLight"],
+    [8, 27, 4, 3, "leather"], [15, 27, 4, 3, "leatherLight"],
+    [6, 30, 6, 2, "boot"], [15, 30, 6, 2, "boot"],
+    [19, 15, 3, 4, "forestShade"], [20, 18, 3, 2, "skin"],
   ],
   [
-    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
-    [5, 18, 3, 3, "outline"], [13, 18, 3, 3, "outline"],
-    [3, 21, 4, 2, "boot"], [14, 20, 4, 2, "boot"],
-    [13, 11, 3, 2, "shirt"], [15, 10, 2, 2, "skin"],
+    [8, 23, 4, 4, "leather"], [14, 23, 4, 4, "leatherLight"],
+    [5, 27, 4, 3, "leather"], [16, 27, 4, 3, "leatherLight"],
+    [2, 30, 6, 2, "boot"], [16, 30, 6, 2, "boot"],
+    [19, 15, 3, 3, "forestShade"], [21, 16, 2, 3, "skin"],
   ],
   [
-    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
-    [8, 18, 3, 3, "outline"], [11, 18, 3, 3, "outline"],
-    [6, 20, 4, 2, "boot"], [13, 21, 4, 2, "boot"],
-    [13, 11, 3, 2, "shirt"], [14, 12, 2, 2, "skin"],
+    [9, 23, 4, 4, "leather"], [14, 23, 4, 4, "leatherLight"],
+    [9, 27, 4, 3, "leather"], [14, 27, 4, 3, "leatherLight"],
+    [8, 30, 6, 2, "boot"], [14, 30, 6, 2, "boot"],
+    [19, 15, 3, 4, "forestShade"], [20, 18, 3, 2, "skin"],
   ],
   [
-    [7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"],
-    [10, 18, 3, 3, "outline"], [8, 18, 3, 3, "outline"],
-    [5, 20, 4, 2, "boot"], [13, 21, 4, 2, "boot"],
-    [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"],
+    [9, 23, 4, 4, "leather"], [14, 23, 4, 4, "leatherLight"],
+    [13, 27, 4, 3, "leatherLight"], [5, 27, 4, 3, "leather"],
+    [13, 30, 6, 2, "boot"], [3, 30, 6, 2, "boot"],
+    [19, 15, 3, 3, "forestShade"], [21, 16, 2, 3, "skin"],
   ],
 ];
 
 const IDLE_FRAMES = [
-  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [5, 21, 4, 2, "boot"], [13, 21, 4, 2, "boot"], [13, 11, 3, 2, "shirt"], [15, 12, 2, 2, "skin"]],
-  [[7, 15, 3, 3, "leather"], [12, 15, 3, 3, "leatherLight"], [7, 18, 3, 3, "outline"], [12, 18, 3, 3, "outline"], [5, 21, 4, 2, "boot"], [13, 21, 4, 2, "boot"], [13, 10, 3, 2, "shirt"], [15, 11, 2, 2, "skin"], [11, 9, 3, 1, "hatLight"]],
+  [[9, 23, 4, 4, "leather"], [14, 23, 4, 4, "leatherLight"], [8, 27, 4, 3, "leather"], [15, 27, 4, 3, "leatherLight"], [6, 30, 6, 2, "boot"], [15, 30, 6, 2, "boot"]],
 ];
 
 const pixel = (ctx, x, y, width, height, color) => {
@@ -119,57 +103,57 @@ function themeAt(worldX) {
 }
 
 function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale = 1) {
-  const spriteWidth = 18 * scale;
+  const spriteWidth = BARD_WIDTH * scale;
   ctx.save();
-  ctx.translate(Math.round(x), Math.round(groundY - 24 * scale));
+  ctx.translate(Math.round(x), Math.round(groundY - BARD_HEIGHT * scale));
   if (direction < 0) {
     ctx.translate(spriteWidth, 0);
     ctx.scale(-1, 1);
   }
   ctx.scale(scale, scale);
 
-  const lute = PALETTE.lute;
-  pixel(ctx, 2, 8, 1, 8, PALETTE.outline);
-  pixel(ctx, 3, 7, 1, 8, PALETTE.leatherLight);
-  pixel(ctx, 1, 12, 4, 5, PALETTE.outline);
-  pixel(ctx, 2, 12, 3, 4, lute);
-  pixel(ctx, 2, 13, 1, 2, PALETTE.luteLight);
-  pixel(ctx, 4, 8, 1, 5, PALETTE.gold);
+  // Draw the lute and travel pack first so they sit naturally behind the Bard.
+  pixel(ctx, 2, 15, 7, 12, PALETTE.outline);
+  pixel(ctx, 3, 16, 5, 9, PALETTE.leather);
+  pixel(ctx, 4, 17, 3, 7, PALETTE.lute);
+  pixel(ctx, 5, 18, 1, 5, PALETTE.luteLight);
+  pixel(ctx, 6, 10, 2, 13, PALETTE.outline);
+  pixel(ctx, 7, 11, 1, 11, PALETTE.gold);
+  pixel(ctx, 5, 14, 5, 8, PALETTE.outline);
+  pixel(ctx, 6, 15, 3, 6, PALETTE.leather);
+  pixel(ctx, 7, 16, 1, 4, PALETTE.leatherLight);
 
-  pixel(ctx, 4, 10, 4, 7, PALETTE.outline);
-  pixel(ctx, 5, 11, 3, 5, PALETTE.leather);
-  pixel(ctx, 5, 12, 1, 2, PALETTE.leatherLight);
+  // Cap, feather, hair, face and collar.
+  pixel(ctx, 8, 5, 12, 2, PALETTE.outline);
+  pixel(ctx, 9, 3, 10, 3, PALETTE.hat);
+  pixel(ctx, 11, 1, 7, 3, PALETTE.hat);
+  pixel(ctx, 15, 0, 2, 3, PALETTE.hatLight);
+  pixel(ctx, 17, 1, 2, 4, PALETTE.gold);
+  pixel(ctx, 10, 5, 9, 7, PALETTE.outline);
+  pixel(ctx, 11, 5, 7, 6, PALETTE.hair);
+  pixel(ctx, 11, 7, 8, 7, PALETTE.skin);
+  pixel(ctx, 10, 8, 2, 5, PALETTE.hair);
+  pixel(ctx, 17, 9, 3, 3, PALETTE.skinShade);
+  pixel(ctx, 17, 8, 2, 2, PALETTE.skin);
+  pixel(ctx, 16, 9, 1, 1, PALETTE.outline);
+  pixel(ctx, 18, 11, 2, 1, PALETTE.skinShade);
+  pixel(ctx, 11, 13, 8, 2, PALETTE.shirt);
 
-  BARD_BASE.forEach((row, rowIndex) => {
-    [...row.padEnd(18, ".").slice(0, 18)].forEach((code, col) => {
-      if (code === ".") return;
-      const colors = {
-        C: PALETTE.hat,
-        H: PALETTE.hair,
-        S: PALETTE.skin,
-        V: PALETTE.forest,
-        T: PALETTE.shirt,
-        G: PALETTE.gold,
-      };
-      pixel(ctx, col, rowIndex, 1, 1, colors[code]);
-    });
-  });
-  pixel(ctx, 9, 4, 3, 1, PALETTE.skinShade);
-  pixel(ctx, 12, 6, 2, 1, PALETTE.skinShade);
-  pixel(ctx, 13, 5, 1, 1, PALETTE.outline);
-  pixel(ctx, 13, 0, 1, 3, PALETTE.hatLight);
-  pixel(ctx, 12, 1, 2, 1, PALETTE.hatLight);
-  pixel(ctx, 6, 3, 3, 1, PALETTE.hatLight);
-  pixel(ctx, 7, 8, 1, 6, PALETTE.forestShade);
-  pixel(ctx, 10, 9, 1, 5, PALETTE.forestLight);
-  pixel(ctx, 8, 11, 1, 3, PALETTE.gold);
-  pixel(ctx, 9, 11, 2, 1, PALETTE.gold);
-  pixel(ctx, 9, 12, 1, 2, PALETTE.gold);
+  // Connected cloak, sleeves, belt and trousers create one readable silhouette.
+  pixel(ctx, 7, 14, 15, 9, PALETTE.outline);
+  pixel(ctx, 8, 14, 13, 8, PALETTE.forest);
+  pixel(ctx, 7, 16, 3, 7, PALETTE.forestShade);
+  pixel(ctx, 18, 15, 4, 7, PALETTE.forestLight);
+  pixel(ctx, 10, 15, 2, 6, PALETTE.forestLight);
+  pixel(ctx, 12, 15, 5, 7, PALETTE.shirt);
+  pixel(ctx, 13, 17, 3, 4, PALETTE.shirtShade);
+  pixel(ctx, 9, 21, 11, 2, PALETTE.gold);
+  pixel(ctx, 14, 20, 2, 3, PALETTE.luteLight);
+  pixel(ctx, 9, 23, 9, 4, PALETTE.leather);
+  pixel(ctx, 10, 24, 7, 1, PALETTE.leatherLight);
 
   const limbs = animation === "walk" ? LIMB_FRAMES[frame % LIMB_FRAMES.length] : IDLE_FRAMES[idleBeat % IDLE_FRAMES.length];
   limbs.forEach(([px, py, width, height, color]) => pixel(ctx, px, py, width, height, PALETTE[color]));
-  pixel(ctx, 9, 16, 3, 1, PALETTE.shirtShade);
-  pixel(ctx, 11, 10, 1, 5, PALETTE.shirtShade);
   ctx.restore();
 }
 
@@ -465,8 +449,8 @@ export default function AdventureWorld() {
       }
 
       const playerScreenBias = viewportWidth < 230 ? 45 : 0;
-      const characterScale = reducedDetails ? 0.88 : 1.16;
-      const playerX = currentWorldX - cameraX - 9 * characterScale - playerScreenBias;
+      const characterScale = reducedDetails ? 0.72 : 0.84;
+      const playerX = currentWorldX - cameraX - (BARD_WIDTH / 2) * characterScale - playerScreenBias;
       const isMoving = !reduced && (Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
       const frameIndex = Math.floor(time / 190) % LIMB_FRAMES.length;
       drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, characterScale);
