@@ -74,7 +74,6 @@
   .game-campfire-hotspot:focus-visible { outline:2px solid #ffcf83;outline-offset:3px;border-radius:5px;box-shadow:0 0 0 2px #172039; }
   .game-campfire-message { position:fixed;z-index:12;left:calc(42vw + 115px);bottom:126px;padding:9px 12px;border:1px solid #d39a67;border-radius:7px;background:rgba(24,30,47,.95);color:#fff0d2;box-shadow:0 4px 0 #0b1122;white-space:nowrap;opacity:0;transform:translateY(6px);visibility:hidden;pointer-events:none;transition:opacity .18s ease,transform .18s ease,visibility 0s linear .18s; }
   .game-campfire-message.is-open { opacity:1;transform:translateY(0);visibility:visible;pointer-events:auto;transition:opacity .18s ease,transform .18s ease,visibility 0s; }
-  .game-campfire-copy { color:#ffe2a4;text-decoration:underline;text-underline-offset:3px; }
   .game-contact-copy-status { min-height:1em;color:#ffe2a4; }
   .game-panel { color:#f6efd9; }
   .game-profile-stats { border-top:2px solid #485777; }

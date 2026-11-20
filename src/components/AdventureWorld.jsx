@@ -1084,7 +1084,8 @@ export default function AdventureWorld() {
         if (!enteringFromLeft) characterEnterStartedAt = null;
       }
       const playerX = currentWorldX + arrivalProgress * (viewportWidth < 230 ? 30 : FINAL_SCENE.arrivalDistance) - cameraX - (BARD_WIDTH / 2) * characterScale - (viewportWidth < 230 ? 0 : playerScreenBias) + characterEnterOffset;
-      const isMoving = !reduced && (enteringFromLeft || arrivalProgress < 1 || Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
+      const arrivalInProgress = contactArrivalStartedAt !== null && !contactArrivalComplete && arrivalProgress < 1;
+      const isMoving = !reduced && (enteringFromLeft || arrivalInProgress || Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
       const frameIndex = Math.floor(time / 190) % LIMB_FRAMES.length;
       drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, characterScale, campfireBright);
       if (!worldReadyEmitted) {

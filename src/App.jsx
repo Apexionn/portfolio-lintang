@@ -918,13 +918,12 @@ function ContactSection() {
           <div
             ref={campfireMessageRef}
             id="campfire-message"
-            className={`game-campfire-message inline-flex items-center gap-3${campfireMessage ? " is-open" : ""}`}
+            className={`game-campfire-message inline-flex${campfireMessage ? " is-open" : ""}`}
             role="status"
             aria-live="polite"
             aria-hidden={!campfireMessage}
           >
             <span>Rest Here Traveler</span>
-            <button type="button" onClick={copyEmail} className="game-campfire-copy" disabled={!campfireMessage} tabIndex={campfireMessage ? 0 : -1}>Copy email</button>
           </div>
         </div>
       </div>
