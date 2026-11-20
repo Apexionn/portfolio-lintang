@@ -44,7 +44,6 @@ const MOUNTAIN_PROFILES = [
 ];
 
 const HILL_PROFILE = [[0, 0], [0.12, 0.34], [0.27, 0.2], [0.43, 0.4], [0.58, 0.26], [0.75, 0.36], [0.9, 0.24], [1, 0]];
-const FOREGROUND_PROFILE = [[0, 0], [0.09, 0.2], [0.18, 0.36], [0.25, 0.29], [0.36, 0.53], [0.44, 0.32], [0.55, 0.43], [0.66, 0.18], [0.78, 0.49], [0.86, 0.31], [0.94, 0.38], [1, 0]];
 
 const BARD_WIDTH = 24;
 const BARD_HEIGHT = 32;
@@ -100,6 +99,13 @@ function mixHex(a, b, amount) {
   const to = Number.parseInt(b.slice(1), 16);
   const channel = (shift) => Math.round(((from >> shift) & 255) + (((to >> shift) & 255) - ((from >> shift) & 255)) * amount);
   return `#${[16, 8, 0].map((shift) => channel(shift).toString(16).padStart(2, "0")).join("")}`;
+}
+
+function stableNoise(index, seed = 0) {
+  let value = Math.imul(index ^ seed, 0x45d9f3b);
+  value = Math.imul(value ^ (value >>> 16), 0x45d9f3b);
+  value = Math.imul(value ^ (value >>> 16), 0x45d9f3b);
+  return ((value ^ (value >>> 16)) >>> 0) / 4294967296;
 }
 
 function themeAt(worldX) {
@@ -178,8 +184,8 @@ function drawCloud(ctx, x, y, variant = 0) {
   pixel(ctx, x + 5, y + 9, 18, 1, "#c3d0cb");
 }
 
-function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, detail = 2, snow = true, profileOverride = null) {
-  const profile = profileOverride || MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
+function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, detail = 2, snow = true) {
+  const profile = MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
   const peakPoints = profile.map(([position, rise]) => [x + position * width, baseY - rise * height]);
   const terrainBottom = ctx.canvas.height;
   fillPoly(ctx, [[x, terrainBottom], ...peakPoints, [x + width, terrainBottom]], color);
@@ -201,11 +207,25 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
       if (detail > 0 && rise < 0.5) return;
       const lightAmount = detail === 0 ? 0.07 : detail === 1 ? 0.12 : 0.2;
       const shadeAmount = detail === 0 ? 0.1 : detail === 1 ? 0.18 : 0.28;
-      fillPoly(ctx, [[previousX, previousY], [summitX, summitY], [summitX, terrainBottom], [previousX, terrainBottom]], mixHex(color, "#d8d6c9", lightAmount));
-      fillPoly(ctx, [[summitX, summitY], [nextX, nextY], [nextX, terrainBottom], [summitX, terrainBottom]], mixHex(color, "#1c2934", shadeAmount));
+      const leftDx = summitX - previousX;
+      const leftDy = summitY - previousY;
+      const rightDx = nextX - summitX;
+      const rightDy = nextY - summitY;
+      fillPoly(ctx, [
+        [previousX + leftDx * 0.08, previousY + leftDy * 0.08],
+        [summitX, summitY],
+        [previousX + leftDx * 0.6, previousY + leftDy * 0.6],
+        [previousX + leftDx * 0.26, previousY + leftDy * 0.47],
+      ], mixHex(color, "#d8d6c9", lightAmount));
+      fillPoly(ctx, [
+        [summitX, summitY],
+        [summitX + rightDx * 0.86, summitY + rightDy * 0.86],
+        [summitX + rightDx * 0.63, summitY + rightDy * 0.63],
+        [summitX + rightDx * 0.22, summitY + rightDy * 0.42],
+      ], mixHex(color, "#1c2934", shadeAmount));
 
       if (detail > 0) {
-        const cluster = Math.max(2, Math.round(width * (detail === 1 ? 0.008 : 0.014)));
+        const cluster = Math.max(2, Math.round(width * (detail === 1 ? 0.004 : 0.006)));
         const leftFaceX = previousX + (summitX - previousX) * 0.58;
         const leftFaceY = previousY + (summitY - previousY) * 0.58;
         const rightFaceX = summitX + (nextX - summitX) * 0.48;
@@ -216,14 +236,18 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
 
         pixel(ctx, leftFaceX - cluster, leftFaceY, cluster * 1.5, Math.max(2, cluster * 0.3), rockLight);
         pixel(ctx, leftFaceX + cluster * 0.25, leftFaceY + cluster * 0.7, cluster, 2, rockMid);
+        const ledgeX = previousX + (summitX - previousX) * 0.7;
+        const ledgeY = previousY + (summitY - previousY) * 0.7;
+        pixel(ctx, ledgeX, ledgeY, cluster * 1.6, 2, rockLight);
+        pixel(ctx, ledgeX + cluster * 0.25, ledgeY + 2, cluster, 1, rockMid);
         pixel(ctx, rightFaceX, rightFaceY, cluster * 1.35, 2, rockShade);
         pixel(ctx, rightFaceX + cluster * 0.6, rightFaceY + 3, 1, Math.max(3, cluster * 0.75), rockShade);
         pixel(ctx, rightFaceX + cluster * 1.1, rightFaceY + cluster * 0.9, cluster * 0.9, 2, rockMid);
       }
 
-      if (snow && rise >= 0.76) {
-        const shoulderY = baseY - rise * height * 0.73;
-        const capSide = width * (rise > 0.84 ? 0.012 : 0.009);
+      if (snow && rise >= 0.82) {
+        const shoulderY = baseY - rise * height * 0.82;
+        const capSide = width * (rise > 0.87 ? 0.008 : 0.006);
         fillPoly(ctx, [
           [summitX - capSide * 1.8, shoulderY],
           [summitX - capSide * 1.2, shoulderY - height * 0.04],
@@ -234,8 +258,8 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
           [summitX + capSide * 0.76, shoulderY - height * 0.12],
           [summitX + capSide * 1.08, shoulderY + height * 0.04],
           [summitX + capSide * 1.7, shoulderY],
-        ], "#d8ded8");
-        pixel(ctx, summitX - capSide * 1.1, shoulderY + 2, capSide * 0.8, 2, "#b8c7c8");
+        ], "#cbd5d1");
+        pixel(ctx, summitX - capSide * 1.1, shoulderY + 2, capSide * 0.8, 2, "#aebfc0");
       }
     } else if (isValley && detail > 0) {
       const valleyX = x + position * width;
@@ -255,20 +279,151 @@ function drawHillRange(ctx, x, baseY, width, height, color) {
   fillPoly(ctx, [[x, ctx.canvas.height], ...points, [x + width, ctx.canvas.height]], color);
 }
 
-function drawTree(ctx, x, baseY, scale, palette, pine = true) {
+function drawPineTier(ctx, centerX, topY, width, unit, palette, variant) {
+  const rows = [0.28, 0.44, 0.62, 0.79, 0.94, 1, 0.9, 0.73, 0.5];
+  rows.forEach((proportion, row) => {
+    const rowWidth = width * proportion;
+    const uneven = ((row + variant) % 3 - 1) * unit * 0.55;
+    const left = centerX - rowWidth / 2 + uneven;
+    const y = topY + row * unit * 1.65;
+    pixel(ctx, left, y + unit * 0.5, rowWidth, unit * 1.8, palette[0]);
+    pixel(ctx, left + unit, y, Math.max(unit, rowWidth - unit * 2), unit * 1.6, palette[1]);
+    if (row < 6) {
+      const highlightX = left + rowWidth * (0.16 + (variant % 2) * 0.08);
+      pixel(ctx, highlightX, y, Math.max(unit, rowWidth * 0.28), unit, palette[2]);
+    }
+  });
+}
+
+function drawLeafMass(ctx, centerX, topY, width, unit, palette, variant = 0) {
+  const rows = [0.38, 0.63, 0.84, 1, 0.94, 0.76, 0.51];
+  rows.forEach((proportion, row) => {
+    const rowWidth = width * proportion;
+    const irregular = ((row * 2 + variant) % 3 - 1) * unit * 0.65;
+    const left = centerX - rowWidth / 2 + irregular;
+    const y = topY + row * unit * 1.8;
+    pixel(ctx, left, y + unit * 0.5, rowWidth, unit * 2, palette[0]);
+    pixel(ctx, left + unit, y, Math.max(unit, rowWidth - unit * 2), unit * 1.6, palette[1]);
+    if (row < 5) {
+      const shineWidth = Math.max(unit, rowWidth * (row % 2 ? 0.22 : 0.32));
+      pixel(ctx, left + rowWidth * 0.17, y, shineWidth, unit, palette[2]);
+    }
+    if (row === 3 || row === 4) {
+      pixel(ctx, left + rowWidth * 0.66, y + unit, rowWidth * 0.2, unit, palette[0]);
+    }
+  });
+}
+
+function drawTree(ctx, x, baseY, scale, palette, pine = true, variant = 0) {
   const unit = scale;
-  pixel(ctx, x + 9 * unit, baseY - 11 * unit, 5 * unit, 12 * unit, "#574638");
+  const trunkX = x + (pine ? 10 : 10 + (variant % 2)) * unit;
+  const trunkWidth = (pine ? 4 : 5) * unit;
+  const crownHeight = (pine ? 43 : 39 + (variant % 3) * 3) * unit;
+  const crownTop = baseY - crownHeight;
+  const bark = "#574638";
+  const barkLight = "#866348";
+
+  pixel(ctx, trunkX, crownTop + crownHeight * (pine ? 0.32 : 0.48), trunkWidth, baseY - (crownTop + crownHeight * (pine ? 0.32 : 0.48)), bark);
+  pixel(ctx, trunkX + unit, crownTop + crownHeight * (pine ? 0.36 : 0.52), unit, baseY - (crownTop + crownHeight * (pine ? 0.36 : 0.52)), barkLight);
+
   if (pine) {
-    pixel(ctx, x + 4 * unit, baseY - 20 * unit, 15 * unit, 5 * unit, palette[0]);
-    pixel(ctx, x + 6 * unit, baseY - 28 * unit, 11 * unit, 7 * unit, palette[1]);
-    pixel(ctx, x + 8 * unit, baseY - 35 * unit, 7 * unit, 7 * unit, palette[2]);
-    pixel(ctx, x + 10 * unit, baseY - 40 * unit, 3 * unit, 6 * unit, palette[2]);
-    pixel(ctx, x + 8 * unit, baseY - 25 * unit, 3 * unit, 3 * unit, "#7d9662");
-  } else {
-    pixel(ctx, x + 4 * unit, baseY - 30 * unit, 16 * unit, 12 * unit, palette[0]);
-    pixel(ctx, x + 1 * unit, baseY - 24 * unit, 22 * unit, 9 * unit, palette[1]);
-    pixel(ctx, x + 6 * unit, baseY - 35 * unit, 12 * unit, 9 * unit, palette[2]);
-    pixel(ctx, x + 3 * unit, baseY - 18 * unit, 6 * unit, 4 * unit, palette[2]);
+    const centerX = trunkX + trunkWidth / 2;
+    const tierGap = 10 * unit;
+    const tierWidths = [13, 18 + (variant % 2) * 2, 23 + (variant % 3) * 2];
+    for (let tier = 0; tier < 3; tier++) {
+      const tierTop = crownTop + tier * tierGap;
+      const tierWidth = tierWidths[tier] * unit;
+      const branchY = tierTop + 9 * unit;
+      pixel(ctx, centerX - tierWidth * 0.34, branchY, tierWidth * 0.34, unit, barkLight);
+      pixel(ctx, centerX, branchY + unit, tierWidth * 0.37, unit, bark);
+      drawPineTier(ctx, centerX, tierTop, tierWidth, unit, palette, variant + tier);
+    }
+    pixel(ctx, centerX - unit, baseY - 10 * unit, trunkWidth + 2 * unit, 2 * unit, barkLight);
+    return;
+  }
+
+  const centerX = trunkX + trunkWidth / 2;
+  const branchStart = crownTop + crownHeight * 0.78;
+  pixel(ctx, centerX - 6 * unit, branchStart + 7 * unit, 7 * unit, 2 * unit, barkLight);
+  pixel(ctx, centerX - 6 * unit, branchStart + 3 * unit, 2 * unit, 5 * unit, bark);
+  pixel(ctx, centerX + 2 * unit, branchStart + 4 * unit, 7 * unit, 2 * unit, barkLight);
+  pixel(ctx, centerX + 7 * unit, branchStart, 2 * unit, 6 * unit, bark);
+  pixel(ctx, centerX - 2 * unit, crownTop + crownHeight * 0.48, 2 * unit, 7 * unit, barkLight);
+
+  const lobes = [
+    [-8, 10, 15, 0], [-1, 2, 18, 1], [8, 9, 16, 2],
+    [-7, 19, 17, 1], [2, 20, 18, 0], [10, 18, 14, 2],
+  ];
+  lobes.forEach(([offsetX, offsetY, width, lobeVariant], index) => {
+    drawLeafMass(ctx, centerX + (offsetX + ((variant + index) % 2)) * unit,
+      crownTop + (offsetY + ((variant + index) % 3 === 0 ? 1 : 0)) * unit,
+      width * unit, unit, palette, variant + lobeVariant);
+  });
+}
+
+function drawGrassTuft(ctx, centerX, surfaceY, scale, colors, variant = 0) {
+  const unit = scale;
+  pixel(ctx, centerX - 5 * unit, surfaceY - unit, 12 * unit, 2 * unit, colors[0]);
+  pixel(ctx, centerX - 3 * unit, surfaceY - 2 * unit, 8 * unit, unit, colors[1]);
+  const blades = [
+    [-4, 5 + (variant % 2), -1, 2], [-2, 3 + (variant % 3), -1, 1],
+    [0, 6, 0, 2], [2, 4 + ((variant + 1) % 3), 1, 1], [4, 3 + (variant % 2), 1, 2],
+  ];
+  blades.forEach(([offset, height, bend, tone], index) => {
+    const x = centerX + offset * unit;
+    const bladeColor = tone === 2 ? colors[2] : colors[1];
+    pixel(ctx, x, surfaceY - height * unit, 1.5 * unit, height * unit, bladeColor);
+    if (bend) pixel(ctx, x + bend * unit, surfaceY - (height + 1) * unit, 1.5 * unit, unit, index % 2 ? colors[2] : colors[1]);
+  });
+}
+
+function drawGround(ctx, cameraX, width, viewportHeight, groundY, groundColor, reducedDetails) {
+  const surfaceY = groundY - 10;
+  const groundGradient = ctx.createLinearGradient(0, surfaceY, 0, viewportHeight);
+  groundGradient.addColorStop(0, mixHex(groundColor, "#a39162", 0.2));
+  groundGradient.addColorStop(1, mixHex(groundColor, "#332f32", 0.42));
+  ctx.fillStyle = groundGradient;
+  ctx.fillRect(0, surfaceY, width, viewportHeight - surfaceY);
+  pixel(ctx, 0, surfaceY, width, 2, mixHex(groundColor, "#89956a", 0.38));
+
+  const grassColors = [
+    mixHex(groundColor, "#283c35", 0.45),
+    mixHex(groundColor, "#78965c", 0.46),
+    mixHex(groundColor, "#b3ad68", 0.42),
+  ];
+  const firstTuft = Math.floor(cameraX / 39) - 1;
+  const lastTuft = Math.ceil((cameraX + width) / 39) + 1;
+  for (let index = firstTuft; index <= lastTuft; index++) {
+    const noise = stableNoise(index, 41);
+    const x = index * 39 + 7 + noise * 18 - cameraX;
+    const surface = surfaceY + 1 + (stableNoise(index, 12) > 0.72 ? 1 : 0);
+    if (noise > 0.16) drawGrassTuft(ctx, x, surface, 0.72 + stableNoise(index, 72) * 0.34, grassColors, index);
+
+    if (reducedDetails) continue;
+    if (noise > 0.78) {
+      const shrubX = x + 13;
+      const shrubY = surfaceY - 2;
+      const smallPalette = [grassColors[0], grassColors[1], grassColors[2]];
+      drawLeafMass(ctx, shrubX - 3, shrubY - 4, 8, 0.7, smallPalette, index);
+      drawLeafMass(ctx, shrubX + 3, shrubY - 3, 8, 0.7, smallPalette, index + 1);
+    } else if (noise < 0.08) {
+      pixel(ctx, x + 1, surfaceY + 7, 4, 2, mixHex(groundColor, "#aa8960", 0.28));
+      pixel(ctx, x + 4, surfaceY + 9, 3, 1, mixHex(groundColor, "#c0a171", 0.22));
+    }
+
+    const detailRoll = stableNoise(index, 93);
+    if (detailRoll < 0.18) {
+      const rockX = x + (detailRoll > 0.09 ? -9 : 10);
+      const rockColor = mixHex(groundColor, "#c1b28a", 0.2);
+      pixel(ctx, rockX, surfaceY + 5, 4, 2, mixHex(rockColor, "#383a39", 0.24));
+      pixel(ctx, rockX + 1, surfaceY + 4, 2, 1, rockColor);
+    } else if (detailRoll > 0.88) {
+      pixel(ctx, x + 8, surfaceY + 5, 2, 3, "#728e56");
+      pixel(ctx, x + 7, surfaceY + 4, 2, 2, "#d3b56c");
+    } else if (detailRoll < 0.35) {
+      pixel(ctx, x + 8, surfaceY + 8, 4, 1, mixHex(groundColor, "#b29468", 0.2));
+      pixel(ctx, x + 11, surfaceY + 9, 3, 1, mixHex(groundColor, "#6d5949", 0.18));
+    }
   }
 }
 
@@ -346,10 +501,10 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
     const xAt = (offset) => Math.round(start + offset - cameraX);
     const base = groundY - 9;
     if (area === 0) {
-      [90, 265, 480, 660].forEach((offset, i) => drawTree(ctx, xAt(offset), base + (i % 2) * 3, 0.82 + (i % 3) * 0.12, ["#24463f", "#31594b", "#426a50"]));
+      [90, 265, 480, 660].forEach((offset, i) => drawTree(ctx, xAt(offset), base + (i % 2) * 3, 0.82 + (i % 3) * 0.12, ["#24463f", "#31594b", "#78905a"], true, i));
       drawHouse(ctx, xAt(550), base, 0.6, "#94876d", "#664943");
     } else if (area === 1) {
-      [110, 360, 620].forEach((offset, i) => drawTree(ctx, xAt(offset), base, 1.22 + i * 0.12, ["#283f50", "#3f5a64", "#536e70"], false));
+      [110, 360, 620].forEach((offset, i) => drawTree(ctx, xAt(offset), base, 1.05 + i * 0.13, ["#283f50", "#3f5a64", "#71817a"], false, i + 1));
       if (!reducedDetails) {
         drawMushroom(ctx, xAt(245), base - 5, "#bc7773", 1.2);
         drawMushroom(ctx, xAt(285), base - 2, "#d9a65e", 0.9);
@@ -359,12 +514,16 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
         pixel(ctx, xAt(466), base - 2, 118, 2, "#b38c5c");
       }
     } else if (area === 2) {
+      [70, 665].forEach((offset, i) => drawTree(ctx, xAt(offset), base, 0.78 + i * 0.12, ["#354a40", "#53664c", "#899264"], true, i + 2));
       drawRuin(ctx, xAt(145), base, 0.9);
       drawRuin(ctx, xAt(470), base + 2, 0.72);
       pixel(ctx, xAt(300), base - 8, 38, 8, "#8b8b7b");
       pixel(ctx, xAt(313), base - 24, 9, 18, "#8b8b7b");
       pixel(ctx, xAt(326), base - 17, 8, 11, "#8b8b7b");
     } else if (area === 3) {
+      [[46, 0.78, true], [278, 0.84, false], [710, 0.78, true]].forEach(([offset, scale, pine], i) => {
+        drawTree(ctx, xAt(offset), base, scale, ["#354b3e", "#586b48", "#8e9860"], pine, i + 1);
+      });
       drawHouse(ctx, xAt(105), base, 0.72, "#a99875", "#714e45");
       drawHouse(ctx, xAt(365), base + 2, 0.86, "#b0a17e", "#596254");
       drawHouse(ctx, xAt(625), base, 0.64, "#9b8c70", "#76554a");
@@ -379,6 +538,9 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
         for (let fence = 0; fence < 8; fence++) pixel(ctx, xAt(55 + fence * 75), base - 14, 3, 14, "#806348");
       }
     } else if (area === 4) {
+      [[92, 0.78, true], [230, 0.7, false], [625, 0.82, true]].forEach(([offset, scale, pine], i) => {
+        drawTree(ctx, xAt(offset), base, scale, ["#333c45", "#4b5d56", "#82896a"], pine, i + 2);
+      });
       drawTower(ctx, xAt(338), base, 1.05);
       if (!reducedDetails) {
         [[260, -58], [540, -73], [605, -45]].forEach(([offset, rise], i) => {
@@ -388,6 +550,9 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
         });
       }
     } else {
+      [[68, 0.78, true], [246, 0.72, true], [720, 0.84, false]].forEach(([offset, scale, pine], i) => {
+        drawTree(ctx, xAt(offset), base, scale, ["#354b42", "#58664e", "#96946a"], pine, i);
+      });
       drawCastle(ctx, xAt(420), base, 0.9);
       drawCampfire(ctx, xAt(600), base, 0);
       pixel(ctx, xAt(555), base - 3, 22, 3, "#584a42");
@@ -497,7 +662,7 @@ export default function AdventureWorld() {
       const distantEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.1 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = distantStart; area <= distantEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.1;
-        const hazeColor = mixHex(AREAS[area].far, centerTheme.sky[1], 0.48);
+        const hazeColor = mixHex(centerTheme.far, centerTheme.sky[1], 0.48);
         drawMountainRange(context, x, groundY - 112, AREA_WIDTH + 8, 66, hazeColor, area + 2, 0, false);
       }
 
@@ -505,38 +670,20 @@ export default function AdventureWorld() {
       const mainEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.22 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = mainStart; area <= mainEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.22;
-        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, AREAS[area].far, area, 2, true);
-        drawHillRange(context, x, groundY - 27, AREA_WIDTH + 8, 28, AREAS[area].hills);
+        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, centerTheme.far, area, 2, true);
+        drawHillRange(context, x, groundY - 27, AREA_WIDTH + 8, 28, centerTheme.hills);
       }
 
       const foregroundStart = Math.max(0, Math.floor((cameraX * 0.38) / AREA_WIDTH) - 1);
       const foregroundEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.38 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = foregroundStart; area <= foregroundEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.38;
-        const rockColor = mixHex(AREAS[area].hills, "#26383c", 0.38);
-        drawMountainRange(context, x, groundY - 4, AREA_WIDTH + 8, 52, rockColor, area + 4, 2, false, FOREGROUND_PROFILE);
+        const rockColor = mixHex(centerTheme.hills, "#26383c", 0.38);
+        drawMountainRange(context, x, groundY - 4, AREA_WIDTH + 8, 52, rockColor, area + 4, 2, false);
       }
 
       drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails);
-
-      const groundGradient = context.createLinearGradient(0, groundY - 16, 0, viewportHeight);
-      groundGradient.addColorStop(0, centerTheme.ground);
-      groundGradient.addColorStop(1, mixHex(centerTheme.ground, "#26383c", 0.46));
-      context.fillStyle = groundGradient;
-      context.fillRect(0, groundY - 10, viewportWidth, viewportHeight - groundY + 10);
-      pixel(context, 0, groundY - 11, viewportWidth, 4, "#82925e");
-      pixel(context, 0, groundY - 7, viewportWidth, 3, "#b39a68");
-      pixel(context, 0, groundY - 4, viewportWidth, 27, "#806849");
-      pixel(context, 0, groundY - 4, viewportWidth, 3, "#9a8059");
-
-      const grassStart = Math.floor(cameraX / 47) - 1;
-      const grassEnd = Math.ceil((cameraX + viewportWidth) / 47) + 1;
-      for (let i = grassStart; i <= grassEnd; i++) {
-        const x = i * 47 - cameraX;
-        pixel(context, x, groundY - 14 - (i % 3) * 2, 2, 5, "#a0a96a");
-        pixel(context, x + 4, groundY - 12, 2, 4, "#708b55");
-        if (!reducedDetails && i % 4 === 0) pixel(context, x + 8, groundY + 12, 2, 2, "#d5bd79");
-      }
+      drawGround(context, cameraX, viewportWidth, viewportHeight, groundY, centerTheme.ground, reducedDetails);
 
       const playerScreenBias = viewportWidth < 230 ? 45 : 0;
       const characterScale = reducedDetails ? 0.72 : 0.84;
