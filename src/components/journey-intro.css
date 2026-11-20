@@ -191,7 +191,7 @@
 @keyframes journey-caption-in { from { opacity:0; } to { opacity:1; } }
 @media (max-width:700px) {
   .journey-map-art { width:auto; min-width:100%; left:50%; transform:translateX(-50%); }
-  .journey-heading { top:max(20px, env(safe-area-inset-top)); width:88vw; }
+  .journey-heading { top:max(44px, calc(env(safe-area-inset-top) + 24px)); width:88vw; }
   .journey-heading h1 { font-size:clamp(32px, 10vw, 52px); }
   .journey-kicker { font-size:8px; letter-spacing:.13em; }
   .journey-subtitle { font-size:15px; margin-top:6px; }
