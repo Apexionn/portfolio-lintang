@@ -73,7 +73,8 @@
 .journey-heading h1 {
   margin: 4px 0 0;
   font: 400 clamp(32px, 5.1vw, 66px)/.98 'IM Fell English', Georgia, serif;
-  letter-spacing: -.035em;
+  letter-spacing: -.015em;
+  word-spacing: .1em;
   color: #3f3025;
 }
 .journey-subtitle { margin: 9px 0 0; font: italic 17px/1.25 'IM Fell English', Georgia, serif; color:#70533a; }

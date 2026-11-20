@@ -461,7 +461,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
       </div>
       <div className="journey-heading" aria-live="off">
         <p className="journey-kicker">A PERSONAL ADVENTURE · CHAPTER I</p>
-        <h1>The Bard’s Journey</h1>
+        <h1>Lintang Journey</h1>
         <p className="journey-subtitle">An adventure begins with a single step.</p>
         <span className="journey-rule" aria-hidden="true"><i /></span>
       </div>
@@ -487,7 +487,7 @@ export default function JourneyIntro({ onEnter, short = false }) {
   }, []);
 
   return (
-    <section ref={rootRef} className={`journey-intro ${isReduced ? "journey-static" : ""}`} aria-label="The Bard's Journey introduction">
+    <section ref={rootRef} className={`journey-intro ${isReduced ? "journey-static" : ""}`} aria-label="Lintang Journey introduction">
       <FantasyMap reduced={isReduced} short={short} onEnter={onEnter} rootRef={rootRef} skipRef={skipRef} />
       <button ref={skipRef} type="button" className="journey-skip">{isReduced ? "Enter the portfolio" : "Skip intro"}<span className="journey-skip-arrow" aria-hidden="true"> ↗</span></button>
       <p className="journey-sr-only" aria-live="polite">{isReduced ? "Static fantasy map. Enter the portfolio when ready." : "The Bard is traveling across the map toward Emberfall Keep."}</p>
