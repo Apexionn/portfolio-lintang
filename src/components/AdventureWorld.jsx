@@ -2,6 +2,14 @@ import { useEffect, useRef } from "react";
 
 const AREA_WIDTH = 620;
 const SECTION_IDS = ["hero", "about", "work", "experience", "arsenal", "contact"];
+const FINAL_SCENE = {
+  areaIndex: 5,
+  sunHeight: 143,
+  sunRadius: 16,
+  arrivalDuration: 1500,
+  arrivalDistance: 54,
+  ambientRadius: 92,
+};
 const PALETTE = {
   transparent: null,
   outline: "#302d38",
@@ -120,7 +128,7 @@ function themeAt(worldX) {
   }));
 }
 
-function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale = 1) {
+function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale = 1, waving = false) {
   const spriteWidth = BARD_WIDTH * scale;
   ctx.save();
   ctx.translate(Math.round(x), Math.round(groundY - BARD_HEIGHT * scale));
@@ -172,7 +180,59 @@ function drawBard(ctx, x, groundY, direction, animation, frame, idleBeat, scale 
 
   const limbs = animation === "walk" ? LIMB_FRAMES[frame % LIMB_FRAMES.length] : IDLE_FRAMES[idleBeat % IDLE_FRAMES.length];
   limbs.forEach(([px, py, width, height, color]) => pixel(ctx, px, py, width, height, PALETTE[color]));
+  if (waving) {
+    pixel(ctx, 18, 14, 4, 3, PALETTE.forestShade);
+    pixel(ctx, 20, 11, 3, 5, PALETTE.skin);
+    pixel(ctx, 21, 8, 2, 4, PALETTE.skin);
+    pixel(ctx, 22, 6, 2, 3, PALETTE.skinShade);
+  }
   ctx.restore();
+}
+
+function drawFinalSky(ctx, width, height, time, animated) {
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, "#1c2742");
+  gradient.addColorStop(0.38, "#413d5d");
+  gradient.addColorStop(0.67, "#80566c");
+  gradient.addColorStop(0.86, "#c47b68");
+  gradient.addColorStop(1, "#e9a071");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, width, height);
+
+  for (let star = 0; star < 22; star++) {
+    const x = 12 + stableNoise(star, 811) * Math.max(1, width - 24);
+    const y = 10 + stableNoise(star, 177) * Math.max(1, height * 0.35);
+    const twinkle = animated ? 0.45 + (Math.sin(time * 0.0012 + star * 2.1) + 1) * 0.22 : 0.66;
+    ctx.globalAlpha = twinkle;
+    pixel(ctx, x, y, star % 5 === 0 ? 2 : 1, star % 5 === 0 ? 2 : 1, "#f3dfbf");
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawSettingSun(ctx, width, groundY) {
+  const sunX = Math.round(width * 0.55);
+  const sunY = Math.round(groundY - FINAL_SCENE.sunHeight);
+  const halo = ctx.createRadialGradient(sunX, sunY, 2, sunX, sunY, FINAL_SCENE.ambientRadius);
+  halo.addColorStop(0, "rgba(255, 205, 137, .38)");
+  halo.addColorStop(0.52, "rgba(245, 157, 117, .17)");
+  halo.addColorStop(1, "rgba(245, 157, 117, 0)");
+  ctx.fillStyle = halo;
+  ctx.fillRect(sunX - FINAL_SCENE.ambientRadius, sunY - FINAL_SCENE.ambientRadius, FINAL_SCENE.ambientRadius * 2, FINAL_SCENE.ambientRadius * 2);
+
+  const rows = [8, 14, 20, 26, 32, 36, 38, 38, 38, 38, 36, 32, 26, 20, 14, 8];
+  rows.forEach((span, row) => pixel(ctx, sunX - span / 2, sunY - FINAL_SCENE.sunRadius / 2 + row, span, 1, row < 3 ? "#fff0bc" : row > 8 ? "#eda76e" : "#ffda91"));
+
+}
+
+function drawBirds(ctx, width, time, animated) {
+  const drift = animated ? (time * 0.004) % Math.max(1, width + 80) : 0;
+  [0, 1].forEach((bird) => {
+    const x = Math.round((width + 40 - drift + bird * 54) % (width + 80));
+    const y = Math.round(38 + bird * 18);
+    pixel(ctx, x, y, 3, 1, "#303247");
+    pixel(ctx, x + 3, y - 1, 2, 1, "#303247");
+    pixel(ctx, x + 5, y, 3, 1, "#303247");
+  });
 }
 
 function drawCloud(ctx, x, y, variant = 0) {
@@ -184,7 +244,7 @@ function drawCloud(ctx, x, y, variant = 0) {
   pixel(ctx, x + 5, y + 9, 18, 1, "#c3d0cb");
 }
 
-function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, detail = 2, snow = true) {
+function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, detail = 2, snow = true, rimLight = false) {
   const profile = MOUNTAIN_PROFILES[profileIndex % MOUNTAIN_PROFILES.length];
   const peakPoints = profile.map(([position, rise]) => [x + position * width, baseY - rise * height]);
   const terrainBottom = ctx.canvas.height;
@@ -202,6 +262,15 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
     const nextY = baseY - next[1] * height;
     const isPeak = rise > previous[1] && rise > next[1];
     const isValley = rise < previous[1] && rise < next[1];
+
+    if (rimLight && rise > previous[1]) {
+      ctx.strokeStyle = "rgba(247, 184, 133, .42)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(Math.round(previousX), Math.round(previousY));
+      ctx.lineTo(Math.round(summitX), Math.round(summitY));
+      ctx.stroke();
+    }
 
     if (isPeak) {
       if (detail > 0 && rise < 0.5) return;
@@ -632,7 +701,7 @@ function drawTower(ctx, x, baseY, scale = 1) {
   pixel(ctx, x + 27 * unit, baseY - 9 * unit, unit, unit, "#ebc675");
 }
 
-function drawCastleTower(ctx, x, baseY, scale, width, height, palette, variant = 0) {
+function drawCastleTower(ctx, x, baseY, scale, width, height, palette, variant = 0, windowLight = "#d8b36e") {
   const unit = scale;
   const topY = baseY - height * unit;
   drawMasonry(ctx, x, topY, width * unit, height * unit, unit, palette, variant);
@@ -640,11 +709,11 @@ function drawCastleTower(ctx, x, baseY, scale, width, height, palette, variant =
     outline: "#353943", roof: variant ? "#5e4e50" : "#4c4e59", roofLight: "#91817a",
     roofShade: "#393c45", roofTile: "#76645d",
   });
-  drawHouseWindow(ctx, x + width * 0.48 * unit, topY + 13 * unit, unit, "#343943", "#d8b36e");
-  drawHouseWindow(ctx, x + width * 0.48 * unit, topY + 29 * unit, unit, "#343943", "#d8b36e");
+  drawHouseWindow(ctx, x + width * 0.48 * unit, topY + 13 * unit, unit, "#343943", windowLight);
+  drawHouseWindow(ctx, x + width * 0.48 * unit, topY + 29 * unit, unit, "#343943", windowLight);
 }
 
-function drawCastle(ctx, x, baseY, scale = 1) {
+function drawCastle(ctx, x, baseY, scale = 1, windowLight = "#edc67b") {
   const unit = scale;
   const palette = { ...STONE_PALETTE, base: "#737985", light: "#a4a39c", shadow: "#505663", mortar: "#4a4e59" };
   drawMasonry(ctx, x + 3 * unit, baseY - 9 * unit, 90 * unit, 9 * unit, unit, palette, 0);
@@ -653,8 +722,8 @@ function drawCastle(ctx, x, baseY, scale = 1) {
     pixel(ctx, x + (18 + merlon * 13) * unit, baseY - 46 * unit, 7 * unit, 8 * unit, palette.outline);
     pixel(ctx, x + (19 + merlon * 13) * unit, baseY - 45 * unit, 5 * unit, 7 * unit, palette.base);
   }
-  drawCastleTower(ctx, x + 2 * unit, baseY, scale, 23, 51, palette, 0);
-  drawCastleTower(ctx, x + 67 * unit, baseY, scale, 23, 46, palette, 1);
+  drawCastleTower(ctx, x + 2 * unit, baseY, scale, 23, 51, palette, 0, windowLight);
+  drawCastleTower(ctx, x + 67 * unit, baseY, scale, 23, 46, palette, 1, windowLight);
 
   pixel(ctx, x + 39 * unit, baseY - 23 * unit, 16 * unit, 24 * unit, "#343841");
   pixel(ctx, x + 42 * unit, baseY - 26 * unit, 10 * unit, 4 * unit, "#343841");
@@ -714,15 +783,60 @@ function drawElderVillager(ctx, x, baseY, scale = 1) {
   pixel(ctx, x + 19 * unit, baseY - 18 * unit, 2 * unit, 2 * unit, "#896c4e");
 }
 
-function drawCampfire(ctx, x, baseY, beat = 0) {
+function drawCampfire(ctx, x, baseY, beat = 0, { time = 0, animated = false, bright = false } = {}) {
+  const flicker = animated ? (Math.sin(time * 0.012) + 1) * 0.5 : 0.45;
+  const glow = ctx.createRadialGradient(x + 13, baseY - 8, 2, x + 13, baseY - 8, FINAL_SCENE.ambientRadius * (bright ? 1.06 : 0.78));
+  glow.addColorStop(0, `rgba(255, 176, 92, ${bright ? 0.3 + flicker * 0.09 : 0.18 + flicker * 0.06})`);
+  glow.addColorStop(0.5, "rgba(236, 127, 74, .12)");
+  glow.addColorStop(1, "rgba(236, 127, 74, 0)");
+  ctx.fillStyle = glow;
+  ctx.fillRect(x - FINAL_SCENE.ambientRadius, baseY - FINAL_SCENE.ambientRadius, FINAL_SCENE.ambientRadius * 2, FINAL_SCENE.ambientRadius * 2);
+
   pixel(ctx, x + 2, baseY - 2, 22, 4, "#57463b");
   pixel(ctx, x + 7, baseY - 5, 14, 3, "#78513c");
-  pixel(ctx, x + 9, baseY - 11 - beat, 10, 9 + beat, "#e38c48");
-  pixel(ctx, x + 12, baseY - 15 - beat, 5, 8 + beat, "#f4ca69");
+  const flameBeat = animated ? Math.round(flicker * 2) : beat;
+  pixel(ctx, x + 9, baseY - 11 - flameBeat, bright ? 12 : 10, 9 + flameBeat, "#e38c48");
+  pixel(ctx, x + 12, baseY - 15 - flameBeat, 5, 8 + flameBeat, "#f4ca69");
   pixel(ctx, x + 13, baseY - 10, 3, 5, "#fff0ad");
+
+  if (animated) {
+    for (let spark = 0; spark < 4; spark++) {
+      const cycle = (time * (0.00034 + spark * 0.00004) + spark * 0.23) % 1;
+      const sparkX = x + 11 + Math.round(Math.sin(time * 0.002 + spark * 2) * (2 + spark)) - cycle * 5;
+      pixel(ctx, sparkX, baseY - 17 - cycle * (19 + spark * 3), 1, 1, spark % 2 ? "#ffcf7a" : "#fff0ad");
+    }
+    for (let puff = 0; puff < 3; puff++) {
+      const cycle = (time * 0.00012 + puff / 3) % 1;
+      const smokeX = x + 14 + Math.round(Math.sin(time * 0.0008 + puff) * 2);
+      pixel(ctx, smokeX, baseY - 22 - cycle * 24, 2, 1, "rgba(190, 190, 191, .48)");
+    }
+    for (let mote = 0; mote < 5; mote++) {
+      const phase = time * 0.00055 + mote * 1.7;
+      const moteX = x + 13 + Math.round(Math.cos(phase) * (25 + mote * 5));
+      const moteY = baseY - 9 + Math.round(Math.sin(phase * 1.4) * (12 + mote * 2));
+      ctx.globalAlpha = 0.48 + (Math.sin(phase * 2) + 1) * 0.22;
+      pixel(ctx, moteX, moteY, 1, 1, "#f7dc94");
+    }
+    ctx.globalAlpha = 1;
+  }
 }
 
-function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
+function drawFirelight(ctx, x, groundY, animated, time, bright) {
+  ctx.save();
+  ctx.translate(x, groundY - 13);
+  ctx.scale(1, 0.42);
+  const radius = FINAL_SCENE.ambientRadius * (bright ? 1.15 : 0.82);
+  const shimmer = animated ? (Math.sin(time * 0.006) + 1) * 0.5 : 0.4;
+  const light = ctx.createRadialGradient(0, 0, 2, 0, 0, radius);
+  light.addColorStop(0, `rgba(247, 164, 82, ${0.28 + shimmer * 0.06})`);
+  light.addColorStop(0.4, "rgba(229, 120, 70, .13)");
+  light.addColorStop(1, "rgba(229, 120, 70, 0)");
+  ctx.fillStyle = light;
+  ctx.fillRect(-radius, -radius, radius * 2, radius * 2);
+  ctx.restore();
+}
+
+function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails, time, decorativeActive, campfireBright) {
   const first = Math.max(0, Math.floor(cameraX / AREA_WIDTH) - 1);
   const last = Math.min(AREAS.length - 1, Math.floor((cameraX + width) / AREA_WIDTH) + 1);
   for (let area = first; area <= last; area++) {
@@ -776,15 +890,16 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
       [[68, 0.78, true], [246, 0.72, true], [720, 0.84, false]].forEach(([offset, scale, pine], i) => {
         drawTree(ctx, xAt(offset), base, scale, ["#354b42", "#58664e", "#96946a"], pine, i);
       });
-      drawCastle(ctx, xAt(420), base, 0.9);
-      drawCampfire(ctx, xAt(600), base, 0);
+      const windowLight = decorativeActive && Math.sin(time * 0.0017) > 0.86 ? "#fff0a9" : "#edc67b";
+      drawCastle(ctx, xAt(420), base, 0.9, windowLight);
+      drawCampfire(ctx, xAt(width < 230 ? 565 : 600), base, 0, { time, animated: decorativeActive, bright: campfireBright });
       pixel(ctx, xAt(555), base - 3, 22, 3, "#584a42");
     }
   }
 }
 
-function drawBardScene(ctx, x, groundY, direction, moving, frame, idleBeat, scale) {
-  drawBard(ctx, x, groundY, direction, moving ? "walk" : "idle", frame, idleBeat, scale);
+function drawBardScene(ctx, x, groundY, direction, moving, frame, idleBeat, scale, waving) {
+  drawBard(ctx, x, groundY, direction, moving ? "walk" : "idle", frame, idleBeat, scale, waving);
 }
 
 function getWorldX(scrollY, waypoints) {
@@ -823,6 +938,9 @@ export default function AdventureWorld() {
     let worldReadyEmitted = false;
     let characterEnterStartedAt = null;
     let characterEnterOffset = 0;
+    let contactVisible = false;
+    let contactArrivalStartedAt = null;
+    let contactArrivalComplete = false;
     let lastScrollAt = 0;
     let animationFrame = null;
     let resizeFrame = null;
@@ -878,7 +996,8 @@ export default function AdventureWorld() {
       if (document.visibilityState !== "visible") return;
       const reduced = reducedMotion.matches;
       const worldActive = document.body.classList.contains("hero-world-active");
-      if (worldActive && !reduced && !forceResizeRender && time - lastWorldFrame < 33) {
+      const frameInterval = contactVisible && !reduced ? 16 : 33;
+      if (worldActive && !reduced && !forceResizeRender && time - lastWorldFrame < frameInterval) {
         animationFrame = window.requestAnimationFrame(render);
         return;
       }
@@ -896,12 +1015,19 @@ export default function AdventureWorld() {
       else cameraX += (targetCamera - cameraX) * (1 - Math.exp(-delta * 7.5));
 
       const centerTheme = themeAt(currentWorldX);
-      const skyGradient = context.createLinearGradient(0, 0, 0, viewportHeight);
-      skyGradient.addColorStop(0, centerTheme.sky[0]);
-      skyGradient.addColorStop(0.63, centerTheme.sky[1]);
-      skyGradient.addColorStop(1, centerTheme.far);
-      context.fillStyle = skyGradient;
-      context.fillRect(0, 0, viewportWidth, viewportHeight);
+      const finalScene = currentWorldX >= FINAL_SCENE.areaIndex * AREA_WIDTH;
+      const decorativeActive = finalScene && contactVisible && !reduced && document.visibilityState === "visible";
+      const campfireBright = document.body.classList.contains("campfire-attuned");
+      if (finalScene) {
+        drawFinalSky(context, viewportWidth, viewportHeight, time, decorativeActive);
+      } else {
+        const skyGradient = context.createLinearGradient(0, 0, 0, viewportHeight);
+        skyGradient.addColorStop(0, centerTheme.sky[0]);
+        skyGradient.addColorStop(0.63, centerTheme.sky[1]);
+        skyGradient.addColorStop(1, centerTheme.far);
+        context.fillStyle = skyGradient;
+        context.fillRect(0, 0, viewportWidth, viewportHeight);
+      }
 
       const groundY = viewportHeight - 12;
       const cloudStart = Math.floor((cameraX * 0.1) / 245) - 1;
@@ -910,36 +1036,49 @@ export default function AdventureWorld() {
       for (let i = cloudStart; i <= cloudEnd; i++) {
         drawCloud(context, i * 245 - cameraX * 0.1 - cloudDrift, 24 + ((i * 37) % 38), Math.abs(i) % 2);
       }
+      if (finalScene && !reduced) drawBirds(context, viewportWidth, time, decorativeActive);
 
       const distantStart = Math.max(0, Math.floor((cameraX * 0.1) / AREA_WIDTH) - 1);
       const distantEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.1 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = distantStart; area <= distantEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.1;
         const hazeColor = mixHex(centerTheme.far, centerTheme.sky[1], 0.48);
-        drawMountainRange(context, x, groundY - 112, AREA_WIDTH + 8, 66, hazeColor, area + 2, 0, false);
+        drawMountainRange(context, x, groundY - 112, AREA_WIDTH + 8, 66, finalScene ? "#758093" : hazeColor, area + 2, 0, false, finalScene);
       }
+      if (finalScene) drawSettingSun(context, viewportWidth, groundY);
 
       const mainStart = Math.max(0, Math.floor((cameraX * 0.22) / AREA_WIDTH) - 1);
       const mainEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.22 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = mainStart; area <= mainEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.22;
-        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, centerTheme.far, area, 2, true);
-        drawHillRange(context, x, groundY - 27, AREA_WIDTH + 8, 28, centerTheme.hills);
+        drawMountainRange(context, x, groundY - 64, AREA_WIDTH + 8, 84, finalScene ? "#536277" : centerTheme.far, area, 2, true, finalScene);
+        drawHillRange(context, x, groundY - 27, AREA_WIDTH + 8, 28, finalScene ? "#455269" : centerTheme.hills);
       }
 
       const foregroundStart = Math.max(0, Math.floor((cameraX * 0.38) / AREA_WIDTH) - 1);
       const foregroundEnd = Math.min(AREAS.length - 1, Math.floor((cameraX * 0.38 + viewportWidth) / AREA_WIDTH) + 1);
       for (let area = foregroundStart; area <= foregroundEnd; area++) {
         const x = area * AREA_WIDTH - cameraX * 0.38;
-        const rockColor = mixHex(centerTheme.hills, "#26383c", 0.38);
-        drawMountainRange(context, x, groundY - 4, AREA_WIDTH + 8, 52, rockColor, area + 4, 2, false);
+        const rockColor = finalScene ? "#344358" : mixHex(centerTheme.hills, "#26383c", 0.38);
+        drawMountainRange(context, x, groundY - 4, AREA_WIDTH + 8, 52, rockColor, area + 4, 2, false, finalScene);
       }
 
-      drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails);
+      drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails, time, decorativeActive, campfireBright);
       drawGround(context, cameraX, viewportWidth, viewportHeight, groundY, centerTheme.ground, reducedDetails);
+      if (finalScene) drawFirelight(context, 5 * AREA_WIDTH + (viewportWidth < 230 ? 565 : 600) - cameraX + 13, groundY - 9, decorativeActive, time, campfireBright);
 
       const playerScreenBias = viewportWidth < 230 ? 45 : 0;
       const characterScale = reducedDetails ? 0.72 : 0.84;
+      let arrivalProgress = 0;
+      if (reduced && contactVisible) arrivalProgress = 1;
+      else if (contactArrivalComplete) arrivalProgress = 1;
+      else if (contactArrivalStartedAt !== null) {
+        arrivalProgress = Math.min(1, Math.max(0, (time - contactArrivalStartedAt) / FINAL_SCENE.arrivalDuration));
+        if (arrivalProgress === 1) {
+          contactArrivalComplete = true;
+          contactArrivalStartedAt = null;
+        }
+      }
       let enteringFromLeft = false;
       if (characterEnterStartedAt !== null) {
         const progress = Math.min(1, Math.max(0, (time - characterEnterStartedAt) / 760));
@@ -948,10 +1087,10 @@ export default function AdventureWorld() {
         enteringFromLeft = progress < 1;
         if (!enteringFromLeft) characterEnterStartedAt = null;
       }
-      const playerX = currentWorldX - cameraX - (BARD_WIDTH / 2) * characterScale - playerScreenBias + characterEnterOffset;
-      const isMoving = !reduced && (enteringFromLeft || Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
+      const playerX = currentWorldX + arrivalProgress * (viewportWidth < 230 ? 30 : FINAL_SCENE.arrivalDistance) - cameraX - (BARD_WIDTH / 2) * characterScale - (viewportWidth < 230 ? 0 : playerScreenBias) + characterEnterOffset;
+      const isMoving = !reduced && (enteringFromLeft || arrivalProgress < 1 || Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
       const frameIndex = Math.floor(time / 190) % LIMB_FRAMES.length;
-      drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, characterScale);
+      drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, characterScale, campfireBright);
       if (!worldReadyEmitted) {
         worldReadyEmitted = true;
         canvas.dataset.worldReady = "true";
@@ -959,7 +1098,7 @@ export default function AdventureWorld() {
       }
 
       const stillMoving = enteringFromLeft || Math.abs(targetWorldX - currentWorldX) > 0.22 || Math.abs(targetCamera - cameraX) > 0.25;
-      if (!reduced && (stillMoving || worldActive)) {
+      if (!reduced && (stillMoving || worldActive || (contactArrivalStartedAt !== null && contactVisible))) {
         requestRender();
       }
     };
@@ -990,6 +1129,16 @@ export default function AdventureWorld() {
       characterEnterStartedAt = performance.now();
       requestRender();
     };
+    const contactSection = document.getElementById("contact");
+    const contactObserver = contactSection ? new IntersectionObserver(([entry]) => {
+      const becameVisible = entry.isIntersecting && !contactVisible;
+      contactVisible = entry.isIntersecting;
+      document.body.classList.toggle("contact-world-visible", contactVisible);
+      if (becameVisible && !contactArrivalComplete) contactArrivalStartedAt = performance.now();
+      window.dispatchEvent(new CustomEvent("portfolio-contact-visibility", { detail: { visible: contactVisible } }));
+      requestRender();
+    }, { threshold: 0.05 }) : null;
+    if (contactSection) contactObserver?.observe(contactSection);
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         lastFrame = 0;
@@ -1017,6 +1166,8 @@ export default function AdventureWorld() {
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("portfolio-world-enter", onWorldEnter);
+      contactObserver?.disconnect();
+      document.body.classList.remove("contact-world-visible");
       document.removeEventListener("visibilitychange", onVisibilityChange);
       reducedMotion.removeEventListener?.("change", onMotionChange);
     };

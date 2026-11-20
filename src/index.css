@@ -64,6 +64,17 @@
   .game-section-label { display:flex;align-items:center;gap:10px;color:#ffb2a3; }
   .game-label-icon { display:grid;place-items:center;width:28px;height:24px;background:#ff917d;color:#172039;border-radius:5px;font:10px 'Press Start 2P',monospace; }
   .game-section-title { line-height:1.05; }
+  .game-contact-section { pointer-events:none; }
+  .game-contact-content, .game-contact-content a, .game-contact-content button { pointer-events:auto; }
+  .game-contact-copy { position:relative; isolation:isolate; }
+  .game-contact-copy::before { content:'';position:absolute;z-index:-1;inset:-54px -70px;border-radius:45%;background:radial-gradient(ellipse,rgba(13,20,37,.52) 0%,rgba(13,20,37,.38) 48%,rgba(13,20,37,0) 78%);filter:blur(10px);pointer-events:none; }
+  .game-contact-copy > p:not(.game-section-label):not(.game-contact-copy-status) { color:#f6efd9;text-shadow:0 2px 3px #0b1122,0 0 10px #0b1122; }
+  .game-campfire-hotspot { position:fixed;z-index:1;left:calc(42vw + 249px);bottom:69px;width:48px;height:48px;border:0;background:transparent;color:transparent;pointer-events:none;cursor:pointer; }
+  body.contact-world-visible .game-campfire-hotspot { pointer-events:auto; }
+  .game-campfire-hotspot:focus-visible { outline:2px solid #ffcf83;outline-offset:3px;border-radius:5px;box-shadow:0 0 0 2px #172039; }
+  .game-campfire-message { position:fixed;z-index:12;left:calc(42vw + 115px);bottom:126px;padding:9px 12px;border:1px solid #d39a67;border-radius:7px;background:rgba(24,30,47,.95);color:#fff0d2;box-shadow:0 4px 0 #0b1122;white-space:nowrap; }
+  .game-campfire-copy { color:#ffe2a4;text-decoration:underline;text-underline-offset:3px; }
+  .game-contact-copy-status { min-height:1em;color:#ffe2a4; }
   .game-panel { color:#f6efd9; }
   .game-profile-stats { border-top:2px solid #485777; }
   .game-stat-row { border-bottom:1px dashed #536486; }
@@ -110,10 +121,14 @@
     .game-project-card { min-height:unset; }
     .game-quest-entry::before { left:-25px; }
     .game-quest-list::before { left:5px; }
+    .game-campfire-hotspot { left:calc(42vw + 144px);bottom:69px;width:48px;height:48px; }
+    .game-contact-copy::before { inset:-34px -20px;border-radius:28px;background:radial-gradient(ellipse,rgba(13,20,37,.66),rgba(13,20,37,.4) 62%,transparent 88%); }
+    .game-campfire-message { left:calc(42vw - 40px);bottom:126px;max-width:calc(100vw - 36px);font-size:11px;gap:8px;white-space:normal; }
   }
   @media (prefers-reduced-motion:reduce) {
     html { scroll-behavior:auto; }
     .game-button,.game-project-card,.game-nav-link { transition:none; }
+    .game-contact-copy::before { background:rgba(13,20,37,.62);filter:none; }
   }
 }
 

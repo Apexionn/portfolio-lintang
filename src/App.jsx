@@ -796,36 +796,94 @@ function ArsenalSection() {
 }
 
 function ContactSection() {
+  const [campfireMessage, setCampfireMessage] = useState(false);
+  const [contactVisible, setContactVisible] = useState(false);
+  const [copyNotice, setCopyNotice] = useState("");
+
+  useEffect(() => {
+    const onCampfireClick = () => setCampfireMessage(true);
+    const onContactVisibility = (event) => setContactVisible(event.detail.visible);
+    window.addEventListener("portfolio-campfire-click", onCampfireClick);
+    window.addEventListener("portfolio-contact-visibility", onContactVisibility);
+    return () => {
+      window.removeEventListener("portfolio-campfire-click", onCampfireClick);
+      window.removeEventListener("portfolio-contact-visibility", onContactVisibility);
+      document.body.classList.remove("campfire-attuned");
+    };
+  }, []);
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText("lintanganggowo@gmail.com");
+      setCopyNotice("Email copied");
+    } catch {
+      setCopyNotice("lintanganggowo@gmail.com");
+    }
+  };
+
+  const setCampfireMood = (isActive) => document.body.classList.toggle("campfire-attuned", isActive);
+
   return (
-    <section className="game-section relative z-10 py-20 md:py-28" id="contact">
-      <div className="max-w-[1200px] mx-auto px-6 md:px-[60px]">
-        <div className="max-w-[700px] mx-auto text-center">
+    <section className="game-section game-contact-section relative z-10 py-20 md:py-28" id="contact">
+      <div className="max-w-[1200px] mx-auto px-6 md:px-[60px] game-contact-content">
+        <div className="max-w-[700px] mx-auto text-center game-contact-copy">
           <p className="game-section-label justify-center font-syne-mono text-[9px] sm:text-[10px] tracking-[0.12em] uppercase mb-5 reveal-item" data-delay="0">
             <span className="game-label-icon">05</span> Next Quest
           </p>
           <h2 className="game-section-title font-syne text-[clamp(36px,5vw,72px)] font-[800] leading-[0.98] mb-6 reveal-item" data-delay="100">
-            Ready for the<br />next level?
+            <span className="block">Ready for the</span><span className="block">next level?</span>
           </h2>
           <p className="text-[14px] text-port-text-dim leading-[1.8] mb-[48px] max-w-[480px] mx-auto reveal-item" data-delay="200">
             Have a project idea, an AI feature to discuss, or a tricky engineering problem? Let's talk.
           </p>
           <div className="flex justify-center gap-[16px] flex-wrap reveal-item" data-delay="300">
-            <a href="mailto:lintanganggowo@gmail.com" className="game-button game-button-primary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 font-[500] inline-flex items-center gap-3 no-underline">
+            <a
+              href="mailto:lintanganggowo@gmail.com"
+              className="game-button game-button-primary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 font-[500] inline-flex items-center gap-3 no-underline"
+              onMouseEnter={() => setCampfireMood(true)}
+              onMouseLeave={(event) => { if (document.activeElement !== event.currentTarget) setCampfireMood(false); }}
+              onFocus={() => setCampfireMood(true)}
+              onBlur={() => setCampfireMood(false)}
+            >
               <span aria-hidden="true">✉</span> Send a message
             </a>
+            <a href="https://www.linkedin.com/in/lintang-anggowoyuono/" target="_blank" rel="noreferrer" className="game-button game-button-secondary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 inline-flex items-center gap-2 no-underline">
+              LinkedIn ↗
+            </a>
+            <button type="button" onClick={copyEmail} className="game-button game-button-secondary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 inline-flex items-center gap-2">
+              Copy email
+            </button>
             <a href="https://github.com/Apexionn" target="_blank" rel="noreferrer" className="game-button game-button-secondary font-syne-mono text-[10px] tracking-[0.08em] py-3.5 px-6 inline-flex items-center gap-2 no-underline">
               GitHub ↗
             </a>
           </div>
+          <p className="game-contact-copy-status font-syne-mono text-[10px] mt-3" aria-live="polite">{copyNotice}</p>
+          {campfireMessage && (
+            <div className="game-campfire-message mx-auto mt-4 inline-flex items-center gap-3" role="status">
+              <span>Rest here, then say hi</span>
+              <button type="button" onClick={copyEmail} className="game-campfire-copy">Copy email</button>
+            </div>
+          )}
         </div>
       </div>
+      <button
+        type="button"
+        className="game-campfire-hotspot"
+        aria-label="Rest at the campfire and reveal the email action"
+        tabIndex={contactVisible ? 0 : -1}
+        onClick={() => setCampfireMessage(true)}
+        onMouseEnter={() => setCampfireMood(true)}
+        onMouseLeave={(event) => { if (document.activeElement !== event.currentTarget) setCampfireMood(false); }}
+        onFocus={() => setCampfireMood(true)}
+        onBlur={() => setCampfireMood(false)}
+      />
     </section>
   );
 }
 
 function Footer() {
   return (
-    <footer className="game-footer relative z-10 border-t py-[32px] px-6 md:px-[60px] flex flex-col md:flex-row justify-between items-center gap-[16px] text-center md:text-left">
+    <footer className="game-footer relative z-10 py-[32px] px-6 md:px-[60px] flex flex-col md:flex-row justify-between items-center gap-[16px] text-center md:text-left">
       <p className="font-syne-mono text-[11px] text-port-text-muted tracking-[0.05em]">
         © 2026 Lintang Anggowoyuono. Designed &amp; engineered from scratch.
       </p>
@@ -871,7 +929,6 @@ export default function App() {
         <ExperienceSection />
         <div className="game-section-break" />
         <ArsenalSection />
-        <div className="game-section-break" />
         <ContactSection />
       </main>
       <Footer />
