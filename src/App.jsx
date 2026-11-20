@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import CharacterCard from "./components/CharacterCard";
 import AdventureWorld from "./components/AdventureWorld";
+import JourneyIntro from "./components/JourneyIntro";
 
 // DATA
 const PROJECTS = [
@@ -398,7 +399,7 @@ function AboutSection() {
                 { label: "Education", value: "BINUS University" },
                 { label: "Focus", value: "Full Stack & AI Systems" },
                 { label: "Community", value: "HIMTI" },
-              ].map((item, i) => (
+              ].map((item) => (
                 <div className="game-stat-row flex flex-col gap-1 py-3" key={item.label}>
                   <span className="game-pixel-label">{item.label}</span>
                   <span className="font-syne text-[15px] font-[700]">{item.value}</span>
@@ -840,9 +841,14 @@ function Footer() {
 // ROOT APP
 export default function App() {
   useScrollReveal();
+  const [showJourney, setShowJourney] = useState(() => {
+    try { return window.sessionStorage.getItem("bard-journey-seen") !== "yes"; }
+    catch { return false; }
+  });
 
   return (
-    <div className="game-page relative w-full overflow-x-hidden min-h-screen">
+    <>
+    <div className="game-page relative w-full overflow-x-hidden min-h-screen" inert={showJourney} aria-hidden={showJourney}>
       <GameWorldBackground />
       <Nav />
       <main>
@@ -860,5 +866,10 @@ export default function App() {
       </main>
       <Footer />
     </div>
+    {showJourney && <JourneyIntro onEnter={() => {
+      try { window.sessionStorage.setItem("bard-journey-seen", "yes"); } catch { /* session storage can be unavailable */ }
+      setShowJourney(false);
+    }} />}
+    </>
   );
 }
