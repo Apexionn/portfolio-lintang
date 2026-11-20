@@ -8,9 +8,7 @@
   display: grid;
   place-items: center;
   isolation: isolate;
-  background:
-    radial-gradient(ellipse at 51% 46%, rgba(97, 80, 55, .12), transparent 67%),
-    #d8c393;
+  background: transparent;
 }
 .journey-intro::after {
   content:"";
@@ -19,7 +17,10 @@
   inset:0;
   pointer-events:none;
   background:radial-gradient(ellipse at center, transparent 55%, rgba(75,55,34,.17) 100%);
+  transition:opacity .2s linear;
 }
+.journey-intro[data-phase="outro"]::after,
+.journey-intro[data-phase="complete"]::after { opacity:0; }
 .journey-map-stage {
   position: absolute;
   inset: 0;
@@ -82,7 +83,7 @@
 .journey-current-location { font-size:11px; letter-spacing:.12em; animation:journey-caption-in .28s ease-out both; }
 .journey-skip {
   position:absolute;
-  z-index:2;
+  z-index:4;
   right: clamp(16px, 3.1vw, 42px);
   bottom: clamp(16px, 3.4vh, 34px);
   min-height:44px;
@@ -129,6 +130,57 @@
   letter-spacing:.13em;
 }
 .journey-intro-leaving { pointer-events:none; }
+.game-page[inert] .game-nav,
+.game-page[inert] .game-eyebrow,
+.game-page[inert] .hero-name-line,
+.game-page[inert] .game-hero-copy,
+.game-page[inert] .game-hero-copy .hero-subtitle,
+.game-page[inert] .game-hero-copy .hero-description,
+.game-page[inert] .hero-enter-button,
+.game-page[inert] .game-avatar-stage { visibility:hidden; }
+.journey-scroll-roll {
+  --roll-y: 100vh;
+  --roll-scale-y: .09;
+  --roll-scale-x: 1;
+  --roll-tilt: 0deg;
+  --roll-hero-shadow: .28;
+  position:absolute;
+  z-index:3;
+  top:0;
+  left:-7px;
+  width:calc(100% + 14px);
+  height:70px;
+  pointer-events:none;
+  visibility:hidden;
+  opacity:1;
+  transform:translate3d(0,var(--roll-y),0) scaleX(var(--roll-scale-x)) scaleY(var(--roll-scale-y)) rotateZ(var(--roll-tilt));
+  transform-origin:center;
+  background:
+    radial-gradient(ellipse at 50% 9%, rgba(255,248,224,.96) 0, rgba(242,224,183,.92) 20%, transparent 49%),
+    linear-gradient(180deg, #f3e4bd 0%, #d9bd88 22%, #a98558 47%, #674a35 65%, #c6a675 79%, #ead5a4 100%);
+  box-shadow:
+    0 -3px 7px rgba(67,47,28,.2),
+    0 5px 13px rgba(6,10,19,var(--roll-hero-shadow)),
+    inset 0 2px 1px rgba(255,250,226,.85),
+    inset 0 -2px 2px rgba(72,47,28,.48);
+  will-change:transform, opacity;
+}
+.journey-scroll-roll::before {
+  content:"";
+  position:absolute;
+  inset:3px 0 auto;
+  height:34%;
+  background:repeating-linear-gradient(177deg, rgba(104,75,45,.12) 0 1px, transparent 1px 5px);
+  opacity:.48;
+  mix-blend-mode:multiply;
+}
+.journey-scroll-roll::after {
+  content:"";
+  position:absolute;
+  inset:auto 0 0;
+  height:20%;
+  background:linear-gradient(180deg, transparent, rgba(71,48,29,.48));
+}
 .journey-static .journey-map-stage { clip-path:none !important; opacity:1 !important; }
 .journey-static .journey-heading { opacity:1 !important; transform:translateX(-50%); }
 .journey-sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
@@ -145,6 +197,7 @@
   .journey-current-location { bottom:max(22px, env(safe-area-inset-bottom)); font-size:10px; max-width:60vw; white-space:nowrap; }
   .journey-skip { right:max(16px, env(safe-area-inset-right)); bottom:max(16px, env(safe-area-inset-bottom)); }
   .journey-arrival { right:8vw; top:53%; font-size:8px; }
+  .journey-scroll-roll { height:44px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .journey-intro *, .journey-intro *::before, .journey-intro *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }

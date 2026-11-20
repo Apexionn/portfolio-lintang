@@ -3,16 +3,18 @@ import { gsap } from "gsap";
 export const INTRO_CONFIG = Object.freeze({
   reveal: 0.48,
   journey: 2.72,
-  outro: 2.4,
-  shortOutro: 0.62,
+  rollDuration: 1.8,
+  rollExitDuration: 0.4,
+  shortOutro: 0.7,
   skipToCastle: 0.14,
   reducedCrossfade: 0.35,
-  cameraZoom: 1.62,
-  cameraZoomDuration: 0.9,
-  parchmentMoveDuration: 0.9,
-  heroStart: 1.6,
+  rollMinDiameter: 6,
+  rollMaxDiameter: 70,
+  rollMaxDiameterMobile: 44,
   easing: "power2.out",
   travelEase: "sine.inOut",
+  rollEase: "power3.inOut",
+  rollExitEase: "power2.in",
 });
 
 function waitForImage(image) {

@@ -101,11 +101,11 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
   const traveledRef = useRef(null);
   const bardRef = useRef(null);
   const cameraRef = useRef(null);
-  const zoomRef = useRef(null);
   const sheetRef = useRef(null);
   const parallaxRef = useRef(null);
   const pulseRef = useRef(null);
   const wrapRef = useRef(null);
+  const rollRef = useRef(null);
   const [activeLandmark, setActiveLandmark] = useState(0);
 
   useEffect(() => {
@@ -113,14 +113,13 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     const traveled = traveledRef.current;
     const bard = bardRef.current;
     const camera = cameraRef.current;
-    const zoom = zoomRef.current;
     const sheet = sheetRef.current;
     const parallax = parallaxRef.current;
     const pulse = pulseRef.current;
     const stage = wrapRef.current;
+    const roll = rollRef.current;
     const root = rootRef.current;
     const skipButton = skipRef.current;
-    const mapSvg = stage?.querySelector(".journey-map-art");
     const page = document.querySelector(".game-page");
     const nav = page?.querySelector(".game-nav");
     const eyebrow = page?.querySelector(".game-eyebrow");
@@ -128,9 +127,8 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     const copy = page?.querySelector(".game-hero-copy");
     const buttons = page?.querySelectorAll(".hero-enter-button");
     const cardStage = page?.querySelector(".game-avatar-stage");
-    const card = cardStage?.querySelector(".bard-card");
     const copyLines = copy?.querySelectorAll(".hero-subtitle, .hero-description");
-    if (!path || !bard || !traveled || !camera || !zoom || !sheet || !stage || !root || !page || !mapSvg) return undefined;
+    if (!path || !bard || !traveled || !camera || !sheet || !stage || !root || !roll || !page) return undefined;
     const length = path.getTotalLength();
     const progress = { value: 0 };
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -138,17 +136,24 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     let assetsReady = false;
     let atHandoff = false;
     let outroStarted = false;
+    let entranceSpeed = 1;
     let skipRequested = false;
     let skipTween = null;
     let stageSettled = false;
+    let rollProgress = { value: 0 };
+    let rollExit = { value: 0 };
+    let rollTargets = [];
+    let rollResizeHandler = null;
+    const entranceTweens = [];
     const master = makeIntroTimeline();
-    const heroVisibilityTargets = [nav, eyebrow, ...(nameLines ?? []), copy, ...(buttons ?? []), cardStage].filter(Boolean);
+    const heroVisibilityTargets = [nav, eyebrow, ...(nameLines ?? []), copy, ...(copyLines ?? []), ...(buttons ?? []), cardStage].filter(Boolean);
 
     root.dataset.phase = "journey";
     document.body.classList.remove("hero-world-active");
     gsap.set(heroVisibilityTargets, { autoAlpha: 0, y: 16 });
     gsap.set(stage, { opacity: 1, clipPath: "inset(0% 0 0% 0 round 0%)" });
     gsap.set(sheet, { x: 0, y: 0, scaleX: 1, scaleY: 1, transformOrigin: "top left" });
+    gsap.set(roll, { autoAlpha: 0 });
     gsap.set(parallax, { x: 0, y: 0 });
     gsap.set(traveled, { strokeDasharray: length, strokeDashoffset: length });
 
@@ -181,6 +186,9 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     const finish = () => {
       if (stageSettled) return;
       stageSettled = true;
+      root.querySelector(".journey-sr-only")?.replaceChildren("Portfolio ready.");
+      entranceTweens.forEach((tween) => tween.kill());
+      gsap.set(heroVisibilityTargets, { autoAlpha: 1, y: 0, clearProps: "clipPath" });
       root.dataset.phase = "complete";
       document.body.classList.add("hero-world-active");
       onEnter();
@@ -189,7 +197,53 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
       if (outroStarted || !assetsReady) return;
       outroStarted = true;
       root.dataset.phase = "outro";
-      master.timeScale(compressed ? INTRO_CONFIG.outro / INTRO_CONFIG.shortOutro : 1);
+      root.querySelector(".journey-sr-only")?.replaceChildren("The map is rolling away; entering the portfolio.");
+      document.body.classList.add("hero-world-active");
+      window.dispatchEvent(new Event("portfolio-world-enter"));
+      rollTargets = [
+        { element: nav, enter: () => gsap.fromTo(nav, { autoAlpha: 0, y: -28 }, { autoAlpha: 1, y: 0, duration: .38, ease: "power2.out", overwrite: true }) },
+        { element: eyebrow, enter: () => gsap.fromTo(eyebrow, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: .32, ease: "power2.out", overwrite: true }) },
+        ...(nameLines ? [...nameLines].map((line, index) => ({ element: line, enter: () => gsap.fromTo(line, { autoAlpha: 0, y: 22, clipPath: "inset(0 0 100% 0)" }, { autoAlpha: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: .38, delay: index * .09, ease: "power3.out", overwrite: true }) })) : []),
+        { element: copy, enter: () => gsap.fromTo(copy, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: .34, ease: "power2.out", overwrite: true }) },
+        ...(copyLines ? [...copyLines].map((line, index) => ({ element: line, enter: () => gsap.fromTo(line, { autoAlpha: 0, y: 9 }, { autoAlpha: 1, y: 0, duration: .26, delay: index * .07, ease: "power2.out", overwrite: true }) })) : []),
+        ...(buttons ? [...buttons].map((button, index) => ({ element: button, enter: () => gsap.fromTo(button, { autoAlpha: 0, scale: .88, y: 10 }, { autoAlpha: 1, scale: 1, y: 0, duration: .28, delay: index * .07, ease: "back.out(1.8)", overwrite: true }) })) : []),
+        { element: cardStage, enter: () => gsap.fromTo(cardStage, { autoAlpha: 0, y: 22, scale: .96 }, { autoAlpha: 1, y: 0, scale: 1, duration: .46, ease: "back.out(1.4)", overwrite: true, onComplete: () => cardStage?.classList.add("hero-card-idle") }) },
+      ].filter((target) => target.element).map((target) => ({ ...target, y: 0, entered: false }));
+      const measureRollTargets = () => {
+        rollTargets.forEach((target) => { target.y = Math.max(0, Math.min(window.innerHeight, target.element.getBoundingClientRect().top + target.element.getBoundingClientRect().height / 2)); });
+      };
+      const updateRoll = () => {
+        const p = rollProgress.value;
+        const edgeY = window.innerHeight * (1 - p);
+        const mobile = window.innerWidth <= 700;
+        const diameter = mobile ? INTRO_CONFIG.rollMaxDiameterMobile : INTRO_CONFIG.rollMaxDiameter;
+        const size = INTRO_CONFIG.rollMinDiameter + (diameter - INTRO_CONFIG.rollMinDiameter) * p;
+        const exitY = rollExit.value * (diameter + 12);
+        stage.style.clipPath = `inset(0px 0px ${p * 100}% 0px)`;
+        roll.style.setProperty("--roll-y", `${edgeY - size / 2 - exitY}px`);
+        roll.style.setProperty("--roll-scale-y", String(size / diameter));
+        roll.style.setProperty("--roll-scale-x", String(1 + Math.sin(p * Math.PI * 5) * .004));
+        roll.style.setProperty("--roll-tilt", `${Math.sin(p * Math.PI * 7) * .35}deg`);
+        roll.style.opacity = String(1 - rollExit.value);
+        roll.style.setProperty("--roll-hero-shadow", `${Math.max(0, 1 - rollExit.value) * 0.28}`);
+        rollTargets.forEach((target) => {
+          if (!target.entered && edgeY <= target.y) {
+            target.entered = true;
+            const tween = target.enter();
+            tween.timeScale(entranceSpeed);
+            entranceTweens.push(tween);
+          }
+        });
+      };
+      measureRollTargets();
+      rollResizeHandler = measureRollTargets;
+      window.addEventListener("resize", rollResizeHandler);
+      gsap.set(roll, { autoAlpha: 1 });
+      master.to(rollProgress, { value: 1, duration: INTRO_CONFIG.rollDuration, ease: INTRO_CONFIG.rollEase, onUpdate: updateRoll }, master.labels.handoff);
+      master.to(rollExit, { value: 1, duration: INTRO_CONFIG.rollExitDuration, ease: INTRO_CONFIG.rollExitEase, onUpdate: updateRoll }, master.labels.handoff + INTRO_CONFIG.rollDuration);
+      master.call(finish, null, master.labels.handoff + INTRO_CONFIG.rollDuration + INTRO_CONFIG.rollExitDuration);
+      entranceSpeed = compressed ? (INTRO_CONFIG.rollDuration + INTRO_CONFIG.rollExitDuration) / INTRO_CONFIG.shortOutro : 1;
+      master.timeScale(entranceSpeed);
       master.play();
     };
     const arriveAtHandoff = () => {
@@ -205,7 +259,11 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
         return;
       }
       if (outroStarted) {
-        master.timeScale(INTRO_CONFIG.outro / INTRO_CONFIG.shortOutro);
+        const remaining = Math.max(.01, master.duration() - master.time());
+        const speed = remaining / INTRO_CONFIG.shortOutro;
+        entranceSpeed = speed;
+        master.timeScale(speed);
+        entranceTweens.forEach((tween) => tween.timeScale(speed));
         return;
       }
       if (atHandoff) {
@@ -262,65 +320,8 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
 
     const handoffTime = master.labels.handoff;
     if (!reducedMotion && !reduced) {
-      const outroAt = handoffTime;
-      const castleScale = INTRO_CONFIG.cameraZoom;
-      const focusX = 1002;
-      const focusY = 286;
-      const focusTransform = `translate(${600 - focusX * castleScale} ${380 - focusY * castleScale}) scale(${castleScale})`;
-
-      master.fromTo(pulse, { attr: { r: 9 }, opacity: 0.95 }, { attr: { r: 30 }, opacity: 0, duration: 0.78, ease: "power2.out", repeat: 1 }, outroAt);
-      master.to(".journey-castle-window", { attr: { fill: "#fff0a8" }, duration: 0.45, ease: "sine.inOut" }, outroAt);
-      master.to(zoom, { attr: { transform: focusTransform }, duration: INTRO_CONFIG.cameraZoomDuration, ease: "power2.inOut" }, outroAt + 0.3);
-      master.to(mapSvg, { filter: "blur(1.4px)", opacity: 0.35, duration: 1.6, ease: "power1.in" }, outroAt + 0.3);
-      master.to(root, { backgroundColor: "rgba(216,195,147,0)", duration: 0.9, ease: "power1.inOut" }, outroAt + 0.95);
-      master.to([root.querySelector(".journey-heading"), root.querySelector(".journey-current-location"), skipButton], { opacity: 0, duration: 0.28, ease: "power1.out" }, outroAt + 0.42);
-      master.to(sheet, {
-        x: () => {
-          const source = sheet.getBoundingClientRect();
-          const target = card?.getBoundingClientRect();
-          return target ? target.left - source.left : 0;
-        },
-        y: () => {
-          const source = sheet.getBoundingClientRect();
-          const target = card?.getBoundingClientRect();
-          return target ? target.top - source.top : 0;
-        },
-        scaleX: () => {
-          const source = sheet.getBoundingClientRect();
-          const target = card?.getBoundingClientRect();
-          return target ? target.width / source.width : 1;
-        },
-        scaleY: () => {
-          const source = sheet.getBoundingClientRect();
-          const target = card?.getBoundingClientRect();
-          return target ? target.height / source.height : 1;
-        },
-        duration: INTRO_CONFIG.parchmentMoveDuration,
-        ease: "power2.inOut",
-        onStart: () => root.classList.add("journey-shared-transition"),
-      }, outroAt + 1.0);
-      master.fromTo(nav, { autoAlpha: 0, top: -30 }, { autoAlpha: 1, top: 12, duration: 0.38, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart);
-      master.fromTo(eyebrow, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.32, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart + 0.04);
-      nameLines?.forEach((line, index) => {
-        master.fromTo(line, { autoAlpha: 0, y: 26, clipPath: "inset(0 0 100% 0)" }, { autoAlpha: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: 0.36, ease: "power3.out" }, outroAt + INTRO_CONFIG.heroStart + 0.08 + index * 0.12);
-      });
-      master.fromTo(copy, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.32, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart + 0.36);
-      if (copyLines?.length) {
-        master.fromTo(copyLines, { autoAlpha: 0, y: 9 }, { autoAlpha: 1, y: 0, duration: 0.26, stagger: 0.08, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart + 0.39);
-      }
-      buttons?.forEach((button, index) => {
-        master.fromTo(button, { autoAlpha: 0, scale: 0.82, y: 12 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.24, ease: "back.out(2.2)" }, outroAt + INTRO_CONFIG.heroStart + 0.46 + index * 0.08);
-      });
-      master.fromTo(cardStage, { autoAlpha: 0, y: 18 }, {
-        autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out",
-        onComplete: () => cardStage?.classList.add("hero-card-idle"),
-      }, outroAt + INTRO_CONFIG.heroStart + 0.12);
-      master.call(() => {
-        document.body.classList.add("hero-world-active");
-        window.dispatchEvent(new Event("portfolio-world-enter"));
-      }, null, outroAt + INTRO_CONFIG.heroStart);
-      master.to(root, { opacity: 0, duration: 0.12, ease: "power1.in" }, outroAt + INTRO_CONFIG.outro - 0.12);
-      master.call(finish, null, outroAt + INTRO_CONFIG.outro);
+      master.fromTo(pulse, { attr: { r: 9 }, opacity: .95 }, { attr: { r: 30 }, opacity: 0, duration: .78, ease: "power2.out", repeat: 1 }, handoffTime);
+      master.to(".journey-castle-window", { attr: { fill: "#fff0a8" }, duration: .45, ease: "sine.inOut" }, handoffTime);
     } else {
       master.addLabel("outro", handoffTime);
     }
@@ -341,8 +342,10 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
 
     return () => {
       skipTween?.kill();
+      if (rollResizeHandler) window.removeEventListener("resize", rollResizeHandler);
       master.kill();
-      gsap.killTweensOf([progress, parallax, sheet, stage, root]);
+      entranceTweens.forEach((tween) => tween.kill());
+      gsap.killTweensOf([progress, parallax, sheet, stage, root, roll, rollProgress, rollExit]);
       skipButton?.removeEventListener("click", onSkip);
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);
@@ -351,6 +354,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
   }, [reduced, short, onEnter, rootRef, skipRef]);
 
   return (
+    <>
     <div className="journey-map-stage" ref={wrapRef}>
       <div className="journey-map-sheet" ref={sheetRef}>
       <div className="journey-parallax-layer" ref={parallaxRef}>
@@ -373,7 +377,6 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
           <path d="M90 130Q190 102 267 141T425 125M620 110q97-23 167 9t141-5M80 580q89-31 174-5t171-6M893 575q105-27 205 7" fill="none" stroke="#a58c61" strokeWidth="1.1" opacity=".48" />
           <path d="M618 68Q579 116 603 166T587 245Q572 282 600 322T631 408Q672 446 695 489" fill="none" stroke="#879996" strokeWidth="17" opacity=".42" />
           <path d="M618 68Q579 116 603 166T587 245Q572 282 600 322T631 408Q672 446 695 489" fill="none" stroke="#d7ded0" strokeWidth="2" opacity=".85" />
-          <g ref={zoomRef} transform="translate(0 0) scale(1)">
           <g ref={cameraRef}>
             {/* Mountain pass: layered ridges, ink hatching, and connected foothills */}
             <Mountain x={526} y={259} scale={1.02} back />
@@ -439,7 +442,6 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             </g>
             <BardMini refNode={bardRef} />
           </g>
-          </g>
 
           {/* Cartographic marginalia */}
           <g className="journey-compass" transform="translate(1090 526)" stroke="#725638">
@@ -466,6 +468,8 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
       <p key={activeLandmark} className="journey-current-location" aria-live="polite" aria-atomic="true">{WAYPOINTS[activeLandmark]?.label}</p>
       <div className="journey-arrival" aria-hidden="true">THE KEEP AWAITS</div>
     </div>
+    <div className="journey-scroll-roll" ref={rollRef} aria-hidden="true" />
+    </>
   );
 }
 
