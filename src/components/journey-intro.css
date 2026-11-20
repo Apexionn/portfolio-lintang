@@ -42,6 +42,7 @@
 .journey-map-art { position:absolute; width:100%; height:100%; inset:0; display:block; }
 .journey-heading {
   position: absolute;
+  z-index:3;
   top: clamp(22px, 5vh, 56px);
   left: 50%;
   width: min(620px, 76vw);
@@ -50,6 +51,16 @@
   text-align: center;
   text-shadow: 0 1px rgba(255,248,225,.7);
   pointer-events: none;
+}
+.journey-heading::before {
+  content:"";
+  position:absolute;
+  z-index:-1;
+  inset:-12px -24px -10px;
+  border:1px solid rgba(118,85,54,.62);
+  background:linear-gradient(180deg, rgba(239,225,190,.97), rgba(230,213,170,.95));
+  box-shadow:inset 0 0 0 4px rgba(255,248,225,.26), 0 3px 8px rgba(91,66,39,.08);
+  pointer-events:none;
 }
 .journey-kicker, .journey-current-location {
   margin: 0;
@@ -60,11 +71,12 @@
 .journey-current-location {
   position:absolute;
   z-index:1;
-  left:50%;
+  left:clamp(28px, 5.8vw, 76px);
   bottom:clamp(23px, 4vh, 42px);
-  transform:translateX(-50%);
+  transform:none;
   margin:0;
   padding:7px 12px;
+  max-width:min(38vw, 400px);
   border-top:1px solid rgba(118,85,54,.5);
   border-bottom:1px solid rgba(118,85,54,.5);
   background:rgba(230,213,170,.72);
@@ -102,13 +114,27 @@
 .journey-skip:hover { background:#f3e5c2; transform:translateY(-1px); }
 .journey-skip-arrow { display:inline-block; transition:transform .18s ease-out; }
 .journey-skip:hover .journey-skip-arrow { transform:translate(2px,-2px); }
-.journey-skip:focus-visible { outline:3px solid #8d503b; outline-offset:3px; }
+.journey-skip:focus-visible { outline:2px solid #8d503b; outline-offset:2px; }
 .journey-ink-tree, .journey-castle, .journey-ruins { transform-box:fill-box; transform-origin:center; }
-.journey-ink-tree { animation: journey-bough 3.8s ease-in-out infinite alternate; }
-.journey-ink-tree:nth-of-type(3n) { animation-delay:-1.5s; }
-.journey-castle > circle { animation: journey-lamp 2.5s ease-in-out infinite alternate; }
+.journey-intro[data-phase="journey"] .journey-ink-tree { animation: journey-bough 3.8s ease-in-out infinite alternate; }
+.journey-intro[data-phase="journey"] .journey-ink-tree:nth-of-type(3n) { animation-delay:-1.5s; }
+.journey-intro[data-phase="journey"] .journey-windmill-blades { transform-box:fill-box; transform-origin:center; animation:journey-windmill-turn 24s linear infinite; }
+.journey-intro[data-phase="journey"] .journey-smoke-puff { animation:journey-smoke-rise 3.8s ease-out infinite; }
+.journey-intro[data-phase="journey"] .journey-smoke-puff.smoke-two { animation-delay:1.25s; }
+.journey-intro[data-phase="journey"] .journey-smoke-puff.smoke-three { animation-delay:2.5s; }
+.journey-intro[data-phase="journey"] .journey-water-shimmer { animation:journey-shimmer 8s ease-in-out infinite alternate; }
+.journey-intro[data-phase="journey"] .journey-fog { animation:journey-fog-drift 28s ease-in-out infinite alternate; }
+.journey-intro[data-phase="journey"] .journey-fog-west { animation-delay:-12s; }
+.journey-intro[data-phase="journey"] .journey-village-lanterns path:nth-child(2) { animation:journey-lantern 3.2s ease-in-out infinite alternate; }
+.journey-intro[data-paused="true"] .journey-ink-tree,
+.journey-intro[data-paused="true"] .journey-bard-bob,
+.journey-intro[data-paused="true"] .journey-windmill-blades,
+.journey-intro[data-paused="true"] .journey-smoke-puff,
+.journey-intro[data-paused="true"] .journey-water-shimmer,
+.journey-intro[data-paused="true"] .journey-fog,
+.journey-intro[data-paused="true"] .journey-village-lanterns path:nth-child(2) { animation-play-state:paused; }
 .journey-bard { transform-box:fill-box; transform-origin:center; }
-.journey-bard-bob { animation:journey-bard-walk .24s steps(2,end) infinite alternate; }
+.journey-intro[data-phase="journey"] .journey-bard-bob { animation:journey-bard-walk .24s steps(2,end) infinite alternate; }
 .journey-waypoints g { opacity:.63; transition:opacity .25s; }
 .journey-waypoints g.is-reached { opacity:1; }
 .journey-waypoints g.is-reached circle:first-child { stroke-width:2.5; }
@@ -116,6 +142,15 @@
 .journey-landmark-labels g.is-visible { opacity:.92; }
 .journey-landmark-labels path { fill:none; stroke:#7d5d3c; stroke-width:.8; }
 .journey-landmark-labels text { fill:#6e5135; font:600 10px 'DM Mono',monospace; letter-spacing:1.25px; font-variant:small-caps; }
+.journey-place-names text { fill:#694c32; font:italic 15px 'IM Fell English',Georgia,serif; letter-spacing:.04em; text-anchor:middle; paint-order:stroke; stroke:#e6d5aa; stroke-width:3px; stroke-linejoin:round; }
+.journey-map-key text { font:9px 'DM Mono',monospace; letter-spacing:.01em; }
+.journey-scale text { font:9px 'DM Mono',monospace; }
+.journey-graticule { opacity:.1; }
+.journey-paper-fold { fill:none; stroke:#826c4b; stroke-width:5; opacity:.045; }
+.journey-paper-fold-v { stroke:#fff8df; stroke-width:2; opacity:.15; }
+.journey-paper-fold-h { stroke:#7b6749; stroke-width:4; opacity:.06; }
+.journey-age-stains { opacity:.065; filter:blur(2px); }
+.journey-fog { fill:#f5ecd5; opacity:.12; }
 .journey-arrival-pulse { transform-box:fill-box; transform-origin:center; }
 .journey-arrival {
   position:absolute;
@@ -195,7 +230,7 @@
   .journey-heading h1 { font-size:clamp(32px, 10vw, 52px); }
   .journey-kicker { font-size:8px; letter-spacing:.13em; }
   .journey-subtitle { font-size:15px; margin-top:6px; }
-  .journey-current-location { bottom:max(22px, env(safe-area-inset-bottom)); font-size:10px; max-width:60vw; white-space:nowrap; }
+  .journey-current-location { left:max(16px, env(safe-area-inset-left)); bottom:max(22px, env(safe-area-inset-bottom)); font-size:10px; line-height:1.25; max-width:calc(100vw - 184px); white-space:normal; }
   .journey-skip { right:max(16px, env(safe-area-inset-right)); bottom:max(16px, env(safe-area-inset-bottom)); }
   .journey-arrival { right:8vw; top:53%; font-size:8px; }
   .journey-scroll-roll { height:44px; }
@@ -203,6 +238,15 @@
 @media (prefers-reduced-motion: reduce) {
   .journey-intro *, .journey-intro *::before, .journey-intro *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; }
 }
+@keyframes journey-windmill-turn { to { transform:rotate(360deg); } }
+@keyframes journey-smoke-rise {
+  0% { translate:0 1px; opacity:.15; }
+  45% { opacity:.28; }
+  100% { translate:2px -15px; opacity:0; }
+}
+@keyframes journey-shimmer { from { translate:0 0; opacity:.35; } to { translate:8px -2px; opacity:.8; } }
+@keyframes journey-fog-drift { from { translate:-8px 0; opacity:.08; } to { translate:16px -2px; opacity:.18; } }
+@keyframes journey-lantern { from { opacity:.65; } to { opacity:1; } }
 
 .game-hero-copy { text-shadow:0 1px 8px rgba(9,14,22,.58); }
 .game-hero-copy .hero-subtitle, .game-hero-copy .hero-description { display:block; }
