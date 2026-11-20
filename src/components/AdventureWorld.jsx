@@ -819,6 +819,7 @@ export default function AdventureWorld() {
     let direction = 1;
     let lastFrame = 0;
     let lastWorldFrame = 0;
+    let forceResizeRender = false;
     let worldReadyEmitted = false;
     let characterEnterStartedAt = null;
     let characterEnterOffset = 0;
@@ -864,6 +865,7 @@ export default function AdventureWorld() {
         if (canvasSizeChanged) {
           if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
           animationFrame = null;
+          forceResizeRender = true;
           render(performance.now());
         } else {
           requestRender();
@@ -876,10 +878,11 @@ export default function AdventureWorld() {
       if (document.visibilityState !== "visible") return;
       const reduced = reducedMotion.matches;
       const worldActive = document.body.classList.contains("hero-world-active");
-      if (worldActive && !reduced && time - lastWorldFrame < 33) {
+      if (worldActive && !reduced && !forceResizeRender && time - lastWorldFrame < 33) {
         animationFrame = window.requestAnimationFrame(render);
         return;
       }
+      forceResizeRender = false;
       if (worldActive) lastWorldFrame = time;
       const delta = Math.min((time - (lastFrame || time)) / 1000, 0.06);
       lastFrame = time;
