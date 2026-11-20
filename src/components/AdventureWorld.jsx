@@ -818,6 +818,10 @@ export default function AdventureWorld() {
     let cameraX = 0;
     let direction = 1;
     let lastFrame = 0;
+    let lastWorldFrame = 0;
+    let worldReadyEmitted = false;
+    let characterEnterStartedAt = null;
+    let characterEnterOffset = 0;
     let lastScrollAt = 0;
     let animationFrame = null;
     let resizeFrame = null;
@@ -871,6 +875,12 @@ export default function AdventureWorld() {
       animationFrame = null;
       if (document.visibilityState !== "visible") return;
       const reduced = reducedMotion.matches;
+      const worldActive = document.body.classList.contains("hero-world-active");
+      if (worldActive && !reduced && time - lastWorldFrame < 33) {
+        animationFrame = window.requestAnimationFrame(render);
+        return;
+      }
+      if (worldActive) lastWorldFrame = time;
       const delta = Math.min((time - (lastFrame || time)) / 1000, 0.06);
       lastFrame = time;
       if (reduced) currentWorldX = targetWorldX;
@@ -893,8 +903,9 @@ export default function AdventureWorld() {
       const groundY = viewportHeight - 12;
       const cloudStart = Math.floor((cameraX * 0.1) / 245) - 1;
       const cloudEnd = Math.ceil((cameraX * 0.1 + viewportWidth) / 245) + 1;
+      const cloudDrift = worldActive && !reduced ? (time * 0.005) % 245 : 0;
       for (let i = cloudStart; i <= cloudEnd; i++) {
-        drawCloud(context, i * 245 - cameraX * 0.1, 24 + ((i * 37) % 38), Math.abs(i) % 2);
+        drawCloud(context, i * 245 - cameraX * 0.1 - cloudDrift, 24 + ((i * 37) % 38), Math.abs(i) % 2);
       }
 
       const distantStart = Math.max(0, Math.floor((cameraX * 0.1) / AREA_WIDTH) - 1);
@@ -926,13 +937,26 @@ export default function AdventureWorld() {
 
       const playerScreenBias = viewportWidth < 230 ? 45 : 0;
       const characterScale = reducedDetails ? 0.72 : 0.84;
-      const playerX = currentWorldX - cameraX - (BARD_WIDTH / 2) * characterScale - playerScreenBias;
-      const isMoving = !reduced && (Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
+      let enteringFromLeft = false;
+      if (characterEnterStartedAt !== null) {
+        const progress = Math.min(1, Math.max(0, (time - characterEnterStartedAt) / 760));
+        const easedProgress = progress * progress * (3 - 2 * progress);
+        characterEnterOffset = -60 * (1 - easedProgress);
+        enteringFromLeft = progress < 1;
+        if (!enteringFromLeft) characterEnterStartedAt = null;
+      }
+      const playerX = currentWorldX - cameraX - (BARD_WIDTH / 2) * characterScale - playerScreenBias + characterEnterOffset;
+      const isMoving = !reduced && (enteringFromLeft || Math.abs(targetWorldX - currentWorldX) > 0.35 || time - lastScrollAt < 110);
       const frameIndex = Math.floor(time / 190) % LIMB_FRAMES.length;
       drawBardScene(context, playerX, groundY + 1, direction, isMoving, frameIndex, idleBeat, characterScale);
+      if (!worldReadyEmitted) {
+        worldReadyEmitted = true;
+        canvas.dataset.worldReady = "true";
+        window.dispatchEvent(new Event("portfolio-world-ready"));
+      }
 
-      const stillMoving = Math.abs(targetWorldX - currentWorldX) > 0.22 || Math.abs(targetCamera - cameraX) > 0.25;
-      if (!reduced && stillMoving) {
+      const stillMoving = enteringFromLeft || Math.abs(targetWorldX - currentWorldX) > 0.22 || Math.abs(targetCamera - cameraX) > 0.25;
+      if (!reduced && (stillMoving || worldActive)) {
         requestRender();
       }
     };
@@ -957,6 +981,12 @@ export default function AdventureWorld() {
       }
       requestRender();
     };
+    const onWorldEnter = () => {
+      lastWorldFrame = 0;
+      characterEnterOffset = -60;
+      characterEnterStartedAt = performance.now();
+      requestRender();
+    };
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         lastFrame = 0;
@@ -971,6 +1001,7 @@ export default function AdventureWorld() {
     resizeObserver.observe(canvas.parentElement || canvas);
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("portfolio-world-enter", onWorldEnter);
     document.addEventListener("visibilitychange", onVisibilityChange);
     reducedMotion.addEventListener?.("change", onMotionChange);
     resize();
@@ -982,6 +1013,7 @@ export default function AdventureWorld() {
       resizeObserver.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("portfolio-world-enter", onWorldEnter);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       reducedMotion.removeEventListener?.("change", onMotionChange);
     };

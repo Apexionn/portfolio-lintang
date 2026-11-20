@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import { INTRO_CONFIG, makeIntroTimeline, waitForHeroAssets } from "./journey/introController";
 import "./journey-intro.css";
 
 const ROUTE = "M 146 510 C 190 475 224 458 264 464 C 306 469 319 420 366 409 C 415 397 436 439 474 416 C 513 393 510 335 555 315 C 596 297 621 342 655 354 C 696 369 724 407 767 414 C 814 422 842 380 878 348 C 916 314 935 264 978 246 C 1000 236 1022 239 1048 226";
 const WAYPOINTS = [
-  { at: 0.04, label: "THE WAYFARER'S VILLAGE" },
-  { at: 0.27, label: "WHISPERING WOOD" },
-  { at: 0.49, label: "THE OLD KING'S PASS" },
-  { at: 0.75, label: "THE FORGOTTEN RUINS" },
-  { at: 0.98, label: "EMBERFALL KEEP" },
+  { at: 0.04, label: "The Wayfarer's Village", section: "About", x: 146, y: 549 },
+  { at: 0.27, label: "Whispering Wood", section: "Skills", x: 366, y: 456 },
+  { at: 0.49, label: "The Old King's Pass", section: "Projects", x: 555, y: 385 },
+  { at: 0.75, label: "The Forgotten Ruins", section: "Contact", x: 767, y: 458 },
+  { at: 0.98, label: "Emberfall Keep", section: "Portfolio", x: 1049, y: 344 },
 ];
 
 function Tree({ x, y, size = 1, pale = false }) {
@@ -68,7 +69,7 @@ function Castle() {
       <path d="M954 267H1057V309H954Z" fill="#b7a27a" />
       <path d="M945 284 1004 269 1067 284V300H945Z" fill="#d0bd92" />
       <path d="M989 304Q1004 276 1019 304V309H989Z" fill="#684a37" />
-      <path d="M962 257H969V267H962ZM1039 241H1047V253H1039ZM988 264H995V274H988ZM1020 264H1027V274H1020Z" fill="#f0d38a" stroke="#74573a" />
+      <path className="journey-castle-window" d="M962 257H969V267H962ZM1039 241H1047V253H1039ZM988 264H995V274H988ZM1020 264H1027V274H1020Z" fill="#f0d38a" stroke="#74573a" />
       <path d="M961 308H1051M948 294H1064" fill="none" stroke="#75644c" strokeWidth="1.4" />
       <path d="M1004 269V256" stroke="#873f35" />
       <circle cx="1004" cy="253" r="4" fill="#b44f3d" />
@@ -81,6 +82,7 @@ function Castle() {
 function BardMini({ refNode }) {
   return (
     <g ref={refNode} className="journey-bard" transform="translate(146 510) rotate(0)">
+      <g className="journey-bard-bob" transform="scale(1.28)">
       <ellipse cx="0" cy="5" rx="13" ry="7" fill="#453727" opacity=".23" />
       <path d="M-7 1Q-10-7-6-15L0-18 7-14 8 1Z" fill="#3e6245" stroke="#3f362b" strokeWidth="1.6" />
       <path d="M-5-1 0-5 5-1 4 4H-4Z" fill="#d1b27a" stroke="#51412f" strokeWidth="1.2" />
@@ -89,15 +91,20 @@ function BardMini({ refNode }) {
       <path d="M7-11 12-6 7 0 3-5Z" fill="#97613f" stroke="#40372c" strokeWidth="1.4" />
       <path d="M-4 1-5 7M4 1 5 7" stroke="#554235" strokeWidth="2.5" strokeLinecap="round" />
       <path d="M-7-9Q-11-4-8 0" fill="none" stroke="#d9bd7f" strokeWidth="1.3" />
+      </g>
     </g>
   );
 }
 
-function FantasyMap({ reduced = false, onEnter }) {
+function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef }) {
   const pathRef = useRef(null);
   const traveledRef = useRef(null);
   const bardRef = useRef(null);
   const cameraRef = useRef(null);
+  const zoomRef = useRef(null);
+  const sheetRef = useRef(null);
+  const parallaxRef = useRef(null);
+  const pulseRef = useRef(null);
   const wrapRef = useRef(null);
   const [activeLandmark, setActiveLandmark] = useState(0);
 
@@ -106,23 +113,52 @@ function FantasyMap({ reduced = false, onEnter }) {
     const traveled = traveledRef.current;
     const bard = bardRef.current;
     const camera = cameraRef.current;
-    if (!path || !bard || !traveled || !camera) return undefined;
+    const zoom = zoomRef.current;
+    const sheet = sheetRef.current;
+    const parallax = parallaxRef.current;
+    const pulse = pulseRef.current;
+    const stage = wrapRef.current;
+    const root = rootRef.current;
+    const skipButton = skipRef.current;
+    const mapSvg = stage?.querySelector(".journey-map-art");
+    const page = document.querySelector(".game-page");
+    const nav = page?.querySelector(".game-nav");
+    const eyebrow = page?.querySelector(".game-eyebrow");
+    const nameLines = page?.querySelectorAll(".hero-name-line");
+    const copy = page?.querySelector(".game-hero-copy");
+    const buttons = page?.querySelectorAll(".hero-enter-button");
+    const cardStage = page?.querySelector(".game-avatar-stage");
+    const card = cardStage?.querySelector(".bard-card");
+    const copyLines = copy?.querySelectorAll(".hero-subtitle, .hero-description");
+    if (!path || !bard || !traveled || !camera || !zoom || !sheet || !stage || !root || !page || !mapSvg) return undefined;
     const length = path.getTotalLength();
-    if (reduced) {
-      traveled.setAttribute("stroke-dashoffset", "0");
-      const point = path.getPointAtLength(0);
-      bard.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(0)`);
-      return undefined;
-    }
-    gsap.set(traveled, { strokeDasharray: length, strokeDashoffset: length });
     const progress = { value: 0 };
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let reachedLandmark = -1;
+    let assetsReady = false;
+    let atHandoff = false;
+    let outroStarted = false;
+    let skipRequested = false;
+    let skipTween = null;
+    let stageSettled = false;
+    const master = makeIntroTimeline();
+    const heroVisibilityTargets = [nav, eyebrow, ...(nameLines ?? []), copy, ...(buttons ?? []), cardStage].filter(Boolean);
+
+    root.dataset.phase = "journey";
+    document.body.classList.remove("hero-world-active");
+    gsap.set(heroVisibilityTargets, { autoAlpha: 0, y: 16 });
+    gsap.set(stage, { opacity: 1, clipPath: "inset(0% 0 0% 0 round 0%)" });
+    gsap.set(sheet, { x: 0, y: 0, scaleX: 1, scaleY: 1, transformOrigin: "top left" });
+    gsap.set(parallax, { x: 0, y: 0 });
+    gsap.set(traveled, { strokeDasharray: length, strokeDashoffset: length });
+
     const updateBard = () => {
       const point = path.getPointAtLength(length * progress.value);
       const before = path.getPointAtLength(Math.max(0, length * progress.value - 2));
       const after = path.getPointAtLength(Math.min(length, length * progress.value + 2));
       const angle = Math.atan2(after.y - before.y, after.x - before.x) * 180 / Math.PI + 90;
       bard.setAttribute("transform", `translate(${point.x} ${point.y}) rotate(${angle})`);
-      const narrow = window.innerWidth / window.innerHeight < 0.95;
+      const narrow = window.innerWidth / window.innerHeight < 1.35;
       const follow = narrow ? 1 : Math.max(0, Math.min(1, (progress.value - 0.13) / 0.72));
       const zoom = narrow ? 1.08 : 1 + follow * 0.13;
       const visibleWidth = narrow ? Math.max(250, 760 * window.innerWidth / window.innerHeight) : 1200;
@@ -137,24 +173,187 @@ function FantasyMap({ reduced = false, onEnter }) {
       camera.setAttribute("transform", `translate(${tx} ${ty}) translate(600 380) scale(${zoom}) translate(-600 -380)`);
       traveled.setAttribute("stroke-dashoffset", String(length * (1 - progress.value)));
       const landmark = WAYPOINTS.reduce((active, waypoint, index) => progress.value >= waypoint.at ? index : active, 0);
-      setActiveLandmark((current) => current === landmark ? current : landmark);
+      if (landmark !== reachedLandmark) {
+        reachedLandmark = landmark;
+        setActiveLandmark(landmark);
+      }
     };
-    const timeline = gsap.timeline({
-      onComplete: () => window.setTimeout(() => {
-        wrapRef.current?.classList.add("journey-intro-leaving");
-        window.setTimeout(onEnter, 310);
-      }, 40),
+    const finish = () => {
+      if (stageSettled) return;
+      stageSettled = true;
+      root.dataset.phase = "complete";
+      document.body.classList.add("hero-world-active");
+      onEnter();
+    };
+    const startOutro = (compressed = false) => {
+      if (outroStarted || !assetsReady) return;
+      outroStarted = true;
+      root.dataset.phase = "outro";
+      master.timeScale(compressed ? INTRO_CONFIG.outro / INTRO_CONFIG.shortOutro : 1);
+      master.play();
+    };
+    const arriveAtHandoff = () => {
+      atHandoff = true;
+      master.pause();
+      if (assetsReady) window.setTimeout(() => startOutro(skipRequested || short), 0);
+    };
+    const onSkip = () => {
+      if (stageSettled) return;
+      skipRequested = true;
+      if (reducedMotion) {
+        if (assetsReady) master.timeScale(1).play();
+        return;
+      }
+      if (outroStarted) {
+        master.timeScale(INTRO_CONFIG.outro / INTRO_CONFIG.shortOutro);
+        return;
+      }
+      if (atHandoff) {
+        if (assetsReady) startOutro(true);
+        return;
+      }
+      master.removePause("handoff");
+      skipTween?.kill();
+      skipTween = master.tweenTo("handoff", {
+        duration: INTRO_CONFIG.skipToCastle,
+        ease: "power2.inOut",
+        onComplete: arriveAtHandoff,
+      });
+    };
+    const onPointerMove = (event) => {
+      if (reducedMotion || event.pointerType !== "mouse" || outroStarted) return;
+      const bounds = root.getBoundingClientRect();
+      gsap.to(parallax, {
+        x: ((event.clientX - bounds.left) / bounds.width - 0.5) * -5,
+        y: ((event.clientY - bounds.top) / bounds.height - 0.5) * -4,
+        duration: 0.6,
+        ease: "power2.out",
+        overwrite: "auto",
+      });
+    };
+    const onPointerLeave = () => gsap.to(parallax, { x: 0, y: 0, duration: 0.7, ease: "power2.out" });
+
+    skipButton?.addEventListener("click", onSkip);
+    root.addEventListener("pointermove", onPointerMove);
+    root.addEventListener("pointerleave", onPointerLeave);
+    skipButton?.focus({ preventScroll: true });
+
+    if (reducedMotion || reduced) {
+      progress.value = 0.72;
+      updateBard();
+      gsap.set(traveled, { strokeDashoffset: 0 });
+      master.fromTo(root, { opacity: 1 }, { opacity: 0, duration: INTRO_CONFIG.reducedCrossfade, ease: "power1.inOut" });
+      master.call(finish);
+      master.addLabel("handoff", 0);
+      master.addPause("handoff", arriveAtHandoff);
+    } else {
+      master.fromTo(stage, { clipPath: "inset(50% 0 50% 0 round 48%)", opacity: 0.72 }, { clipPath: "inset(0% 0 0% 0 round 0%)", opacity: 1, duration: short ? 0.12 : INTRO_CONFIG.reveal, ease: "power2.out" });
+      master.fromTo(".journey-heading", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: short ? 0.1 : 0.28 }, "-=0.12");
+      if (short) {
+        progress.value = 1;
+        updateBard();
+        gsap.set(traveled, { strokeDashoffset: 0 });
+      } else {
+        master.to(progress, { value: 1, duration: INTRO_CONFIG.journey, ease: INTRO_CONFIG.travelEase, onUpdate: updateBard });
+      }
+      master.addLabel("handoff");
+      master.addPause("handoff", arriveAtHandoff);
+    }
+
+    const handoffTime = master.labels.handoff;
+    if (!reducedMotion && !reduced) {
+      const outroAt = handoffTime;
+      const castleScale = INTRO_CONFIG.cameraZoom;
+      const focusX = 1002;
+      const focusY = 286;
+      const focusTransform = `translate(${600 - focusX * castleScale} ${380 - focusY * castleScale}) scale(${castleScale})`;
+
+      master.fromTo(pulse, { attr: { r: 9 }, opacity: 0.95 }, { attr: { r: 30 }, opacity: 0, duration: 0.78, ease: "power2.out", repeat: 1 }, outroAt);
+      master.to(".journey-castle-window", { attr: { fill: "#fff0a8" }, duration: 0.45, ease: "sine.inOut" }, outroAt);
+      master.to(zoom, { attr: { transform: focusTransform }, duration: INTRO_CONFIG.cameraZoomDuration, ease: "power2.inOut" }, outroAt + 0.3);
+      master.to(mapSvg, { filter: "blur(1.4px)", opacity: 0.35, duration: 1.6, ease: "power1.in" }, outroAt + 0.3);
+      master.to(root, { backgroundColor: "rgba(216,195,147,0)", duration: 0.9, ease: "power1.inOut" }, outroAt + 0.95);
+      master.to([root.querySelector(".journey-heading"), root.querySelector(".journey-current-location"), skipButton], { opacity: 0, duration: 0.28, ease: "power1.out" }, outroAt + 0.42);
+      master.to(sheet, {
+        x: () => {
+          const source = sheet.getBoundingClientRect();
+          const target = card?.getBoundingClientRect();
+          return target ? target.left - source.left : 0;
+        },
+        y: () => {
+          const source = sheet.getBoundingClientRect();
+          const target = card?.getBoundingClientRect();
+          return target ? target.top - source.top : 0;
+        },
+        scaleX: () => {
+          const source = sheet.getBoundingClientRect();
+          const target = card?.getBoundingClientRect();
+          return target ? target.width / source.width : 1;
+        },
+        scaleY: () => {
+          const source = sheet.getBoundingClientRect();
+          const target = card?.getBoundingClientRect();
+          return target ? target.height / source.height : 1;
+        },
+        duration: INTRO_CONFIG.parchmentMoveDuration,
+        ease: "power2.inOut",
+        onStart: () => root.classList.add("journey-shared-transition"),
+      }, outroAt + 1.0);
+      master.fromTo(nav, { autoAlpha: 0, top: -30 }, { autoAlpha: 1, top: 12, duration: 0.38, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart);
+      master.fromTo(eyebrow, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: 0.32, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart + 0.04);
+      nameLines?.forEach((line, index) => {
+        master.fromTo(line, { autoAlpha: 0, y: 26, clipPath: "inset(0 0 100% 0)" }, { autoAlpha: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: 0.36, ease: "power3.out" }, outroAt + INTRO_CONFIG.heroStart + 0.08 + index * 0.12);
+      });
+      master.fromTo(copy, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: 0.32, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart + 0.36);
+      if (copyLines?.length) {
+        master.fromTo(copyLines, { autoAlpha: 0, y: 9 }, { autoAlpha: 1, y: 0, duration: 0.26, stagger: 0.08, ease: "power2.out" }, outroAt + INTRO_CONFIG.heroStart + 0.39);
+      }
+      buttons?.forEach((button, index) => {
+        master.fromTo(button, { autoAlpha: 0, scale: 0.82, y: 12 }, { autoAlpha: 1, scale: 1, y: 0, duration: 0.24, ease: "back.out(2.2)" }, outroAt + INTRO_CONFIG.heroStart + 0.46 + index * 0.08);
+      });
+      master.fromTo(cardStage, { autoAlpha: 0, y: 18 }, {
+        autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out",
+        onComplete: () => cardStage?.classList.add("hero-card-idle"),
+      }, outroAt + INTRO_CONFIG.heroStart + 0.12);
+      master.call(() => {
+        document.body.classList.add("hero-world-active");
+        window.dispatchEvent(new Event("portfolio-world-enter"));
+      }, null, outroAt + INTRO_CONFIG.heroStart);
+      master.to(root, { opacity: 0, duration: 0.12, ease: "power1.in" }, outroAt + INTRO_CONFIG.outro - 0.12);
+      master.call(finish, null, outroAt + INTRO_CONFIG.outro);
+    } else {
+      master.addLabel("outro", handoffTime);
+    }
+
+    const startAtHandoff = () => {
+      if (!assetsReady || stageSettled || !atHandoff) return;
+      if (reducedMotion || reduced) {
+        master.play();
+        return;
+      }
+      startOutro(skipRequested || short);
+    };
+    waitForHeroAssets(page).then(() => {
+      assetsReady = true;
+      startAtHandoff();
     });
-    timeline.fromTo(wrapRef.current, { clipPath: "inset(50% 0 50% 0 round 48%)", opacity: 0.65 }, { clipPath: "inset(0% 0 0% 0 round 0%)", opacity: 1, duration: 0.48, ease: "power2.out" });
-    timeline.fromTo(".journey-heading", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.25 }, "-=0.14");
-    timeline.to(progress, { value: 1, duration: 2.4, ease: "sine.inOut", onUpdate: updateBard }, "-=0.05");
-    timeline.to(".journey-arrival", { opacity: 1, scale: 1, duration: 0.28, ease: "back.out(1.8)" });
-    timeline.to(wrapRef.current, { opacity: 0, duration: 0.3, ease: "power1.in" });
-    return () => { timeline.kill(); gsap.killTweensOf(progress); };
-  }, [reduced, onEnter]);
+    master.play(0);
+
+    return () => {
+      skipTween?.kill();
+      master.kill();
+      gsap.killTweensOf([progress, parallax, sheet, stage, root]);
+      skipButton?.removeEventListener("click", onSkip);
+      root.removeEventListener("pointermove", onPointerMove);
+      root.removeEventListener("pointerleave", onPointerLeave);
+      document.body.classList.remove("journey-lock-scroll");
+    };
+  }, [reduced, short, onEnter, rootRef, skipRef]);
 
   return (
     <div className="journey-map-stage" ref={wrapRef}>
+      <div className="journey-map-sheet" ref={sheetRef}>
+      <div className="journey-parallax-layer" ref={parallaxRef}>
       <svg className="journey-map-art" viewBox="0 0 1200 760" role="img" aria-label="An illustrated fantasy map showing the Bard's route from a village, through forests, mountains, and ancient ruins, to a castle">
         <defs>
           <pattern id="journey-paper-grain" width="120" height="120" patternUnits="userSpaceOnUse">
@@ -174,6 +373,7 @@ function FantasyMap({ reduced = false, onEnter }) {
           <path d="M90 130Q190 102 267 141T425 125M620 110q97-23 167 9t141-5M80 580q89-31 174-5t171-6M893 575q105-27 205 7" fill="none" stroke="#a58c61" strokeWidth="1.1" opacity=".48" />
           <path d="M618 68Q579 116 603 166T587 245Q572 282 600 322T631 408Q672 446 695 489" fill="none" stroke="#879996" strokeWidth="17" opacity=".42" />
           <path d="M618 68Q579 116 603 166T587 245Q572 282 600 322T631 408Q672 446 695 489" fill="none" stroke="#d7ded0" strokeWidth="2" opacity=".85" />
+          <g ref={zoomRef} transform="translate(0 0) scale(1)">
           <g ref={cameraRef}>
             {/* Mountain pass: layered ridges, ink hatching, and connected foothills */}
             <Mountain x={526} y={259} scale={1.02} back />
@@ -218,17 +418,27 @@ function FantasyMap({ reduced = false, onEnter }) {
 
             {/* Hand-inked route, drawn over the geography */}
             <path ref={pathRef} d={ROUTE} fill="none" stroke="#efe2bd" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round" opacity=".88" />
-            <path d={ROUTE} fill="none" stroke="#8b4e39" strokeWidth="2.7" strokeDasharray="1 8" strokeLinecap="round" opacity=".88" />
+            <path d={ROUTE} fill="none" stroke="#8b4e39" strokeWidth="2.3" strokeDasharray="1 9" strokeLinecap="round" opacity=".68" />
             <path ref={traveledRef} d={ROUTE} fill="none" stroke="#8b4e39" strokeWidth="3.6" strokeLinecap="round" strokeDasharray="1 1" opacity=".92" />
             <g className="journey-waypoints" aria-hidden="true">
               {[[146,510],[366,409],[555,315],[767,414],[1048,226]].map(([x,y], index) => (
                 <g key={x} className={activeLandmark >= index ? "is-reached" : ""} transform={`translate(${x} ${y})`}>
+                  {index === 4 && <circle ref={pulseRef} className="journey-arrival-pulse" r="9" fill="none" stroke="#a14e36" strokeWidth="2.5" opacity="0" />}
                   <circle r="9" fill="#eadbb7" stroke="#784b37" strokeWidth="1.8" />
                   <circle r="3" fill="#a45e43" />
                 </g>
               ))}
             </g>
+            <g className="journey-landmark-labels" aria-hidden="true">
+              {WAYPOINTS.map((waypoint, index) => (
+                <g key={waypoint.section} className={activeLandmark >= index ? "is-visible" : ""} transform={`translate(${waypoint.x} ${waypoint.y})`}>
+                  <path d="M-32 0h64" />
+                  <text textAnchor="middle" y="15">{waypoint.section}</text>
+                </g>
+              ))}
+            </g>
             <BardMini refNode={bardRef} />
+          </g>
           </g>
 
           {/* Cartographic marginalia */}
@@ -245,19 +455,23 @@ function FantasyMap({ reduced = false, onEnter }) {
           <path d="M102 91h14v14h-14zM1090 654h14v14h-14zM500 688h11v11h-11z" fill="#a78a5d" opacity=".65" />
         </g>
       </svg>
+      </div>
+      </div>
       <div className="journey-heading" aria-live="off">
         <p className="journey-kicker">A PERSONAL ADVENTURE · CHAPTER I</p>
         <h1>The Bard’s Journey</h1>
         <p className="journey-subtitle">An adventure begins with a single step.</p>
         <span className="journey-rule" aria-hidden="true"><i /></span>
       </div>
-      <p className="journey-current-location">{WAYPOINTS[activeLandmark]?.label}</p>
+      <p key={activeLandmark} className="journey-current-location" aria-live="polite" aria-atomic="true">{WAYPOINTS[activeLandmark]?.label}</p>
       <div className="journey-arrival" aria-hidden="true">THE KEEP AWAITS</div>
     </div>
   );
 }
 
-export default function JourneyIntro({ onEnter }) {
+export default function JourneyIntro({ onEnter, short = false }) {
+  const rootRef = useRef(null);
+  const skipRef = useRef(null);
   const [isReduced, setIsReduced] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -269,9 +483,9 @@ export default function JourneyIntro({ onEnter }) {
   }, []);
 
   return (
-    <section className={`journey-intro ${isReduced ? "journey-static" : ""}`} aria-label="The Bard's Journey introduction">
-      <FantasyMap reduced={isReduced} onEnter={onEnter} />
-      <button type="button" className="journey-skip" onClick={onEnter}>{isReduced ? "Enter the portfolio" : "Skip intro"}<span aria-hidden="true"> ↗</span></button>
+    <section ref={rootRef} className={`journey-intro ${isReduced ? "journey-static" : ""}`} aria-label="The Bard's Journey introduction">
+      <FantasyMap reduced={isReduced} short={short} onEnter={onEnter} rootRef={rootRef} skipRef={skipRef} />
+      <button ref={skipRef} type="button" className="journey-skip">{isReduced ? "Enter the portfolio" : "Skip intro"}<span className="journey-skip-arrow" aria-hidden="true"> ↗</span></button>
       <p className="journey-sr-only" aria-live="polite">{isReduced ? "Static fantasy map. Enter the portfolio when ready." : "The Bard is traveling across the map toward Emberfall Keep."}</p>
     </section>
   );

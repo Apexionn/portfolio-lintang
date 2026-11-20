@@ -263,7 +263,7 @@ function Nav() {
 
   return (
     <>
-      <nav className="game-nav fixed top-3 left-1/2 -translate-x-1/2 z-[100] flex justify-between items-center px-3 sm:px-5 py-2.5 w-[calc(100%-24px)] max-w-[1180px]">
+      <nav className="game-nav fixed top-3 left-1/2 -translate-x-1/2 z-[100] flex justify-between items-center px-3 sm:px-5 py-2.5 w-[calc(100%-24px)] max-w-[1180px]" data-hero-enter="nav">
         <a href="#hero" aria-label="Lintang Anggowoyuono, home" className="game-logo font-syne font-[800] text-[18px] sm:text-[20px] tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
           LA<span>.</span>
         </a>
@@ -335,35 +335,35 @@ function HeroSection() {
       <div className="game-hero-layout max-w-[1200px] w-full mx-auto px-6 md:px-[60px] flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-[60px]">
         
         <div className={`w-full min-w-0 pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
-          <p className="game-eyebrow font-syne-mono text-[10px] sm:text-[11px] tracking-[0.12em] uppercase mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.3s]">
+          <p className="game-eyebrow font-syne-mono text-[10px] sm:text-[11px] tracking-[0.12em] uppercase mb-5">
             PLAYER 01 <span>•</span> BINUS COMPUTER SCIENCE
           </p>
           
-          <h1 className="game-hero-title font-syne font-[800] leading-[0.98] tracking-[-0.06em] mb-5 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.5s] break-words">
-            <span>Lintang</span>
+          <h1 className="game-hero-title font-syne font-[800] leading-[0.98] tracking-[-0.06em] mb-5 break-words">
+            <span className="hero-name-line">Lintang</span>
             <br />
-            <span>Anggowoyuono</span>
+            <span className="hero-name-line">Anggowoyuono</span>
           </h1>
           
-          <p className="game-hero-copy text-[14px] sm:text-[16px] leading-[1.8] max-w-[480px] mb-8 opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.7s]">
-            Full Stack • AI • Game Dev<br />
-            I build useful things with code, curiosity, and a little player energy.
+          <p className="game-hero-copy text-[14px] sm:text-[16px] leading-[1.8] max-w-[480px] mb-8">
+            <span className="hero-subtitle">Full Stack • AI • Game Dev</span>
+            <span className="hero-description">I build useful things with code, curiosity, and a little player energy.</span>
           </p>
           
           <div className="relative w-full">
-            <div className="flex items-center opacity-0 animate-[fadeUp_0.6s_ease_forwards_0.9s]">
+            <div className="flex items-center">
               <div className="flex gap-[16px] flex-wrap">
-                <a href="#work" className="game-button game-button-primary font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 font-[500] inline-flex items-center gap-3 no-underline">
+                <a href="#work" className="game-button game-button-primary hero-enter-button game-hero-start font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 font-[500] inline-flex items-center gap-3 no-underline">
                   <span aria-hidden="true">▶</span> Start exploring
                 </a>
-                <a href="/cv-lintang-anggowoyuono.pdf" target="_blank" rel="noreferrer" className="game-button game-button-secondary font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 inline-flex items-center gap-2 no-underline">
+                <a href="/cv-lintang-anggowoyuono.pdf" target="_blank" rel="noreferrer" className="game-button game-button-secondary hero-enter-button font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 inline-flex items-center gap-2 no-underline">
                   Resume ↓
                 </a>
               </div>
             </div>
 
             {isDesktop && (
-              <div className="game-scroll-hint mt-8 flex items-center gap-3 font-syne-mono text-[9px] tracking-[0.12em] uppercase opacity-0 animate-[fadeUp_0.6s_ease_forwards_1.2s]">
+              <div className="game-scroll-hint mt-8 flex items-center gap-3 font-syne-mono text-[9px] tracking-[0.12em] uppercase">
                 <span className="game-scroll-arrow">↓</span> Scroll to continue
               </div>
             )}
@@ -841,10 +841,20 @@ function Footer() {
 // ROOT APP
 export default function App() {
   useScrollReveal();
-  const [showJourney, setShowJourney] = useState(() => {
-    try { return window.sessionStorage.getItem("bard-journey-seen") !== "yes"; }
+  const [showJourney, setShowJourney] = useState(true);
+  const [journeyCompleted, setJourneyCompleted] = useState(false);
+  const [shortJourney] = useState(() => {
+    try { return window.sessionStorage.getItem("bard-journey-seen") === "yes"; }
     catch { return false; }
   });
+
+  useEffect(() => {
+    if (!journeyCompleted) return undefined;
+    const frame = window.requestAnimationFrame(() => {
+      document.querySelector(".game-hero-start")?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [journeyCompleted]);
 
   return (
     <>
@@ -866,9 +876,10 @@ export default function App() {
       </main>
       <Footer />
     </div>
-    {showJourney && <JourneyIntro onEnter={() => {
+    {showJourney && <JourneyIntro short={shortJourney} onEnter={() => {
       try { window.sessionStorage.setItem("bard-journey-seen", "yes"); } catch { /* session storage can be unavailable */ }
       setShowJourney(false);
+      setJourneyCompleted(true);
     }} />}
     </>
   );
