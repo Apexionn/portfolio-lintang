@@ -435,54 +435,283 @@ function drawMushroom(ctx, x, y, color, scale = 1) {
   pixel(ctx, x + 7 * scale, y + 4 * scale, scale, scale, "#f1d8aa");
 }
 
-function drawHouse(ctx, x, baseY, scale, wall = "#a99875", roof = "#704d45") {
-  pixel(ctx, x + 4 * scale, baseY - 20 * scale, 28 * scale, 20 * scale, wall);
-  pixel(ctx, x + 1 * scale, baseY - 23 * scale, 34 * scale, 5 * scale, roof);
-  pixel(ctx, x + 5 * scale, baseY - 28 * scale, 26 * scale, 6 * scale, roof);
-  pixel(ctx, x + 11 * scale, baseY - 33 * scale, 14 * scale, 6 * scale, roof);
-  pixel(ctx, x + 17 * scale, baseY - 39 * scale, 3 * scale, 7 * scale, roof);
-  pixel(ctx, x + 14 * scale, baseY - 11 * scale, 7 * scale, 11 * scale, "#493d38");
-  pixel(ctx, x + 7 * scale, baseY - 16 * scale, 5 * scale, 5 * scale, "#d9b46f");
-  pixel(ctx, x + 25 * scale, baseY - 16 * scale, 5 * scale, 5 * scale, "#d9b46f");
-  pixel(ctx, x + 9 * scale, baseY - 16 * scale, scale, 5 * scale, "#594a3d");
-  pixel(ctx, x + 27 * scale, baseY - 16 * scale, scale, 5 * scale, "#594a3d");
-  pixel(ctx, x + 1 * scale, baseY - 1 * scale, 34 * scale, 2 * scale, "#574739");
+const STONE_PALETTE = {
+  outline: "#383b42",
+  mortar: "#53565c",
+  shadow: "#62666d",
+  base: "#81858a",
+  light: "#a9a598",
+  moss: "#657650",
+};
+
+function drawMasonry(ctx, x, y, width, height, scale, palette = STONE_PALETTE, variant = 0) {
+  const unit = scale;
+  pixel(ctx, x - unit, y - unit, width + 2 * unit, height + 2 * unit, palette.outline);
+  pixel(ctx, x, y, width, height, palette.base);
+  pixel(ctx, x + width - 4 * unit, y + unit, 4 * unit, height - unit, palette.shadow);
+  pixel(ctx, x + unit, y + unit, width - 6 * unit, 2 * unit, palette.light);
+
+  const courseHeight = 7 * unit;
+  const courses = Math.floor(height / courseHeight);
+  for (let row = 1; row < courses; row++) {
+    const courseY = y + row * courseHeight;
+    pixel(ctx, x + unit, courseY, width - 5 * unit, unit, palette.mortar);
+    const stagger = row % 2 ? 6 : 0;
+    for (let col = 0; col < Math.ceil(width / (12 * unit)); col++) {
+      const seamX = x + (stagger + col * 12) * unit;
+      if (seamX > x + 3 * unit && seamX < x + width - 5 * unit) {
+        pixel(ctx, seamX, courseY + unit, unit, 5 * unit, palette.mortar);
+        if ((row + col + variant) % 3 === 0) {
+          pixel(ctx, seamX + unit, courseY + unit, 3 * unit, unit, palette.light);
+        }
+      }
+    }
+    if ((row + variant) % 2 === 0) {
+      pixel(ctx, x + width * 0.2, courseY + unit, width * 0.18, unit, palette.light);
+    }
+  }
 }
 
-function drawRuin(ctx, x, baseY, scale = 1) {
-  const stone = "#8b8b7b";
-  pixel(ctx, x, baseY - 34 * scale, 7 * scale, 35 * scale, stone);
-  pixel(ctx, x + 48 * scale, baseY - 27 * scale, 7 * scale, 28 * scale, stone);
-  pixel(ctx, x - 3 * scale, baseY - 37 * scale, 13 * scale, 6 * scale, "#a3a18b");
-  pixel(ctx, x + 44 * scale, baseY - 31 * scale, 14 * scale, 6 * scale, "#a3a18b");
-  pixel(ctx, x + 7 * scale, baseY - 35 * scale, 13 * scale, 5 * scale, stone);
-  pixel(ctx, x + 20 * scale, baseY - 31 * scale, 13 * scale, 5 * scale, stone);
-  pixel(ctx, x + 33 * scale, baseY - 35 * scale, 12 * scale, 5 * scale, stone);
-  pixel(ctx, x + 11 * scale, baseY - 20 * scale, 6 * scale, 2 * scale, "#626c68");
-  pixel(ctx, x + 49 * scale, baseY - 17 * scale, 6 * scale, 2 * scale, "#626c68");
+function drawPitchedRoof(ctx, x, eavesY, width, scale, palette) {
+  const unit = scale;
+  const centerX = x + width / 2;
+  const roofHeight = 18 * unit;
+  const peakY = eavesY - roofHeight;
+  fillPoly(ctx, [
+    [x - 3 * unit, eavesY], [centerX, peakY], [x + width + 3 * unit, eavesY],
+    [x + width + 2 * unit, eavesY + 4 * unit], [centerX, peakY + 5 * unit], [x - 2 * unit, eavesY + 4 * unit],
+  ], palette.outline);
+  fillPoly(ctx, [
+    [x - unit, eavesY], [centerX, peakY + 2 * unit], [centerX, peakY + 5 * unit], [x + 2 * unit, eavesY + 3 * unit],
+  ], palette.roofLight);
+  fillPoly(ctx, [
+    [centerX, peakY + 2 * unit], [x + width + unit, eavesY], [x + width - 2 * unit, eavesY + 3 * unit], [centerX, peakY + 5 * unit],
+  ], palette.roof);
+  pixel(ctx, x - 3 * unit, eavesY + 2 * unit, width + 6 * unit, 2 * unit, palette.roofShade);
+
+  for (let row = 1; row <= 5; row++) {
+    const t = row / 6;
+    const half = width * t * 0.46;
+    const tileY = peakY + roofHeight * t;
+    pixel(ctx, centerX - half, tileY, half * 0.72, unit, row % 2 ? palette.roofTile : palette.roofLight);
+    pixel(ctx, centerX + half * 0.28, tileY + unit, half * 0.68, unit, palette.roofShade);
+  }
+}
+
+function drawHouseWindow(ctx, x, y, scale, frame = "#55483f", glass = "#e0b76f") {
+  pixel(ctx, x - scale, y - scale, 8 * scale, 9 * scale, frame);
+  pixel(ctx, x, y, 6 * scale, 7 * scale, glass);
+  pixel(ctx, x + 2 * scale, y, scale, 7 * scale, frame);
+  pixel(ctx, x, y + 3 * scale, 6 * scale, scale, frame);
+}
+
+function drawHouseDoor(ctx, x, baseY, scale, wood = "#704b39") {
+  pixel(ctx, x - scale, baseY - 16 * scale, 10 * scale, 17 * scale, "#38363a");
+  pixel(ctx, x + scale, baseY - 18 * scale, 6 * scale, 3 * scale, "#38363a");
+  pixel(ctx, x, baseY - 16 * scale, 2 * scale, 2 * scale, "#38363a");
+  pixel(ctx, x + 7 * scale, baseY - 16 * scale, 2 * scale, 2 * scale, "#38363a");
+  pixel(ctx, x + scale, baseY - 14 * scale, 6 * scale, 14 * scale, wood);
+  pixel(ctx, x + 2 * scale, baseY - 16 * scale, 4 * scale, 2 * scale, wood);
+  pixel(ctx, x + 2 * scale, baseY - 14 * scale, scale, 14 * scale, "#a2764c");
+  pixel(ctx, x + scale, baseY - 17 * scale, 6 * scale, 2 * scale, "#57483e");
+  pixel(ctx, x + 6 * scale, baseY - 8 * scale, scale, scale, "#e5bd69");
+}
+
+function drawHouse(ctx, x, baseY, scale, variant = 0) {
+  const styles = [
+    { width: 38, wall: "#b79a6b", roof: "#77543b", roofLight: "#a7804d", roofShade: "#503d33", roofTile: "#91704b", timber: "#62483a", stone: false },
+    { width: 44, wall: "#918f80", roof: "#704e4b", roofLight: "#a17158", roofShade: "#493d41", roofTile: "#87594d", timber: "#59473f", stone: true },
+    { width: 40, wall: "#b89a70", roof: "#65585a", roofLight: "#8b7370", roofShade: "#403b43", roofTile: "#716469", timber: "#61483a", stone: false },
+  ];
+  const style = styles[variant % styles.length];
+  const unit = scale;
+  const width = style.width * unit;
+  const wallTop = baseY - 23 * unit;
+  const roofEaves = wallTop + 3 * unit;
+  const roofPeak = roofEaves - 18 * unit;
+  const bodyX = x + 4 * unit;
+  const bodyWidth = width - 8 * unit;
+  const masonryPalette = { ...STONE_PALETTE, base: style.wall, light: "#c5b798", shadow: "#6d716f", mortar: "#65645d" };
+
+  pixel(ctx, x + 1 * unit, baseY - 3 * unit, width - 2 * unit, 4 * unit, "#473f3b");
+  if (style.stone) {
+    drawMasonry(ctx, bodyX, wallTop, bodyWidth, baseY - wallTop, unit, masonryPalette, variant);
+  } else {
+    pixel(ctx, bodyX - unit, wallTop - unit, bodyWidth + 2 * unit, baseY - wallTop + unit, "#463d39");
+    pixel(ctx, bodyX, wallTop, bodyWidth, baseY - wallTop, style.wall);
+    pixel(ctx, bodyX + bodyWidth - 5 * unit, wallTop, 5 * unit, baseY - wallTop, "#8b7355");
+    pixel(ctx, bodyX + unit, wallTop + 2 * unit, bodyWidth - 7 * unit, 2 * unit, "#c6aa79");
+    pixel(ctx, bodyX + 3 * unit, wallTop, 2 * unit, baseY - wallTop, style.timber);
+    pixel(ctx, bodyX + bodyWidth - 8 * unit, wallTop, 2 * unit, baseY - wallTop, style.timber);
+    pixel(ctx, bodyX + unit, baseY - 6 * unit, bodyWidth - 6 * unit, 2 * unit, style.timber);
+  }
+
+  fillPoly(ctx, [
+    [bodyX, wallTop + unit], [x + width / 2, roofPeak + 15 * unit], [bodyX + bodyWidth, wallTop + unit],
+  ], style.stone ? style.wall : "#c1a577");
+
+  if (variant === 1) {
+    pixel(ctx, x + width - 13 * unit, roofPeak + 4 * unit, 6 * unit, 14 * unit, "#4b4240");
+    pixel(ctx, x + width - 14 * unit, roofPeak + 2 * unit, 8 * unit, 3 * unit, "#9a8e7b");
+  }
+
+  drawHouseWindow(ctx, x + 8 * unit, wallTop + 9 * unit, unit, style.timber);
+  drawHouseDoor(ctx, x + (width - 8 * unit) / 2, baseY, unit, style.timber);
+  if (variant !== 0) drawHouseWindow(ctx, x + width - 15 * unit, wallTop + 9 * unit, unit, style.timber);
+  if (variant === 2) {
+    pixel(ctx, x + 4 * unit, baseY - 2 * unit, width - 8 * unit, 2 * unit, "#704d3c");
+    pixel(ctx, x + 2 * unit, baseY - 9 * unit, 2 * unit, 8 * unit, style.timber);
+    pixel(ctx, x + width - 6 * unit, baseY - 9 * unit, 2 * unit, 8 * unit, style.timber);
+    pixel(ctx, x + 2 * unit, baseY - 10 * unit, width - 6 * unit, 2 * unit, "#a67a4d");
+    pixel(ctx, x + 7 * unit, baseY - 7 * unit, 6 * unit, 2 * unit, "#b45f55");
+  }
+  const roofPalette = { ...style, outline: "#443a39", roofShade: style.roofShade, roofTile: style.roofTile };
+  drawPitchedRoof(ctx, x, roofEaves, width, unit, roofPalette);
+}
+
+function drawRuin(ctx, x, baseY, scale = 1, variant = 0) {
+  const unit = scale;
+  const palette = { ...STONE_PALETTE, base: "#828477", light: "#aaa58c", shadow: "#5d625b", mortar: "#54594f" };
+  drawMasonry(ctx, x - unit, baseY - 6 * unit, 66 * unit, 6 * unit, unit, palette, 1);
+  if (variant === 0) {
+    drawMasonry(ctx, x + 3 * unit, baseY - 34 * unit, 10 * unit, 29 * unit, unit, palette, 0);
+    drawMasonry(ctx, x + 48 * unit, baseY - 28 * unit, 10 * unit, 23 * unit, unit, palette, 1);
+    drawMasonry(ctx, x + 9 * unit, baseY - 39 * unit, 10 * unit, 5 * unit, unit, palette, 0);
+    drawMasonry(ctx, x + 18 * unit, baseY - 44 * unit, 10 * unit, 5 * unit, unit, palette, 1);
+    drawMasonry(ctx, x + 28 * unit, baseY - 46 * unit, 10 * unit, 5 * unit, unit, palette, 2);
+    drawMasonry(ctx, x + 38 * unit, baseY - 41 * unit, 10 * unit, 5 * unit, unit, palette, 0);
+    pixel(ctx, x + 16 * unit, baseY - 23 * unit, 2 * unit, 8 * unit, "#444941");
+    pixel(ctx, x + 43 * unit, baseY - 21 * unit, 2 * unit, 7 * unit, "#444941");
+  } else {
+    drawMasonry(ctx, x + 3 * unit, baseY - 29 * unit, 10 * unit, 24 * unit, unit, palette, 1);
+    drawMasonry(ctx, x + 49 * unit, baseY - 22 * unit, 10 * unit, 17 * unit, unit, palette, 2);
+    drawMasonry(ctx, x + 9 * unit, baseY - 30 * unit, 21 * unit, 7 * unit, unit, palette, 0);
+    drawMasonry(ctx, x + 30 * unit, baseY - 25 * unit, 13 * unit, 6 * unit, unit, palette, 1);
+    pixel(ctx, x + 21 * unit, baseY - 16 * unit, 12 * unit, 2 * unit, palette.mortar);
+    pixel(ctx, x + 36 * unit, baseY - 12 * unit, 9 * unit, 2 * unit, palette.light);
+  }
+  pixel(ctx, x + 1 * unit, baseY - 4 * unit, 12 * unit, 2 * unit, palette.moss);
+  pixel(ctx, x + 48 * unit, baseY - 4 * unit, 13 * unit, 2 * unit, palette.moss);
+}
+
+function drawRockFormation(ctx, x, baseY, scale = 1) {
+  const unit = scale;
+  const outline = "#3f4548";
+  fillPoly(ctx, [
+    [x, baseY], [x + 4 * unit, baseY - 9 * unit], [x + 14 * unit, baseY - 13 * unit],
+    [x + 21 * unit, baseY - 25 * unit], [x + 30 * unit, baseY - 21 * unit],
+    [x + 39 * unit, baseY - 11 * unit], [x + 49 * unit, baseY - 8 * unit], [x + 54 * unit, baseY],
+  ], outline);
+  fillPoly(ctx, [
+    [x + 3 * unit, baseY - unit], [x + 7 * unit, baseY - 8 * unit],
+    [x + 18 * unit, baseY - 12 * unit], [x + 23 * unit, baseY - 21 * unit],
+    [x + 29 * unit, baseY - 18 * unit], [x + 24 * unit, baseY - 8 * unit], [x + 14 * unit, baseY - unit],
+  ], "#87908a");
+  fillPoly(ctx, [
+    [x + 29 * unit, baseY - 18 * unit], [x + 38 * unit, baseY - 10 * unit],
+    [x + 48 * unit, baseY - 7 * unit], [x + 51 * unit, baseY - unit], [x + 18 * unit, baseY - unit],
+  ], "#596267");
+  pixel(ctx, x + 21 * unit, baseY - 18 * unit, 3 * unit, 6 * unit, "#424b4e");
+  pixel(ctx, x + 34 * unit, baseY - 10 * unit, 7 * unit, 2 * unit, "#454d50");
+  pixel(ctx, x + 4 * unit, baseY - 2 * unit, 12 * unit, 2 * unit, "#66764e");
 }
 
 function drawTower(ctx, x, baseY, scale = 1) {
-  pixel(ctx, x + 8 * scale, baseY - 48 * scale, 42 * scale, 49 * scale, "#665c79");
-  pixel(ctx, x + 4 * scale, baseY - 52 * scale, 50 * scale, 6 * scale, "#9886a2");
-  pixel(ctx, x + 11 * scale, baseY - 60 * scale, 36 * scale, 9 * scale, "#6e627f");
-  pixel(ctx, x + 17 * scale, baseY - 68 * scale, 24 * scale, 9 * scale, "#82708f");
-  pixel(ctx, x + 24 * scale, baseY - 79 * scale, 10 * scale, 12 * scale, "#594f72");
-  pixel(ctx, x + 15 * scale, baseY - 37 * scale, 7 * scale, 11 * scale, "#e8c57d");
-  pixel(ctx, x + 35 * scale, baseY - 37 * scale, 7 * scale, 11 * scale, "#e8c57d");
-  pixel(ctx, x + 25 * scale, baseY - 17 * scale, 9 * scale, 17 * scale, "#3e3a4a");
-  pixel(ctx, x + 28 * scale, baseY - 75 * scale, 2 * scale, 4 * scale, "#e7d7a2");
+  const unit = scale;
+  const stone = { ...STONE_PALETTE, base: "#706d82", light: "#a0919e", shadow: "#4e5062", mortar: "#535362" };
+  drawMasonry(ctx, x + 5 * unit, baseY - 46 * unit, 40 * unit, 45 * unit, unit, stone, 0);
+  drawMasonry(ctx, x + 9 * unit, baseY - 67 * unit, 32 * unit, 22 * unit, unit, stone, 1);
+  pixel(ctx, x + 1 * unit, baseY - 7 * unit, 49 * unit, 8 * unit, "#4b4b59");
+  drawPitchedRoof(ctx, x + 7 * unit, baseY - 65 * unit, 36 * unit, unit, {
+    outline: "#393747", roof: "#51475f", roofLight: "#81718b", roofShade: "#3d394d", roofTile: "#685a77",
+  });
+  drawHouseWindow(ctx, x + 21 * unit, baseY - 55 * unit, unit, "#393849", "#edc67b");
+  drawHouseWindow(ctx, x + 21 * unit, baseY - 33 * unit, unit, "#393849", "#e1b56d");
+  pixel(ctx, x + 21 * unit, baseY - 17 * unit, 9 * unit, 17 * unit, "#393747");
+  pixel(ctx, x + 23 * unit, baseY - 16 * unit, 5 * unit, 15 * unit, "#79584b");
+  pixel(ctx, x + 27 * unit, baseY - 9 * unit, unit, unit, "#ebc675");
+}
+
+function drawCastleTower(ctx, x, baseY, scale, width, height, palette, variant = 0) {
+  const unit = scale;
+  const topY = baseY - height * unit;
+  drawMasonry(ctx, x, topY, width * unit, height * unit, unit, palette, variant);
+  drawPitchedRoof(ctx, x - unit, topY + 2 * unit, (width + 2) * unit, unit, {
+    outline: "#353943", roof: variant ? "#5e4e50" : "#4c4e59", roofLight: "#91817a",
+    roofShade: "#393c45", roofTile: "#76645d",
+  });
+  drawHouseWindow(ctx, x + width * 0.48 * unit, topY + 13 * unit, unit, "#343943", "#d8b36e");
+  drawHouseWindow(ctx, x + width * 0.48 * unit, topY + 29 * unit, unit, "#343943", "#d8b36e");
 }
 
 function drawCastle(ctx, x, baseY, scale = 1) {
-  const stone = "#73778a";
-  pixel(ctx, x + 12 * scale, baseY - 32 * scale, 66 * scale, 33 * scale, stone);
-  pixel(ctx, x, baseY - 50 * scale, 22 * scale, 51 * scale, "#85879a");
-  pixel(ctx, x + 68 * scale, baseY - 45 * scale, 20 * scale, 46 * scale, "#85879a");
-  pixel(ctx, x - 3 * scale, baseY - 54 * scale, 28 * scale, 7 * scale, "#9c9aaa");
-  pixel(ctx, x + 65 * scale, baseY - 50 * scale, 26 * scale, 7 * scale, "#9c9aaa");
-  for (let i = 0; i < 4; i++) pixel(ctx, x + (8 + i * 20) * scale, baseY - 40 * scale, 6 * scale, 9 * scale, "#ecc77a");
-  pixel(ctx, x + 38 * scale, baseY - 20 * scale, 14 * scale, 21 * scale, "#3d3941");
+  const unit = scale;
+  const palette = { ...STONE_PALETTE, base: "#737985", light: "#a4a39c", shadow: "#505663", mortar: "#4a4e59" };
+  drawMasonry(ctx, x + 3 * unit, baseY - 9 * unit, 90 * unit, 9 * unit, unit, palette, 0);
+  drawMasonry(ctx, x + 16 * unit, baseY - 39 * unit, 62 * unit, 32 * unit, unit, palette, 1);
+  for (let merlon = 0; merlon < 5; merlon++) {
+    pixel(ctx, x + (18 + merlon * 13) * unit, baseY - 46 * unit, 7 * unit, 8 * unit, palette.outline);
+    pixel(ctx, x + (19 + merlon * 13) * unit, baseY - 45 * unit, 5 * unit, 7 * unit, palette.base);
+  }
+  drawCastleTower(ctx, x + 2 * unit, baseY, scale, 23, 51, palette, 0);
+  drawCastleTower(ctx, x + 67 * unit, baseY, scale, 23, 46, palette, 1);
+
+  pixel(ctx, x + 39 * unit, baseY - 23 * unit, 16 * unit, 24 * unit, "#343841");
+  pixel(ctx, x + 42 * unit, baseY - 26 * unit, 10 * unit, 4 * unit, "#343841");
+  pixel(ctx, x + 39 * unit, baseY - 23 * unit, 4 * unit, 4 * unit, "#343841");
+  pixel(ctx, x + 51 * unit, baseY - 23 * unit, 4 * unit, 4 * unit, "#343841");
+  pixel(ctx, x + 42 * unit, baseY - 20 * unit, 10 * unit, 21 * unit, "#60483f");
+  pixel(ctx, x + 44 * unit, baseY - 23 * unit, 6 * unit, 3 * unit, "#60483f");
+  pixel(ctx, x + 43 * unit, baseY - 22 * unit, 8 * unit, 2 * unit, "#a39a86");
+  pixel(ctx, x + 49 * unit, baseY - 10 * unit, unit, unit, "#d8b36e");
+  pixel(ctx, x + 31 * unit, baseY - 31 * unit, 5 * unit, 10 * unit, "#303740");
+  pixel(ctx, x + 58 * unit, baseY - 31 * unit, 5 * unit, 10 * unit, "#303740");
+  pixel(ctx, x + 32 * unit, baseY - 30 * unit, 3 * unit, 7 * unit, "#d8b36e");
+  pixel(ctx, x + 59 * unit, baseY - 30 * unit, 3 * unit, 7 * unit, "#d8b36e");
+}
+
+function drawLanternPost(ctx, x, baseY, scale = 1) {
+  pixel(ctx, x + 5 * scale, baseY - 29 * scale, 3 * scale, 29 * scale, "#4b423c");
+  pixel(ctx, x + 6 * scale, baseY - 27 * scale, scale, 25 * scale, "#9a734b");
+  pixel(ctx, x + 1 * scale, baseY - 31 * scale, 11 * scale, 2 * scale, "#5a4739");
+  pixel(ctx, x + 2 * scale, baseY - 40 * scale, 9 * scale, 8 * scale, "#3d3c3d");
+  pixel(ctx, x + 3 * scale, baseY - 39 * scale, 7 * scale, 6 * scale, "#e0b66d");
+  pixel(ctx, x + 4 * scale, baseY - 38 * scale, 4 * scale, 4 * scale, "#f2d58a");
+  pixel(ctx, x + scale, baseY - 42 * scale, 11 * scale, 2 * scale, "#5b483b");
+  pixel(ctx, x + 4 * scale, baseY - 44 * scale, 5 * scale, 2 * scale, "#76583d");
+  pixel(ctx, x + 3 * scale, baseY - 2 * scale, 7 * scale, 2 * scale, "#49403a");
+}
+
+function drawElderVillager(ctx, x, baseY, scale = 1) {
+  const unit = scale;
+  const outline = "#302f35";
+  const coat = "#716254";
+  const coatLight = "#a28a68";
+  const hair = "#b9b7a7";
+  pixel(ctx, x + 7 * unit, baseY - 2 * unit, 14 * unit, 2 * unit, "#49443c");
+  pixel(ctx, x + 7 * unit, baseY - 8 * unit, 5 * unit, 7 * unit, outline);
+  pixel(ctx, x + 15 * unit, baseY - 8 * unit, 5 * unit, 7 * unit, outline);
+  pixel(ctx, x + 8 * unit, baseY - 7 * unit, 3 * unit, 5 * unit, "#78614b");
+  pixel(ctx, x + 16 * unit, baseY - 7 * unit, 3 * unit, 5 * unit, "#78614b");
+  pixel(ctx, x + 5 * unit, baseY - 23 * unit, 15 * unit, 16 * unit, outline);
+  pixel(ctx, x + 7 * unit, baseY - 22 * unit, 11 * unit, 13 * unit, coat);
+  pixel(ctx, x + 7 * unit, baseY - 20 * unit, 3 * unit, 10 * unit, coatLight);
+  pixel(ctx, x + 16 * unit, baseY - 20 * unit, 2 * unit, 10 * unit, "#514a47");
+  pixel(ctx, x + 10 * unit, baseY - 18 * unit, 6 * unit, unit, "#453d39");
+  pixel(ctx, x + 11 * unit, baseY - 19 * unit, 2 * unit, 3 * unit, "#d2b26e");
+  pixel(ctx, x + 17 * unit, baseY - 20 * unit, 4 * unit, 8 * unit, outline);
+  pixel(ctx, x + 18 * unit, baseY - 19 * unit, 2 * unit, 6 * unit, "#9c7651");
+  pixel(ctx, x + 9 * unit, baseY - 31 * unit, 10 * unit, 11 * unit, outline);
+  pixel(ctx, x + 10 * unit, baseY - 30 * unit, 8 * unit, 8 * unit, "#d6b28d");
+  pixel(ctx, x + 9 * unit, baseY - 32 * unit, 10 * unit, 4 * unit, hair);
+  pixel(ctx, x + 8 * unit, baseY - 29 * unit, 3 * unit, 6 * unit, hair);
+  pixel(ctx, x + 16 * unit, baseY - 29 * unit, 3 * unit, 5 * unit, hair);
+  pixel(ctx, x + 11 * unit, baseY - 24 * unit, 6 * unit, 7 * unit, hair);
+  pixel(ctx, x + 12 * unit, baseY - 27 * unit, unit, unit, outline);
+  pixel(ctx, x + 16 * unit, baseY - 27 * unit, unit, unit, outline);
+  pixel(ctx, x + 17 * unit, baseY - 25 * unit, 2 * unit, unit, "#a57959");
+  pixel(ctx, x + 20 * unit, baseY - 18 * unit, 2 * unit, 14 * unit, "#493f37");
+  pixel(ctx, x + 19 * unit, baseY - 18 * unit, 2 * unit, 2 * unit, "#896c4e");
 }
 
 function drawCampfire(ctx, x, baseY, beat = 0) {
@@ -502,7 +731,7 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
     const base = groundY - 9;
     if (area === 0) {
       [90, 265, 480, 660].forEach((offset, i) => drawTree(ctx, xAt(offset), base + (i % 2) * 3, 0.82 + (i % 3) * 0.12, ["#24463f", "#31594b", "#78905a"], true, i));
-      drawHouse(ctx, xAt(550), base, 0.6, "#94876d", "#664943");
+      drawHouse(ctx, xAt(550), base, 0.6, 0);
     } else if (area === 1) {
       [110, 360, 620].forEach((offset, i) => drawTree(ctx, xAt(offset), base, 1.05 + i * 0.13, ["#283f50", "#3f5a64", "#71817a"], false, i + 1));
       if (!reducedDetails) {
@@ -516,24 +745,18 @@ function drawAreaObjects(ctx, cameraX, width, groundY, reducedDetails) {
     } else if (area === 2) {
       [70, 665].forEach((offset, i) => drawTree(ctx, xAt(offset), base, 0.78 + i * 0.12, ["#354a40", "#53664c", "#899264"], true, i + 2));
       drawRuin(ctx, xAt(145), base, 0.9);
-      drawRuin(ctx, xAt(470), base + 2, 0.72);
-      pixel(ctx, xAt(300), base - 8, 38, 8, "#8b8b7b");
-      pixel(ctx, xAt(313), base - 24, 9, 18, "#8b8b7b");
-      pixel(ctx, xAt(326), base - 17, 8, 11, "#8b8b7b");
+      drawRuin(ctx, xAt(470), base + 2, 0.72, 1);
+      drawRockFormation(ctx, xAt(300), base, 0.9);
     } else if (area === 3) {
       [[46, 0.78, true], [278, 0.84, false], [710, 0.78, true]].forEach(([offset, scale, pine], i) => {
         drawTree(ctx, xAt(offset), base, scale, ["#354b3e", "#586b48", "#8e9860"], pine, i + 1);
       });
-      drawHouse(ctx, xAt(105), base, 0.72, "#a99875", "#714e45");
-      drawHouse(ctx, xAt(365), base + 2, 0.86, "#b0a17e", "#596254");
-      drawHouse(ctx, xAt(625), base, 0.64, "#9b8c70", "#76554a");
+      drawElderVillager(ctx, xAt(455), base, 0.86);
+      drawHouse(ctx, xAt(105), base, 0.72, 0);
+      drawHouse(ctx, xAt(365), base + 2, 0.86, 1);
+      drawHouse(ctx, xAt(625), base, 0.64, 2);
       if (!reducedDetails) {
-        [220, 510].forEach((offset) => {
-          const x = xAt(offset);
-          pixel(ctx, x, base - 27, 3, 25, "#57463b");
-          pixel(ctx, x - 5, base - 29, 13, 3, "#8e6946");
-          pixel(ctx, x - 2, base - 24, 7, 8, "#e0b467");
-        });
+        [220, 535].forEach((offset) => drawLanternPost(ctx, xAt(offset), base, 0.72));
         pixel(ctx, xAt(45), base - 2, 620, 3, "#6d513d");
         for (let fence = 0; fence < 8; fence++) pixel(ctx, xAt(55 + fence * 75), base - 14, 3, 14, "#806348");
       }
