@@ -3,14 +3,12 @@ import { useEffect, useRef } from "react";
 const AREA_WIDTH = 620;
 const SECTION_IDS = ["hero", "about", "work", "experience", "arsenal", "contact"];
 const FINAL_SCENE = {
-  sunRadius: 24,
   arrivalDuration: 1500,
   arrivalDistance: 54,
   ambientRadius: 92,
   scrollRamp: 0.82,
   scrollDamping: 8,
   reducedDamping: 22,
-  sunScreenRatio: 0.84,
   skyStops: [[0, "#1c2742"], [0.38, "#413d5d"], [0.67, "#80566c"], [0.86, "#c47b68"], [1, "#e9a071"]],
   mountainColors: { distant: "#758093", main: "#536277", foothill: "#455269", foreground: "#344358", rimLight: "#f7b885" },
 };
@@ -339,31 +337,6 @@ function drawMountainRange(ctx, x, baseY, width, height, color, profileIndex, de
 function drawHillRange(ctx, x, baseY, width, height, color) {
   const points = HILL_PROFILE.map(([position, rise]) => [x + position * width, baseY - rise * height]);
   fillPoly(ctx, [[x, ctx.canvas.height], ...points, [x + width, ctx.canvas.height]], color);
-}
-
-function getLandscapeHorizonY(screenX, cameraX, groundY) {
-  const surfaceAt = (parallax, baseY, height, profile, profileOffset = 0) => {
-    const layerOffset = cameraX * parallax;
-    const area = Math.max(0, Math.floor((screenX + layerOffset) / AREA_WIDTH));
-    const rangeX = area * AREA_WIDTH - layerOffset;
-    const localX = Math.max(0, Math.min(1, (screenX - rangeX) / (AREA_WIDTH + 8)));
-    const points = profile[(area + profileOffset) % profile.length];
-    for (let index = 1; index < points.length; index++) {
-      const next = points[index];
-      if (localX > next[0]) continue;
-      const previous = points[index - 1];
-      const span = Math.max(0.0001, next[0] - previous[0]);
-      const ratio = (localX - previous[0]) / span;
-      return baseY - (previous[1] + (next[1] - previous[1]) * ratio) * height;
-    }
-    return baseY;
-  };
-  return Math.min(
-    surfaceAt(0.1, groundY - 112, 66, MOUNTAIN_PROFILES, 2),
-    surfaceAt(0.22, groundY - 64, 84, MOUNTAIN_PROFILES),
-    surfaceAt(0.22, groundY - 27, 28, [HILL_PROFILE]),
-    surfaceAt(0.38, groundY - 4, 52, MOUNTAIN_PROFILES, 4),
-  );
 }
 
 function drawPineTier(ctx, centerX, topY, width, unit, palette, variant) {
@@ -1053,11 +1026,6 @@ export default function AdventureWorld() {
       drawFinalSky(context, viewportWidth, viewportHeight, time, decorativeActive, centerTheme, duskProgress);
 
       const groundY = viewportHeight - 12;
-      const sunScreenRatio = viewportWidth < 155 ? 1.05 : FINAL_SCENE.sunScreenRatio;
-      const sunX = viewportWidth * sunScreenRatio;
-      const sunRidgeY = Math.min(...[-FINAL_SCENE.sunRadius, -FINAL_SCENE.sunRadius / 2, 0, FINAL_SCENE.sunRadius / 2, FINAL_SCENE.sunRadius]
-        .map((offset) => getLandscapeHorizonY(sunX + offset, cameraX, groundY)));
-      const sunCenterY = sunRidgeY + FINAL_SCENE.sunRadius * (1 - 0.85 * duskProgress);
       const cloudStart = Math.floor((cameraX * 0.1) / 245) - 1;
       const cloudEnd = Math.ceil((cameraX * 0.1 + viewportWidth) / 245) + 1;
       const cloudDrift = worldActive && !reduced ? (time * 0.005) % 245 : 0;
@@ -1088,11 +1056,6 @@ export default function AdventureWorld() {
         const rockColor = mixHex(rockBase, FINAL_SCENE.mountainColors.foreground, duskProgress);
         drawMountainRange(context, x, groundY - 4, AREA_WIDTH + 8, 52, rockColor, area + 4, 2, false, duskProgress);
       }
-      document.body.style.setProperty("--contact-dusk-progress", duskProgress.toFixed(3));
-      document.body.style.setProperty("--contact-dusk-glow-opacity", (duskProgress * 0.78).toFixed(3));
-      document.body.style.setProperty("--contact-sun-y", `${sunCenterY * window.innerHeight / viewportHeight}px`);
-      document.body.style.setProperty("--contact-sun-horizon-y", `${sunRidgeY * window.innerHeight / viewportHeight}px`);
-
       drawAreaObjects(context, cameraX, viewportWidth, groundY, reducedDetails, time, decorativeActive, campfireBright);
       drawGround(context, cameraX, viewportWidth, viewportHeight, groundY, centerTheme.ground, reducedDetails);
       drawFirelight(context, 5 * AREA_WIDTH + (viewportWidth < 230 ? 565 : 600) - cameraX + 13, groundY - 9, decorativeActive, time, campfireBright, duskProgress);
@@ -1202,10 +1165,6 @@ export default function AdventureWorld() {
       window.removeEventListener("portfolio-world-enter", onWorldEnter);
       contactObserver?.disconnect();
       document.body.classList.remove("contact-world-visible");
-      document.body.style.removeProperty("--contact-dusk-progress");
-      document.body.style.removeProperty("--contact-dusk-glow-opacity");
-      document.body.style.removeProperty("--contact-sun-y");
-      document.body.style.removeProperty("--contact-sun-horizon-y");
       document.removeEventListener("visibilitychange", onVisibilityChange);
       reducedMotion.removeEventListener?.("change", onMotionChange);
     };

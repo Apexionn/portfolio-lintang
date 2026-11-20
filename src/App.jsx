@@ -230,10 +230,6 @@ function GameWorldBackground() {
     <div className="game-world-background fixed inset-0 pointer-events-none z-0" aria-hidden="true">
       <AdventureWorld />
       <div className="game-world-vignette absolute inset-0" />
-      <div className="dusk-sun-overlay" aria-hidden="true">
-        <span className="dusk-sun-glow" />
-        <span className="dusk-sun-disc" />
-      </div>
     </div>
   );
 }
@@ -927,7 +923,7 @@ function ContactSection() {
             aria-live="polite"
             aria-hidden={!campfireMessage}
           >
-            <span>Rest here, then say hi</span>
+            <span>Rest Here Traveler</span>
             <button type="button" onClick={copyEmail} className="game-campfire-copy" disabled={!campfireMessage} tabIndex={campfireMessage ? 0 : -1}>Copy email</button>
           </div>
         </div>
