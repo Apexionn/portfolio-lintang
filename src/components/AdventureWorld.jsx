@@ -584,7 +584,7 @@ export default function AdventureWorld() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    const context = canvas?.getContext("2d", { alpha: false, desynchronized: true });
+    const context = canvas?.getContext("2d", { alpha: false });
     if (!canvas || !context) return undefined;
 
     let viewportWidth = 1;
@@ -597,6 +597,7 @@ export default function AdventureWorld() {
     let lastFrame = 0;
     let lastScrollAt = 0;
     let animationFrame = null;
+    let resizeFrame = null;
     const idleBeat = 0;
     let reducedDetails = false;
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -617,15 +618,30 @@ export default function AdventureWorld() {
     };
 
     const resize = () => {
-      const bounds = canvas.getBoundingClientRect();
-      viewportWidth = Math.max(1, Math.ceil(bounds.width / 3));
-      viewportHeight = Math.max(1, Math.ceil(bounds.height / 3));
-      reducedDetails = viewportWidth < 155;
-      canvas.width = viewportWidth;
-      canvas.height = viewportHeight;
-      context.imageSmoothingEnabled = false;
-      readWaypoints();
-      requestRender();
+      if (resizeFrame !== null) return;
+      resizeFrame = window.requestAnimationFrame(() => {
+        resizeFrame = null;
+        const bounds = canvas.getBoundingClientRect();
+        const nextWidth = Math.max(1, Math.ceil(bounds.width / 3));
+        const nextHeight = Math.max(1, Math.ceil(bounds.height / 3));
+        const canvasSizeChanged = canvas.width !== nextWidth || canvas.height !== nextHeight;
+        viewportWidth = nextWidth;
+        viewportHeight = nextHeight;
+        reducedDetails = viewportWidth < 155;
+        if (canvasSizeChanged) {
+          canvas.width = viewportWidth;
+          canvas.height = viewportHeight;
+          context.imageSmoothingEnabled = false;
+        }
+        readWaypoints();
+        if (canvasSizeChanged) {
+          if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+          animationFrame = null;
+          render(performance.now());
+        } else {
+          requestRender();
+        }
+      });
     };
 
     const render = (time = performance.now()) => {
@@ -729,7 +745,7 @@ export default function AdventureWorld() {
     };
 
     const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(document.documentElement);
+    resizeObserver.observe(canvas.parentElement || canvas);
     window.addEventListener("resize", resize, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
     document.addEventListener("visibilitychange", onVisibilityChange);
@@ -739,6 +755,7 @@ export default function AdventureWorld() {
 
     return () => {
       if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
+      if (resizeFrame !== null) window.cancelAnimationFrame(resizeFrame);
       resizeObserver.disconnect();
       window.removeEventListener("resize", resize);
       window.removeEventListener("scroll", onScroll);
