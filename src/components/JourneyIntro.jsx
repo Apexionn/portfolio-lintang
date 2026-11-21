@@ -5,11 +5,11 @@ import "./journey-intro.css";
 
 const ROUTE = "M 146 510 C 190 475 224 458 264 464 C 306 469 319 420 366 409 C 415 397 436 439 474 416 C 513 393 510 335 555 315 C 596 297 621 342 655 354 C 696 369 724 407 767 414 C 814 422 842 438 878 427 C 916 416 932 397 958 388 C 984 379 1000 388 1017 398";
 const WAYPOINTS = [
-  { at: 0.04, label: "The Wayfarer's Village", section: "About", x: 180, y: 477 },
-  { at: 0.27, label: "Whispering Wood", section: "Skills", x: 418, y: 427 },
-  { at: 0.49, label: "The Old King's Pass", section: "Projects", x: 575, y: 325 },
-  { at: 0.75, label: "The Forgotten Ruins", section: "Contact", x: 785, y: 420 },
-  { at: 0.99, label: "Emberfall Keep", section: "Portfolio", x: 1017, y: 398 },
+  { id: "about", t: 0.04, label: "The Wayfarer's Village", section: "About", dx: -15, dy: 28, anchor: "end", width: 58 },
+  { id: "skills", t: 0.27, label: "Whispering Wood", section: "Skills", dx: -16, dy: 27, anchor: "end", width: 53 },
+  { id: "projects", t: 0.49, label: "The Old King's Pass", section: "Projects", dx: 18, dy: 25, anchor: "start", width: 66 },
+  { id: "contact", t: 0.75, label: "The Forgotten Ruins", section: "Contact", dx: 20, dy: 28, anchor: "start", width: 58 },
+  { id: "portfolio", t: 1, label: "Emberfall Keep", section: "Portfolio", dx: -20, dy: 65, anchor: "end", width: 72 },
 ];
 
 function Tree({ x, y, size = 1, pale = false }) {
@@ -153,6 +153,8 @@ function BardMini({ refNode }) {
 
 function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef }) {
   const pathRef = useRef(null);
+  const svgRef = useRef(null);
+  const labelRefs = useRef(new Map());
   const traveledRef = useRef(null);
   const bardRef = useRef(null);
   const cameraRef = useRef(null);
@@ -162,10 +164,25 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
   const gateGlowRef = useRef(null);
   const wrapRef = useRef(null);
   const rollRef = useRef(null);
-  const [activeLandmark, setActiveLandmark] = useState(0);
+  const [activeLandmark, setActiveLandmark] = useState(-1);
+  const [waypointPoints, setWaypointPoints] = useState([]);
+  const [debugLabelBoxes, setDebugLabelBoxes] = useState([]);
+  const debugMap = new URLSearchParams(window.location.search).get("debug") === "map";
+
+  useEffect(() => {
+    if (!debugMap || !waypointPoints.length) return undefined;
+    const frame = requestAnimationFrame(() => setDebugLabelBoxes(WAYPOINTS.flatMap(({ id }) => {
+      const label = labelRefs.current.get(id);
+      if (!label) return [];
+      const { x, y, width, height } = label.getBBox();
+      return [{ id, x: x - 3, y: y - 2, width: width + 6, height: height + 4 }];
+    })));
+    return () => cancelAnimationFrame(frame);
+  }, [debugMap, waypointPoints]);
 
   useEffect(() => {
     const path = pathRef.current;
+    const svg = svgRef.current;
     const traveled = traveledRef.current;
     const bard = bardRef.current;
     const camera = cameraRef.current;
@@ -185,8 +202,24 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     const buttons = page?.querySelectorAll(".hero-enter-button");
     const cardStage = page?.querySelector(".game-avatar-stage");
     const copyLines = copy?.querySelectorAll(".hero-subtitle, .hero-description");
-    if (!path || !bard || !traveled || !camera || !sheet || !stage || !root || !roll || !page) return undefined;
+    if (!path || !svg || !bard || !traveled || !camera || !sheet || !stage || !root || !roll || !page) return undefined;
     const length = path.getTotalLength();
+    const updateWaypointPoints = () => {
+      const points = WAYPOINTS.map(({ id, t }) => {
+        const point = path.getPointAtLength(length * t);
+        return { id, x: point.x, y: point.y };
+      });
+      const arrival = points[points.length - 1];
+      if (arrival && pulseRef.current) {
+        pulseRef.current.setAttribute("cx", arrival.x);
+        pulseRef.current.setAttribute("cy", arrival.y);
+      }
+      setWaypointPoints(points);
+    };
+    updateWaypointPoints();
+    const mapResizeObserver = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(updateWaypointPoints);
+    mapResizeObserver?.observe(svg);
+    if (!mapResizeObserver) window.addEventListener("resize", updateWaypointPoints);
     const progress = { value: 0 };
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let reachedLandmark = -1;
@@ -234,7 +267,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
         : -follow * Math.max(0, point.y - 360) * 0.13;
       camera.setAttribute("transform", `translate(${tx} ${ty}) translate(600 380) scale(${zoom}) translate(-600 -380)`);
       traveled.setAttribute("stroke-dashoffset", String(length * (1 - progress.value)));
-      const landmark = WAYPOINTS.reduce((active, waypoint, index) => progress.value >= waypoint.at ? index : active, 0);
+      const landmark = WAYPOINTS.reduce((active, waypoint, index) => progress.value >= waypoint.t ? index : active, -1);
       if (landmark !== reachedLandmark) {
         reachedLandmark = landmark;
         setActiveLandmark(landmark);
@@ -413,6 +446,8 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
       root.removeEventListener("pointermove", onPointerMove);
       root.removeEventListener("pointerleave", onPointerLeave);
       document.removeEventListener("visibilitychange", onVisibilityChange);
+      mapResizeObserver?.disconnect();
+      if (!mapResizeObserver) window.removeEventListener("resize", updateWaypointPoints);
       document.body.classList.remove("journey-lock-scroll");
     };
   }, [reduced, short, onEnter, rootRef, skipRef]);
@@ -422,7 +457,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     <div className="journey-map-stage" ref={wrapRef}>
       <div className="journey-map-sheet" ref={sheetRef}>
       <div className="journey-parallax-layer" ref={parallaxRef}>
-      <svg className="journey-map-art" viewBox="0 0 1200 760" role="img" aria-label="A fantasy map showing Lintang's journey from a village through misty peaks and ruins to Emberfall Keep">
+      <svg ref={svgRef} className="journey-map-art" viewBox="0 0 1200 760" role="img" aria-label="A fantasy map showing Lintang's journey from a village through misty peaks and ruins to Emberfall Keep">
         <defs>
           <pattern id="journey-paper-grain" width="120" height="120" patternUnits="userSpaceOnUse">
             <path d="M4 23q17-5 30 1M67 94q13-3 22 0M31 112l10-2M96 30q8 2 15-1" fill="none" stroke="#6c4d31" strokeWidth=".55" opacity=".18" />
@@ -468,15 +503,19 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             </g>
 
             {/* Main river sits below the title and crosses the route at an old bridge */}
-            <path d="M31 218Q109 251 194 272T357 300Q450 307 515 328T674 372Q740 394 785 447T849 501Q875 525 891 553" fill="none" stroke="#718f8b" strokeWidth="18" opacity=".32" />
-            <path d="M31 218Q109 251 194 272T357 300Q450 307 515 328T674 372Q740 394 785 447T849 501Q875 525 891 553" fill="none" stroke="#91aaa0" strokeWidth="12" opacity=".63" />
-            <path d="M31 216Q109 249 194 270T357 298Q450 305 515 326T674 370Q740 392 785 445T849 499Q875 523 891 551" fill="none" stroke="#d4dfcc" strokeWidth="1.8" opacity=".72" />
-            <path d="M155 260q17 4 28 10m28 5q17 4 28 9m306 44q18 4 30 12m360 165q18 3 29 9" fill="none" stroke="#e1e0c9" strokeWidth="1.3" opacity=".8" />
+            <path d="M650 333Q695 341 730 370T786 427Q805 467 840 502T891 553" fill="none" stroke="#718f8b" strokeWidth="18" opacity=".32" />
+            <path d="M650 333Q695 341 730 370T786 427Q805 467 840 502T891 553" fill="none" stroke="#91aaa0" strokeWidth="12" opacity=".63" />
+            <path d="M650 331Q695 339 730 368T786 425Q805 465 840 500T891 551" fill="none" stroke="#d4dfcc" strokeWidth="1.8" opacity=".72" />
+            <path d="M670 340q16 3 26 10m38 26q15 8 22 17m36 34q10 15 13 28m20 36q14 16 26 22m19 19q16 11 26 14" fill="none" stroke="#e1e0c9" strokeWidth="1.3" opacity=".8" />
             {/* Mountain pass: layered ridges, ink hatching, and connected foothills */}
+            <path d="M282 340Q324 312 362 331T425 324L447 350Q404 363 363 351T292 358Z" fill="#b7b186" stroke="#777353" strokeWidth="1.2" opacity=".58" />
+            <path d="M294 345Q329 325 365 340T424 333M305 352Q339 337 371 349T430 343" fill="none" stroke="#817953" strokeWidth="1" opacity=".56" />
+            <Tree x={361} y={331} size={.46} pale /><Tree x={402} y={336} size={.42} />
             <Mountain x={526} y={259} scale={1.02} back />
             <Mountain x={628} y={267} scale={1.23} />
             <Mountain x={714} y={278} scale={.76} back />
             <path d="M426 369Q466 345 507 359T584 350Q627 340 668 359T748 351Q791 361 828 388L841 415Q794 430 746 414T652 421Q601 407 552 420T451 411Z" fill="#aaa083" stroke="#6d624d" strokeWidth="1.5" />
+            <path d="M429 377Q472 354 509 369T584 361Q628 350 668 369T748 361Q791 371 830 394L834 406Q790 418 749 405T652 411Q602 399 553 412T454 403Z" fill="url(#journey-hatch)" opacity=".62" />
             <path d="M438 380Q483 358 530 372T615 365Q662 357 701 375T782 371M453 397Q496 380 535 392T620 387Q660 376 707 393T817 394M481 409Q525 398 564 408T641 404Q694 393 733 408" fill="none" stroke="#776b53" strokeWidth="1.15" opacity=".76" />
             <path d="M472 366l11 13m-1-15 13 14m88-20 12 13m-1-16 13 15m53-11 12 14m-1-16 13 15m51-7 12 14m-1-16 13 14" fill="none" stroke="#665941" strokeWidth="1" opacity=".64" />
             <path d="M461 421q-7-18-12-4m35 3q-7-20-12-7m282-8q10-21 14-8m25 13q9-18 14-6" fill="none" stroke="#49563e" strokeWidth="3" />
@@ -484,9 +523,9 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             {/* Village */}
             <path d="M72 501Q119 488 159 500T246 492L270 524Q225 537 184 527T93 532Z" fill="#b7b47f" opacity=".24" />
             <Cottage x={112} y={459} scale={.78} roofStyle="steep" chimney />
-            <Cottage x={198} y={445} scale={.9} roof="#9a6746" roofStyle="hip" chimney />
+            <Cottage x={174} y={445} scale={.9} roof="#9a6746" roofStyle="hip" chimney />
             <Cottage x={139} y={394} scale={.68} roof="#7d5141" roofStyle="steep" />
-            <g transform="translate(212 417)" className="journey-smoke-stack" fill="#857d68">
+            <g transform="translate(192 417)" className="journey-smoke-stack" fill="#857d68">
               <circle className="journey-smoke-puff smoke-one" cx="0" cy="0" r="4" />
               <circle className="journey-smoke-puff smoke-two" cx="2" cy="-7" r="3.5" />
               <circle className="journey-smoke-puff smoke-three" cx="-1" cy="-13" r="3" />
@@ -497,7 +536,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             <path d="M226 448q9-5 18 0v11q-9 5-18 0Z" fill="#c9a869" stroke="#5a4934" strokeWidth="1.5" />
             <Tree x={78} y={433} size={.65} pale /><Tree x={257} y={427} size={.82} /><Tree x={86} y={546} size={.7} />
             <path d="M159 484h5m11-6h4m30-43h4" stroke="#b38e57" strokeWidth="2" />
-            <Windmill x={284} y={454} />
+            <Windmill x={316} y={572} />
             <VillageWell x={282} y={516} />
             <g className="journey-market-stall" transform="translate(246 502)" stroke="#554633" strokeWidth="1.5" strokeLinejoin="round">
               <path d="M-20-5H20V15H-20ZM-25-5 0-20 25-5Z" fill="#d7c18e" />
@@ -519,6 +558,14 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             <Tree x={428} y={497} size={.78} pale /><Tree x={487} y={449} size={.83} />
             <path d="M327 445q25-10 38 1m91 9q15-10 28 0m-95 48q12-8 21 0" fill="none" stroke="#8f7147" strokeWidth="1.4" />
             <path d="M354 477q3-9 7 0m4 2q3-7 6 0m67-48q3-8 6 0" fill="none" stroke="#9b5940" strokeWidth="2" />
+            <path d="M290 544q31-24 64-14t64-6q34-12 64 8" fill="none" stroke="#856c48" strokeWidth="1.5" strokeDasharray="2 7" opacity=".7" />
+            <path d="M502 578Q535 551 576 567T649 562Q682 569 705 590L696 608Q655 599 613 610T526 602Z" fill="#b5b080" stroke="#7f7552" strokeWidth="1.2" opacity=".42" />
+            <path d="M519 582Q553 565 583 579T649 574Q675 580 693 592M532 596Q570 582 604 596T662 591" fill="none" stroke="#827653" strokeWidth="1" opacity=".68" />
+            <g className="journey-extra-forest"><Tree x={550} y={514} size={.68} /><Tree x={578} y={521} size={.52} pale /><Tree x={522} y={526} size={.48} /></g>
+            <g className="journey-signpost" transform="translate(481 548)" stroke="#55422f" strokeWidth="1.6" strokeLinejoin="round">
+              <path d="M0 2v30m-2-21h19l-3 7H-2Z" fill="#c5a875" /><path d="M1-3v-4m-4 4h8" fill="none" />
+            </g>
+            <text x="394" y="594" className="journey-dragon-note">Here be dragons</text>
 
             {/* Ruins */}
             <path d="M718 435q24-42 62-15t61-10q38-27 71 9l-13 41q-49 13-97 3t-87 8Z" fill="#64714b" opacity=".18" />
@@ -533,10 +580,10 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             <Tree x={858} y={433} size={.68} /><Tree x={1151} y={356} size={.62} pale />
 
             <g className="journey-place-names" aria-hidden="true">
-              <text x="175" y="367">The Wayfarer's Village</text>
-              <text x="590" y="239">Misty Peaks</text>
-              <text x="795" y="328">Forgotten Ruins</text>
-              <text x="1010" y="174">Emberfall Keep</text>
+              <text x="175" y="350">The Wayfarer's Village</text>
+              <text x="615" y="228">Misty Peaks</text>
+              <text x="803" y="321">Forgotten Ruins</text>
+              <text x="1050" y="489">Emberfall Keep</text>
             </g>
 
             {/* Hand-inked route, drawn over the geography */}
@@ -544,41 +591,55 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
             <path d={ROUTE} fill="none" stroke="#8b4e39" strokeWidth="2.3" strokeDasharray="1 9" strokeLinecap="round" opacity=".68" />
             <path ref={traveledRef} d={ROUTE} fill="none" stroke="#8b4e39" strokeWidth="3.6" strokeLinecap="round" strokeDasharray="1 1" opacity=".92" />
             <g className="journey-waypoints" aria-hidden="true">
-              {WAYPOINTS.map(({ x, y, section }, index) => (
-                <g key={section} className={activeLandmark >= index ? "is-reached" : ""} transform={`translate(${x} ${y})`}>
-                  {index === 4 && <circle ref={pulseRef} className="journey-arrival-pulse" r="9" fill="none" stroke="#a14e36" strokeWidth="2.5" opacity="0" />}
+              <circle ref={pulseRef} className="journey-arrival-pulse" r="9" fill="none" stroke="#a14e36" strokeWidth="2.5" opacity="0" />
+              {WAYPOINTS.map((waypoint, index) => {
+                const point = waypointPoints.find(({ id }) => id === waypoint.id);
+                return point && <g key={waypoint.id} className={activeLandmark >= index ? "is-reached" : ""} transform={`translate(${point.x} ${point.y})`}>
                   <circle r="9" fill="#eadbb7" stroke="#784b37" strokeWidth="1.8" />
                   <circle r="3" fill="#a45e43" />
-                </g>
-              ))}
+                </g>;
+              })}
             </g>
             <g className="journey-landmark-labels" aria-hidden="true">
-              {WAYPOINTS.map((waypoint, index) => (
-                <g key={waypoint.section} className={activeLandmark >= index ? "is-visible" : ""} transform={`translate(${waypoint.x} ${waypoint.y})`}>
-                  <path d="M-32 0h64" />
-                  <text textAnchor="middle" y="15">{waypoint.section}</text>
-                </g>
-              ))}
+              {WAYPOINTS.map((waypoint, index) => {
+                const point = waypointPoints.find(({ id }) => id === waypoint.id);
+                if (!point) return null;
+                const labelX = waypoint.dx;
+                const labelY = waypoint.dy;
+                const paperX = waypoint.anchor === "end" ? -waypoint.width : waypoint.anchor === "middle" ? -waypoint.width / 2 : 0;
+                return <g key={waypoint.id} ref={(node) => node ? labelRefs.current.set(waypoint.id, node) : labelRefs.current.delete(waypoint.id)} className={activeLandmark >= index ? "is-visible" : ""} transform={`translate(${point.x + labelX} ${point.y + labelY})`}>
+                  <rect className="journey-waypoint-label-paper" x={paperX} y="-13" width={waypoint.width} height="18" rx="2" />
+                  <text textAnchor={waypoint.anchor} y="0">{waypoint.section}</text>
+                </g>;
+              })}
             </g>
+            {debugMap && <g className="journey-map-debug" aria-hidden="true">
+              {waypointPoints.map(({ id, x, y }) => <g key={`point-${id}`}><circle cx={x} cy={y} r="12" /><circle cx={x} cy={y} r="2.5" /><text x={x + 14} y={y - 12}>{id}</text></g>)}
+              {debugLabelBoxes.map(({ id, x, y, width, height }) => {
+                const point = waypointPoints.find((entry) => entry.id === id);
+                const waypoint = WAYPOINTS.find((entry) => entry.id === id);
+                return <rect key={`label-${id}`} x={point.x + waypoint.dx + x} y={point.y + waypoint.dy + y} width={width} height={height} />;
+              })}
+            </g>}
             <BardMini refNode={bardRef} />
           </g>
 
           {/* Cartographic marginalia */}
-          <g className="journey-compass" transform="translate(1090 526)" stroke="#725638">
+          <g className="journey-compass" transform="translate(1110 480)" stroke="#725638">
             <circle r="43" fill="none" strokeWidth="1.2" /><circle r="34" fill="none" strokeWidth=".8" />
             <path d="M0-38 7-5 0 0-7-5ZM0 38-7 5 0 0 7 5ZM-38 0-5-7 0 0-5 7ZM38 0 5 7 0 0 5-7Z" fill="#9b7145" strokeWidth="1" />
             <circle r="4" fill="#ead9b4" strokeWidth="1.5" /><text x="-4" y="-51">N</text>
           </g>
-          <g className="journey-map-key" transform="translate(54 596)" fill="#59452f" stroke="#80623e" strokeWidth="1">
-            <path d="M0 0H168V66H0Z" fill="#eadbb7" opacity=".86" />
-            <path d="M6 6H162V60H6Z" fill="none" stroke="#9a7b4e" strokeWidth=".8" />
-            <text x="13" y="18" stroke="none">MAP KEY</text>
-            <path d="M15 31h17" stroke="#718f8b" strokeWidth="4" />
-            <text x="39" y="34" stroke="none">River</text>
-            <path d="M98 31 105 22 112 31Z" fill="#8e8067" />
-            <text x="118" y="34" stroke="none">Peaks</text>
-            <path d="M15 47H32M18 43V52M29 43V52" stroke="#9b7651" strokeWidth="1.5" />
-            <text x="39" y="51" stroke="none">Old road</text>
+          <g className="journey-map-key" transform="translate(54 583)" fill="#59452f" stroke="#80623e" strokeWidth="1">
+            <path d="M0 0H202V104H0Z" fill="#eadbb7" opacity=".9" />
+            <path d="M6 6H196V98H6Z" fill="none" stroke="#9a7b4e" strokeWidth=".8" />
+            <text x="13" y="20" stroke="none">MAP KEY</text>
+            <path d="M14 37h18" stroke="#718f8b" strokeWidth="4" /><text x="38" y="40" stroke="none">River</text>
+            <path d="M111 37 118 27 125 37Z" fill="#8e8067" /><text x="130" y="40" stroke="none">Peaks</text>
+            <path d="M14 58V47l8-6 8 6v11zM12 47l10-8 10 8" fill="#d1b37d" /><text x="38" y="56" stroke="none">Village</text>
+            <path d="M111 58V47h15v11m-18-11 10-8 11 8m-12 0v11" fill="#b9a47d" /><text x="130" y="56" stroke="none">Castle</text>
+            <circle cx="21" cy="78" r="6" fill="#eadbb7" /><circle cx="21" cy="78" r="2" fill="#a45e43" /><text x="38" y="82" stroke="none">Waypoint</text>
+            <path d="M111 78h16" stroke="#8b4e39" strokeWidth="2" strokeDasharray="2 4" /><text x="130" y="82" stroke="none">Old road</text>
           </g>
           <g className="journey-scale" transform="translate(482 645)" fill="#614a31" stroke="#73583a">
             <path d="M0 0H138" strokeWidth="2" /><path d="M0-5V5M69-5V5M138-5V5" strokeWidth="1.5" />
