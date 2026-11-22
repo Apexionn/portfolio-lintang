@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import { INTRO_CONFIG, makeIntroTimeline, waitForHeroAssets } from "./journey/introController";
+import { INTRO_CONFIG, makeIntroTimeline, waitForHeroAssets } from "./introController";
 import "./journey-intro.css";
 
 const ROUTE = "M 146 510 C 190 475 224 458 264 464 C 306 469 319 420 366 409 C 415 397 436 439 474 416 C 513 393 510 335 555 315 C 596 297 621 342 655 354 C 696 369 724 407 767 414 C 814 422 842 438 878 427 C 916 416 932 397 958 388 C 984 379 1000 388 1017 398";

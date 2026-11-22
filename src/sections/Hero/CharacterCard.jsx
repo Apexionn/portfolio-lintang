@@ -1,4 +1,4 @@
-import characterCard from "../data/characterCard";
+import characterCard from "../../data/characterCard";
 import "./character-card.css";
 
 function LyreMark({ className = "" }) {
