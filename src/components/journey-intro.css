@@ -189,6 +189,7 @@
 .game-page[inert] .game-hero-copy .hero-subtitle,
 .game-page[inert] .game-hero-copy .hero-description,
 .game-page[inert] .hero-enter-button,
+.game-page[inert] .hero-proof-strip,
 .game-page[inert] .game-avatar-stage { visibility:hidden; }
 .journey-scroll-roll {
   --roll-y: 100vh;

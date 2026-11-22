@@ -70,37 +70,47 @@ function handlePointerLeave(event) {
   card.style.setProperty("--foil-opacity", "0");
 }
 
-export default function CharacterCard({ character = characterCard }) {
+export default function CharacterCard({ character = characterCard, content }) {
   return (
     <article
       className="bard-card"
-      aria-label={`${character.name}, ${character.className}`}
+      aria-label={`${content.name}, ${content.className} character folio`}
       onPointerMove={handlePointerMove}
       onPointerLeave={handlePointerLeave}
     >
       <div className="bard-card__grain" aria-hidden="true" />
       <header className="bard-card__identity">
-        <p className="bard-card__edition">Character folio <span>·</span> 01</p>
-        <h2 className="bard-card__name">{character.name}</h2>
-        <p className="bard-card__class"><span className="bard-card__class-rule" />{character.className}<span className="bard-card__class-rule" /></p>
+        <p className="bard-card__edition">{content.title} <span>·</span> 01</p>
+        <h2 className="bard-card__name">{content.name}</h2>
+        <p className="bard-card__class"><span className="bard-card__class-rule" />{content.className}<span className="bard-card__class-rule" /></p>
       </header>
 
       <figure className="bard-card__portrait-frame">
         <div className="bard-card__portrait-mat">
-          <img src={character.portrait} alt={character.portraitAlt} className="bard-card__portrait" />
+          <img src={character.portrait} alt={content.portraitAlt} className="bard-card__portrait" />
         </div>
-        <figcaption className="bard-card__guild"><span>{character.affiliation.label}</span>{character.affiliation.value}</figcaption>
+        <figcaption className="bard-card__guild"><span>{content.guildLabel}</span>{content.guild}</figcaption>
       </figure>
 
-      <section className="bard-card__details" aria-label="Character details">
-        <div className="bard-card__calling">
-          <span className="bard-card__label">Calling</span>
-          <p>{character.calling.map((item, index) => (
-            <span key={item}>{index > 0 && <i aria-hidden="true"> · </i>}{item}</span>
-          ))}</p>
-        </div>
+      <section className="bard-card__details" aria-label={content.statsLabel}>
+        <dl className="bard-card__stats">
+          <div className="bard-card__stat"><dt>{content.roleLabel}</dt><dd>{content.role}</dd></div>
+          <div className="bard-card__stat"><dt>{content.levelLabel}</dt><dd>{content.level}</dd></div>
+          <div className="bard-card__stat bard-card__stat--skills">
+            <dt>{content.skillsLabel}</dt>
+            <dd><ul>{content.skills.map((skill, skillIndex) => (
+              <li key={skill.name}>
+                <span className="bard-card__skill-name">{skill.name}</span>
+                <span className="bard-card__pips" aria-hidden="true">
+                  {Array.from({ length: 4 }, (_, pipIndex) => <span key={pipIndex} className={`bard-card__pip ${pipIndex < skill.pips ? "is-filled" : ""}`} style={{ "--pip-index": skillIndex * 4 + pipIndex }} aria-hidden="true" />)}
+                </span>
+              </li>
+            ))}</ul></dd>
+          </div>
+          <div className="bard-card__stat bard-card__stat--quest"><dt>{content.questLabel}</dt><dd>{content.currentQuest}</dd></div>
+        </dl>
         <EngravedRule />
-        <p className="bard-card__epithet"><LyreMark className="bard-card__lyre" />{character.epithet}</p>
+        <p className="bard-card__epithet"><LyreMark className="bard-card__lyre" />{content.epithet}</p>
       </section>
 
       <CornerOrnaments />

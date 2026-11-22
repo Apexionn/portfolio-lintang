@@ -32,9 +32,17 @@
   .game-nav { background: rgba(25,35,62,.92); border: 2px solid #7182a7; border-radius: 12px; box-shadow: 0 5px 0 #0d1326, 0 14px 36px #080d1a88; backdrop-filter: blur(12px); }
   .game-logo { color: #f6efd9; text-decoration: none; }
   .game-logo span { color: #ff917d; }
-  .game-nav-link { display:flex; align-items:center; gap:7px; padding:10px 11px; color:#d1d9ec; border-radius:7px; transition:background .18s,color .18s,transform .18s; }
-  .game-nav-link:hover, .game-nav-link:focus-visible { color:#151d35; background:#c8ef76; transform:translateY(-2px); outline:none; }
+  .game-nav-link { position:relative;display:flex;align-items:center;gap:7px;padding:10px 11px;color:#d1d9ec;border-radius:7px;transition:background .18s,color .18s,transform .18s; }
+  .game-nav-link:hover, .game-nav-link:focus-visible { color:#151d35;background:#c8ef76;transform:translateY(-2px);outline:2px solid #f6efd9;outline-offset:2px; }
   .game-nav-link > span { color:#ff917d; }
+  .game-nav-tooltip { position:absolute;z-index:130;top:calc(100% + 8px);left:50%;padding:6px 9px;border:1px solid #7182a7;border-radius:4px;background:#17213b;color:#f6efd9;font:9px/1.2 'Syne Mono',monospace;letter-spacing:.02em;text-transform:none;white-space:nowrap;opacity:0;visibility:hidden;pointer-events:none;transform:translate(-50%,-3px);transition:opacity .16s,transform .16s,visibility .16s; }
+  .game-nav-link .game-nav-tooltip { color:#f6efd9; }
+  .game-nav-link:hover .game-nav-tooltip,.game-nav-link:focus-visible .game-nav-tooltip { opacity:1;visibility:visible;transform:translate(-50%,0); }
+  .game-nav-status { position:relative;cursor:help; }
+  .game-nav-status:focus-visible { outline:2px solid #f6efd9;outline-offset:4px;border-radius:3px; }
+  .game-status-copy-short { display:none; }
+  .game-status-tooltip { position:absolute;z-index:130;top:calc(100% + 8px);right:0;min-width:205px;padding:7px 9px;border:1px solid #7182a7;border-radius:4px;background:#17213b;color:#f6efd9;font:10px/1.4 'DM Mono',monospace;text-transform:none;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .16s,visibility .16s; }
+  .game-nav-status:hover .game-status-tooltip,.game-nav-status:focus-visible .game-status-tooltip { opacity:1;visibility:visible; }
   .game-status-dot, .game-player-status i { display:inline-block; width:8px; height:8px; border-radius:2px; background:#c8ef76; box-shadow:0 0 12px #c8ef7680; }
   .game-menu-toggle { border:1px solid #7182a7; border-radius:7px; background:#202a46; }
   .game-mobile-menu { background:rgba(21,29,53,.97); backdrop-filter:blur(14px); }
@@ -47,6 +55,15 @@
   .game-hero-title { font-size:clamp(28px,3.5vw,52px); }
   .game-hero-title span:last-child { color:#c8ef76;display:inline-block;white-space:nowrap; }
   .game-hero-copy { color:#c4cde0; }
+  .game-hero-copy .hero-role-line { margin:0;color:#f6efd9;font:700 clamp(18px,1.7vw,21px)/1.35 'Syne',sans-serif;letter-spacing:-.025em;text-shadow:0 2px 8px rgba(9,14,22,.7); }
+  .game-hero-copy .hero-description { max-width:570px;margin:8px 0 10px;color:#d1d9ec;font:400 14px/1.65 'DM Mono',monospace; }
+  .game-dev-chip { display:inline-flex;align-items:center;padding:4px 8px;border:1px solid #62708f;border-radius:4px;background:#202a46;color:#ffb2a3;font:9px/1.2 'Syne Mono',monospace;letter-spacing:.06em;text-transform:uppercase; }
+  .hero-proof-strip { max-width:620px;margin-top:15px; }
+  .hero-social-links a:focus-visible,.game-hero a:focus-visible { outline:2px solid #f6efd9;outline-offset:3px; }
+  .hero-social-links { display:flex;align-items:center;gap:6px; }
+  .hero-social-links a { display:grid;width:36px;height:36px;place-items:center;border:1px solid #7182a7;border-radius:5px;background:#202a46;color:#f6efd9;transition:transform .16s,border-color .16s,color .16s; }
+  .hero-social-links a:hover { transform:translateY(-2px);border-color:#c8ef76;color:#c8ef76; }
+  .hero-social-links svg { width:17px;height:17px;fill:currentColor; }
   .game-button { border:2px solid #f6efd9; border-radius:8px; box-shadow:0 4px 0 #090f20; font-weight:500; transition:transform .16s,box-shadow .16s,background .16s; }
   .game-button:hover { transform:translateY(-3px); box-shadow:0 7px 0 #090f20; }
   .game-button:active { transform:translateY(2px); box-shadow:0 2px 0 #090f20; }
@@ -54,6 +71,7 @@
   .game-button-primary:hover { background:#d7f79a; }
   .game-button-secondary { color:#f6efd9; background:#263352; }
   .game-button-secondary:hover { background:#354567; }
+  .game-hero .game-button:focus-visible { outline:2px solid #f6efd9;outline-offset:3px; }
   .game-scroll-hint { color:#aebbd6; }
   .game-scroll-arrow { width:24px;height:24px;display:grid;place-items:center;background:#ff917d;color:#19223c;border-radius:5px; }
   .game-panel { background:#202a46; border:2px solid #7182a7; border-radius:12px; box-shadow:6px 7px 0 #0b1122; }
@@ -112,10 +130,24 @@
   .game-footer { border-color:#62708f; }
   .game-footer-link { color:#aebbd6;transition:color .2s; }
   .game-footer-link:hover { color:#c8ef76; }
+  @media (max-width:1439px) {
+    .game-status-copy-long { display:none; }
+    .game-status-copy-short { display:inline; }
+  }
+  .game-mobile-link { position:relative; }
+  .game-mobile-link .game-nav-tooltip { top:auto;right:0;bottom:-19px;left:auto;font:10px/1.2 'Syne Mono',monospace;transform:translateY(-3px); }
+  .game-mobile-link .game-nav-tooltip { color:#f6efd9; }
+  .game-mobile-link:hover .game-nav-tooltip,.game-mobile-link:focus-visible .game-nav-tooltip { opacity:1;visibility:visible;transform:translateY(0); }
   @media (max-width:767px) {
     .game-hero-layout { min-height:unset;gap:54px;padding-top:28px; }
     .game-avatar-stage { width:min(330px,88vw);margin:0 auto 18px; }
     .game-hero-title { font-size:clamp(20px,7.5vw,44px); }
+    .game-hero-copy .hero-role-line { max-width:540px;font-size:clamp(18px,4.4vw,21px); }
+    .game-hero-copy .hero-description { font-size:13px; }
+    .hero-proof-strip { margin-top:13px; }
+    .hero-social-links { gap:5px; }
+    .hero-social-links a { width:34px;height:34px; }
+    .game-mobile-link .game-nav-tooltip { bottom:-18px; }
     .adventure-world-canvas { opacity:.78; }
     .game-section-break { margin:0 24px; }
     .game-project-card { min-height:unset; }
@@ -127,7 +159,7 @@
   }
   @media (prefers-reduced-motion:reduce) {
     html { scroll-behavior:auto; }
-    .game-button,.game-project-card,.game-nav-link { transition:none; }
+    .game-button,.game-project-card,.game-nav-link,.hero-social-links a,.game-nav-tooltip,.game-status-tooltip { transition:none; }
     .game-contact-copy::before { background:rgba(13,20,37,.62);filter:none; }
     .game-campfire-message,.game-campfire-message.is-open { transition:opacity .1s ease,transform .1s ease,visibility 0s; }
   }

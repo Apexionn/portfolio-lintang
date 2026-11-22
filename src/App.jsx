@@ -4,6 +4,64 @@ import CharacterCard from "./components/CharacterCard";
 import AdventureWorld from "./components/AdventureWorld";
 import JourneyIntro from "./components/JourneyIntro";
 
+const HERO_COPY = Object.freeze({
+  eyebrow: ["PLAYER 01", "BINUS COMPUTER SCIENCE"],
+  name: ["Lintang", "Anggowoyuono"],
+  role: "Full-Stack Developer building toward AI/ML",
+  introduction: "I build web products end to end—from clear interfaces to reliable backends—and explore AI/ML and Indonesian NLP.",
+  secondaryTag: "Game Dev",
+  socialLinks: [
+    { label: "GitHub profile", href: "https://github.com/Apexionn", icon: "github" },
+    { label: "LinkedIn profile", href: "https://www.linkedin.com/in/lintang-anggowoyuono/", icon: "linkedin" },
+    { label: "Instagram profile", href: "https://www.instagram.com/", icon: "instagram" },
+  ],
+  socialGroupLabel: "Social profiles",
+  status: {
+    long: "Open to internship & freelance quests",
+    short: "Open to work",
+    title: "Available for internship and freelance opportunities.",
+  },
+  navigation: {
+    links: [
+      { label: "Profile", id: "about", icon: "◉", description: "About me" },
+      { label: "Projects", id: "work", icon: "✦", description: "Selected work" },
+      { label: "Quest Log", id: "experience", icon: "▤", description: "Experience" },
+      { label: "Inventory", id: "arsenal", icon: "◇", description: "Skills and tools" },
+      { label: "Contact", id: "contact", icon: "➜", description: "Get in touch" },
+    ],
+    openMenuLabel: "Open navigation menu",
+    closeMenuLabel: "Close navigation menu",
+  },
+  actions: {
+    primary: "View projects",
+    resume: "Resume",
+    scroll: "Scroll to continue",
+  },
+  folio: {
+    title: "Character Folio",
+    statsLabel: "Character stats",
+    name: "Lintang Anggowoyuono",
+    className: "Bard",
+    roleLabel: "Class",
+    role: "Full-Stack Dev",
+    levelLabel: "Level",
+    level: "Computer Science student",
+    skillsLabel: "Main skills",
+    skills: [
+      { name: "React", pips: 4 },
+      { name: "Laravel", pips: 4 },
+      { name: "Python", pips: 3 },
+      { name: "Node.js", pips: 3 },
+    ],
+    questLabel: "Current quest",
+    currentQuest: "UI X AI Project",
+    guildLabel: "Guild",
+    guild: "BINUS University",
+    epithet: "The Wayfarer's Song",
+    portraitAlt: "Portrait of Lintang Anggowoyuono",
+  },
+});
+
 // DATA
 const PROJECTS = [
   {
@@ -236,13 +294,7 @@ function GameWorldBackground() {
 
 function Nav() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const links = [
-    { label: "Profile", id: "about", icon: "◉" },
-    { label: "Projects", id: "work", icon: "✦" },
-    { label: "Quest Log", id: "experience", icon: "▤" },
-    { label: "Inventory", id: "arsenal", icon: "◇" },
-    { label: "Contact", id: "contact", icon: "➜" },
-  ];
+  const links = HERO_COPY.navigation.links;
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -264,28 +316,31 @@ function Nav() {
   return (
     <>
       <nav className="game-nav fixed top-3 left-1/2 -translate-x-1/2 z-[100] flex justify-between items-center px-3 sm:px-5 py-2.5 w-[calc(100%-24px)] max-w-[1180px]" data-hero-enter="nav">
-        <a href="#hero" aria-label="Lintang Anggowoyuono, home" className="game-logo font-syne font-[800] text-[18px] sm:text-[20px] tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
+        <a href="#hero" aria-label={`${HERO_COPY.name.join(" ")}, home`} className="game-logo font-syne font-[800] text-[18px] sm:text-[20px] tracking-[-0.5px] no-underline relative z-[110]" onClick={() => setIsMenuOpen(false)}>
           LA<span>.</span>
         </a>
 
         <ul className="hidden md:flex items-center gap-1.5 list-none p-0 m-0">
           {links.map((item) => (
             <li key={item.id}>
-              <a href={`#${item.id}`} className="game-nav-link font-syne-mono text-[10px] lg:text-[11px] tracking-[0.08em] uppercase no-underline">
+              <a href={`#${item.id}`} aria-describedby={`nav-tip-${item.id}`} className="game-nav-link font-syne-mono text-[10px] lg:text-[11px] tracking-[0.08em] uppercase no-underline">
                 <span aria-hidden="true">{item.icon}</span>{item.label}
+                <span id={`nav-tip-${item.id}`} className="game-nav-tooltip" role="tooltip">{item.description}</span>
               </a>
             </li>
           ))}
         </ul>
         
-        <div className="hidden xl:flex items-center gap-2 font-syne-mono text-[9px] text-port-text-muted tracking-[0.08em] uppercase">
+        <div className="game-nav-status hidden xl:flex items-center gap-2 font-syne-mono text-[9px] text-port-text-muted tracking-[0.08em]" title={HERO_COPY.status.title} tabIndex="0" aria-describedby="hero-status-tooltip" aria-label={`${HERO_COPY.status.long}. ${HERO_COPY.status.title}`}>
           <span className="game-status-dot" />
-          Open to quests
+          <span className="game-status-copy-long">{HERO_COPY.status.long}</span>
+          <span className="game-status-copy-short">{HERO_COPY.status.short}</span>
+          <span id="hero-status-tooltip" className="game-status-tooltip" role="tooltip">{HERO_COPY.status.title}</span>
         </div>
 
         <button 
           type="button"
-          aria-label={isMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+          aria-label={isMenuOpen ? HERO_COPY.navigation.closeMenuLabel : HERO_COPY.navigation.openMenuLabel}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-navigation"
           className="game-menu-toggle md:hidden relative z-[110] flex flex-col justify-center items-center w-[38px] h-[36px] gap-[5px] cursor-pointer"
@@ -304,18 +359,32 @@ function Nav() {
               <a
                 href={`#${item.id}`}
                 onClick={() => setIsMenuOpen(false)}
+                aria-describedby={`mobile-nav-tip-${item.id}`}
                 className="game-mobile-link font-syne text-[28px] font-[800] no-underline"
               >
                 <span aria-hidden="true">{item.icon}</span>{item.label}
+                <span id={`mobile-nav-tip-${item.id}`} className="game-nav-tooltip" role="tooltip">{item.description}</span>
               </a>
             </li>
           ))}
         </ul>
-        <div className={`absolute bottom-10 flex items-center gap-2 font-syne-mono text-[10px] text-port-text-muted uppercase tracking-widest transition-opacity duration-500 delay-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`}>
-          <span className="game-status-dot" /> Open to quests
+        <div className={`absolute bottom-10 flex items-center gap-2 font-syne-mono text-[10px] text-port-text-muted tracking-widest transition-opacity duration-500 delay-300 ${isMenuOpen ? 'opacity-100' : 'opacity-0'}`} title={HERO_COPY.status.title}>
+          <span className="game-status-dot" /> {HERO_COPY.status.short}
         </div>
       </div>
     </>
+  );
+}
+
+function HeroSocialIcon({ icon }) {
+  if (icon === "github") return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5a9.5 9.5 0 0 0-3 18.52c.48.09.65-.2.65-.46v-1.62c-2.65.58-3.21-1.13-3.21-1.13-.44-1.11-1.08-1.4-1.08-1.4-.88-.6.07-.59.07-.59.97.07 1.48 1 1.48 1 .86 1.47 2.25 1.05 2.8.8.09-.62.34-1.05.61-1.29-2.11-.24-4.33-1.06-4.33-4.7 0-1.04.37-1.9.99-2.57-.1-.24-.43-1.22.09-2.54 0 0 .81-.26 2.61.98a9.1 9.1 0 0 1 4.75 0c1.8-1.24 2.6-.98 2.6-.98.53 1.32.2 2.3.1 2.54.62.67.99 1.53.99 2.57 0 3.65-2.22 4.46-4.34 4.7.35.3.65.87.65 1.76v2.61c0 .26.17.55.66.46A9.5 9.5 0 0 0 12 2.5Z" /></svg>
+  );
+  if (icon === "instagram") return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.2 2.5h9.6a4.7 4.7 0 0 1 4.7 4.7v9.6a4.7 4.7 0 0 1-4.7 4.7H7.2a4.7 4.7 0 0 1-4.7-4.7V7.2a4.7 4.7 0 0 1 4.7-4.7Zm0 1.8a2.9 2.9 0 0 0-2.9 2.9v9.6a2.9 2.9 0 0 0 2.9 2.9h9.6a2.9 2.9 0 0 0 2.9-2.9V7.2a2.9 2.9 0 0 0-2.9-2.9H7.2Zm4.8 3.1a4.6 4.6 0 1 1 0 9.2 4.6 4.6 0 0 1 0-9.2Zm0 1.8a2.8 2.8 0 1 0 0 5.6 2.8 2.8 0 0 0 0-5.6Zm4.9-3.1a1.1 1.1 0 1 1 0 2.2 1.1 1.1 0 0 1 0-2.2Z" /></svg>
+  );
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 3.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM3.8 9h3.4v11.2H3.8ZM9.3 9h3.25v1.53h.05A3.57 3.57 0 0 1 15.82 8.8c3.47 0 4.12 2.28 4.12 5.25v6.15h-3.39v-5.45c0-1.3-.02-2.97-1.81-2.97-1.81 0-2.09 1.41-2.09 2.87v5.55H9.3Z" /></svg>
   );
 }
 
@@ -336,35 +405,46 @@ function HeroSection() {
         
         <div className={`w-full min-w-0 pt-10 md:pt-0 ${isDesktop ? 'flex-1' : 'flex-none'}`}>
           <p className="game-eyebrow font-syne-mono text-[10px] sm:text-[11px] tracking-[0.12em] uppercase mb-5">
-            PLAYER 01 <span>•</span> BINUS COMPUTER SCIENCE
+            {HERO_COPY.eyebrow[0]} <span>•</span> {HERO_COPY.eyebrow[1]}
           </p>
           
           <h1 className="game-hero-title font-syne font-[800] leading-[0.98] tracking-[-0.06em] mb-5 break-words">
-            <span className="hero-name-line">Lintang</span>
+            <span className="hero-name-line">{HERO_COPY.name[0]}</span>
             <br />
-            <span className="hero-name-line">Anggowoyuono</span>
+            <span className="hero-name-line">{HERO_COPY.name[1]}</span>
           </h1>
           
-          <p className="game-hero-copy text-[14px] sm:text-[16px] leading-[1.8] max-w-[480px] mb-8">
-            <span className="hero-subtitle">Full Stack • AI • Game Dev</span>
-            <span className="hero-description">I build useful things with code, curiosity, and a little player energy.</span>
-          </p>
+          <div className="game-hero-copy max-w-[590px] mb-6">
+            <p className="hero-subtitle hero-role-line">{HERO_COPY.role}</p>
+            <p className="hero-description">{HERO_COPY.introduction}</p>
+            <span className="game-dev-chip">{HERO_COPY.secondaryTag}</span>
+          </div>
           
           <div className="relative w-full">
             <div className="flex items-center">
               <div className="flex gap-[16px] flex-wrap">
                 <a href="#work" className="game-button game-button-primary hero-enter-button game-hero-start font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 font-[500] inline-flex items-center gap-3 no-underline">
-                  <span aria-hidden="true">▶</span> Start exploring
+                  <span aria-hidden="true">▶</span> {HERO_COPY.actions.primary}
                 </a>
                 <a href="/cv-lintang-anggowoyuono.pdf" target="_blank" rel="noreferrer" className="game-button game-button-secondary hero-enter-button font-syne-mono text-[10px] sm:text-[11px] tracking-[0.08em] py-3.5 px-5 sm:px-6 inline-flex items-center gap-2 no-underline">
-                  Resume ↓
+                  {HERO_COPY.actions.resume} ↓
                 </a>
+              </div>
+            </div>
+
+            <div className="hero-proof-strip">
+              <div className="hero-social-links" role="group" aria-label={HERO_COPY.socialGroupLabel}>
+                {HERO_COPY.socialLinks.map((social) => (
+                  <a key={social.icon} href={social.href} aria-label={social.label} title={social.label} target="_blank" rel="noreferrer">
+                    <HeroSocialIcon icon={social.icon} />
+                  </a>
+                ))}
               </div>
             </div>
 
             {isDesktop && (
               <div className="game-scroll-hint mt-8 flex items-center gap-3 font-syne-mono text-[9px] tracking-[0.12em] uppercase">
-                <span className="game-scroll-arrow">↓</span> Scroll to continue
+                <span className="game-scroll-arrow">↓</span> {HERO_COPY.actions.scroll}
               </div>
             )}
 
@@ -372,7 +452,7 @@ function HeroSection() {
         </div>
 
         <div className="game-avatar-stage relative flex-none w-[min(330px,calc(100vw-3rem))] lg:w-[390px] mt-3 md:mt-0 reveal-item" data-delay="250">
-          <CharacterCard />
+          <CharacterCard content={HERO_COPY.folio} />
         </div>
 
       </div>

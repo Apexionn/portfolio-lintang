@@ -200,6 +200,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     const nameLines = page?.querySelectorAll(".hero-name-line");
     const copy = page?.querySelector(".game-hero-copy");
     const buttons = page?.querySelectorAll(".hero-enter-button");
+    const proofStrip = page?.querySelector(".hero-proof-strip");
     const cardStage = page?.querySelector(".game-avatar-stage");
     const copyLines = copy?.querySelectorAll(".hero-subtitle, .hero-description");
     if (!path || !svg || !bard || !traveled || !camera || !sheet || !stage || !root || !roll || !page) return undefined;
@@ -236,7 +237,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
     let rollResizeHandler = null;
     const entranceTweens = [];
     const master = makeIntroTimeline();
-    const heroVisibilityTargets = [nav, eyebrow, ...(nameLines ?? []), copy, ...(copyLines ?? []), ...(buttons ?? []), cardStage].filter(Boolean);
+    const heroVisibilityTargets = [nav, eyebrow, ...(nameLines ?? []), copy, ...(copyLines ?? []), ...(buttons ?? []), proofStrip, cardStage].filter(Boolean);
 
     root.dataset.phase = "journey";
     document.body.classList.remove("hero-world-active");
@@ -297,6 +298,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
         { element: copy, enter: () => gsap.fromTo(copy, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: .34, ease: "power2.out", overwrite: true }) },
         ...(copyLines ? [...copyLines].map((line, index) => ({ element: line, enter: () => gsap.fromTo(line, { autoAlpha: 0, y: 9 }, { autoAlpha: 1, y: 0, duration: .26, delay: index * .07, ease: "power2.out", overwrite: true }) })) : []),
         ...(buttons ? [...buttons].map((button, index) => ({ element: button, enter: () => gsap.fromTo(button, { autoAlpha: 0, scale: .88, y: 10 }, { autoAlpha: 1, scale: 1, y: 0, duration: .28, delay: index * .07, ease: "back.out(1.8)", overwrite: true }) })) : []),
+        { element: proofStrip, enter: () => gsap.fromTo(proofStrip, { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: .3, ease: "power2.out", overwrite: true }) },
         { element: cardStage, enter: () => gsap.fromTo(cardStage, { autoAlpha: 0, y: 22, scale: .96 }, { autoAlpha: 1, y: 0, scale: 1, duration: .46, ease: "back.out(1.4)", overwrite: true, onComplete: () => cardStage?.classList.add("hero-card-idle") }) },
       ].filter((target) => target.element).map((target) => ({ ...target, y: 0, entered: false }));
       const measureRollTargets = () => {
