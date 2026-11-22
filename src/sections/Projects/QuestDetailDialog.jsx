@@ -2,60 +2,51 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import ProjectCover from "./ProjectCover";
 
-const DETAIL_FIELDS = [
-  ["The problem", "problem"],
-  ["My approach", "approach"],
-  ["Result", "result"],
-  ["Challenges and learnings", "challenges"],
-];
-
 function hasProjectValue(value) {
-  return typeof value === "string" && value.trim() !== "" && !value.trim().startsWith("TODO:");
+  return typeof value === "string" && value.trim() !== "" && !value.trim().startsWith("TODO");
 }
 
 function projectLinks(project) {
-  const labels = { live: "Live site", github: "GitHub", paper: "Paper", demo: "Demo" };
-  const primaryLinks = Object.entries(project.links ?? {})
+  const labels = { github: "GitHub", paper: "Paper", live: "Live site", demo: "Demo" };
+  return Object.entries(project.links ?? {})
     .filter(([, href]) => Boolean(href))
     .map(([key, href]) => ({ label: labels[key] ?? key, href }));
-  return [...primaryLinks, ...(project.additionalLinks ?? [])];
 }
 
-function Lightbox({ images, index, onClose, onChange }) {
+function CoverLightbox({ project, onClose }) {
   const closeRef = useRef(null);
 
   useEffect(() => closeRef.current?.focus(), []);
 
-  const onKeyDown = (event) => {
+  const handleKeyDown = (event) => {
     if (event.key === "Escape") {
+      event.preventDefault();
       event.stopPropagation();
       onClose();
-    } else if (event.key === "ArrowRight") {
-      event.stopPropagation();
-      onChange((index + 1) % images.length);
-    } else if (event.key === "ArrowLeft") {
-      event.stopPropagation();
-      onChange((index - 1 + images.length) % images.length);
     }
   };
 
   return (
-    <div className="quest-lightbox" role="dialog" aria-modal="true" aria-label={images[index].alt} tabIndex={-1} onKeyDown={onKeyDown} onClick={onClose}>
+    <div className="quest-lightbox" role="dialog" aria-modal="true" aria-label={`${project.title} cover image`} onKeyDown={handleKeyDown} onClick={onClose}>
       <button ref={closeRef} type="button" className="quest-icon-button quest-lightbox__close" aria-label="Close image preview" onClick={onClose}>×</button>
-      {images.length > 1 && <button type="button" className="quest-icon-button quest-lightbox__previous" aria-label="Previous image" onClick={(event) => { event.stopPropagation(); onChange((index - 1 + images.length) % images.length); }}>‹</button>}
-      <img src={images[index].src} alt={images[index].alt} onClick={(event) => event.stopPropagation()} />
-      {images.length > 1 && <button type="button" className="quest-icon-button quest-lightbox__next" aria-label="Next image" onClick={(event) => { event.stopPropagation(); onChange((index + 1) % images.length); }}>›</button>}
-      <p>{images[index].caption || images[index].alt}</p>
+      <img src={project.coverImage} alt={project.coverAlt || `${project.title} project cover`} onClick={(event) => event.stopPropagation()} />
     </div>
   );
 }
 
-export default function QuestDetailDialog({ project, index, total, onClose, onPrevious, onNext, returnFocusRef }) {
+export default function QuestDetailDialog({ project, index, total, previousProject, nextProject, onClose, onPrevious, onNext, returnFocusRef }) {
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
-  const [lightboxIndex, setLightboxIndex] = useState(null);
-  const images = project.gallery ?? [];
+  const coverButtonRef = useRef(null);
+  const lightboxOpenRef = useRef(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const links = projectLinks(project);
+  const metadata = [
+    ["YEAR", project.year],
+    ["STATUS", project.status],
+    ["ROLE", project.role],
+    ["TEAM", project.teamType],
+  ].filter(([, value]) => hasProjectValue(value));
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -64,10 +55,22 @@ export default function QuestDetailDialog({ project, index, total, onClose, onPr
     closeRef.current?.focus();
 
     const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
-      if (event.key === "ArrowLeft") onPrevious();
-      if (event.key === "ArrowRight") onNext();
-      if (event.key === "Tab") {
+      if (event.key === "Escape") {
+        onClose();
+      } else if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        onPrevious();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        onNext();
+      } else if (event.key === "Tab") {
+        if (lightboxOpenRef.current) {
+          const lightboxClose = dialogRef.current?.querySelector(".quest-lightbox__close");
+          event.preventDefault();
+          lightboxClose?.focus();
+          return;
+        }
+
         const focusable = dialogRef.current?.querySelectorAll('button:not([disabled]), a[href]');
         if (!focusable?.length) return;
         const first = focusable[0];
@@ -90,88 +93,77 @@ export default function QuestDetailDialog({ project, index, total, onClose, onPr
     };
   }, [onClose, onNext, onPrevious, returnFocusRef]);
 
-  const research = project.research;
+  const closeLightbox = () => {
+    lightboxOpenRef.current = false;
+    setIsLightboxOpen(false);
+    window.requestAnimationFrame(() => coverButtonRef.current?.focus());
+  };
+  const openLightbox = () => {
+    lightboxOpenRef.current = true;
+    setIsLightboxOpen(true);
+  };
 
   return createPortal(
     <div className="quest-dialog-backdrop" onClick={onClose}>
       <article ref={dialogRef} className="quest-dialog" role="dialog" aria-modal="true" aria-labelledby="quest-dialog-title" onClick={(event) => event.stopPropagation()}>
         <header className="quest-dialog__header">
           <div className="quest-dialog__window-lights" aria-hidden="true"><i /><i /><i /></div>
-          <p className="quest-dialog__eyebrow">QUEST {project.questNumber}{hasProjectValue(project.status) && <> <span>·</span> {project.status}</>}</p>
+          <p className="quest-dialog__eyebrow">QUEST {project.questNumber}</p>
           <button ref={closeRef} type="button" className="quest-icon-button" aria-label="Close quest details" onClick={onClose}>×</button>
         </header>
 
-        <div className="quest-dialog__body">
+        <div className="quest-dialog__body quest-dialog__content">
           <div className="quest-dialog__title-row">
             <div>
               <p className="quest-dialog__subtitle">{project.subtitle}</p>
               <h2 id="quest-dialog-title">{project.title}</h2>
             </div>
-              {hasProjectValue(project.year) && <span className="quest-dialog__year">{project.year}</span>}
           </div>
 
-          {hasProjectValue(project.role) && <p className="quest-dialog__role"><span>MY ROLE</span>{project.role}</p>}
+          {metadata.length > 0 && (
+            <dl className="quest-dialog__metadata" aria-label="Project details">
+              {metadata.map(([label, value]) => (
+                <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
+              ))}
+            </dl>
+          )}
 
           <div className="quest-dialog__feature-grid">
             <div className="quest-dialog__cover-wrap">
-              {project.coverImage ? (
-                <button type="button" className="quest-dialog__cover-button" onClick={() => setLightboxIndex(0)} aria-label={`Open ${project.title} cover image`}>
-                  <ProjectCover project={project} variant="detail" />
-                </button>
-              ) : <ProjectCover project={project} variant="detail" />}
-              {images.length > 0 && (
-                <div className="quest-dialog__gallery" aria-label="Project gallery">
-                  {images.map((image, imageIndex) => (
-                    <button type="button" key={image.src} onClick={() => setLightboxIndex(imageIndex)} aria-label={`Open image ${imageIndex + 1}: ${image.alt}`}>
-                      <img src={image.src} alt="" loading="lazy" width="120" height="75" />
-                    </button>
-                  ))}
-                </div>
+              <button ref={coverButtonRef} type="button" className="quest-dialog__cover-button" onClick={openLightbox} aria-label={`Open ${project.title} cover image`}>
+                <ProjectCover project={project} variant="detail" />
+                <span className="quest-dialog__image-hint">VIEW COVER ↗</span>
+              </button>
+            </div>
+
+            <div className="quest-dialog__story-column">
+              <section className="quest-dialog__story-card">
+                <span className="quest-dialog__field-label">OVERVIEW</span>
+                <p>{project.description}</p>
+              </section>
+
+              {project.keyFeatures?.length > 0 && (
+                <section className="quest-dialog__story-card">
+                  <h3>Key features</h3>
+                  <ul className="quest-dialog__feature-list">
+                    {project.keyFeatures.map((feature) => <li key={feature}>{feature}</li>)}
+                  </ul>
+                </section>
+              )}
+
+              {project.challenge && (
+                <section className="quest-dialog__story-card quest-dialog__challenge">
+                  <h3>Challenge</h3>
+                  <p><span>The challenge</span>{project.challenge.description}</p>
+                  <p><span>My approach</span>{project.challenge.approach}</p>
+                </section>
               )}
             </div>
-            <div className="quest-dialog__impact-panel">
-              {hasProjectValue(project.impact) && <><span className="quest-dialog__field-label">IMPACT</span><p>{project.impact}</p></>}
-              <span className="quest-dialog__field-label">OVERVIEW</span>
-              <p>{project.description}</p>
-            </div>
           </div>
-
-          <div className="quest-dialog__detail-grid">
-            {DETAIL_FIELDS.filter(([, key]) => hasProjectValue(project.details[key])).map(([label, key]) => (
-              <section key={key}>
-                <h3>{label}</h3>
-                <p>{project.details[key]}</p>
-              </section>
-            ))}
-          </div>
-
-            {project.highlights?.some(hasProjectValue) && (
-            <section className="quest-dialog__highlights">
-              <h3>Quest notes</h3>
-                <ul>{project.highlights.filter(hasProjectValue).map((highlight) => <li key={highlight}>{highlight}</li>)}</ul>
-            </section>
-          )}
-
-          {research && (
-            <section className="quest-dialog__research">
-              <h3>Research record</h3>
-              <dl>
-                {[
-                  ["Research question", research.question],
-                  ["Dataset", research.dataset],
-                  ["Models compared", research.models?.join(" · ")],
-                  ["Evaluation method", research.evaluation],
-                  ["Key findings", research.findings],
-                ].filter(([, value]) => hasProjectValue(value)).map(([label, value]) => (
-                  <div key={label}><dt>{label}</dt><dd>{value}</dd></div>
-                ))}
-              </dl>
-            </section>
-          )}
 
           <section className="quest-dialog__tech">
             <h3>Tech used</h3>
-            <div>{project.techStack.map((tech) => <span className="game-tag" key={tech}>{tech}</span>)}</div>
+            <div>{(project.techStack ?? []).map((tech) => <span className="game-tag" key={tech}>{tech}</span>)}</div>
           </section>
 
           {links.length > 0 && (
@@ -183,14 +175,13 @@ export default function QuestDetailDialog({ project, index, total, onClose, onPr
           )}
 
           <nav className="quest-dialog__pager" aria-label="Browse projects">
-            <button type="button" onClick={onPrevious}>← Previous quest</button>
+            <button type="button" onClick={onPrevious} title={`Previous: ${previousProject.title}`}><span aria-hidden="true">←</span><span className="quest-dialog__pager-label">Previous: {previousProject.title}</span></button>
             <span>{index + 1} / {total}</span>
-            <button type="button" onClick={onNext}>Next quest →</button>
+            <button type="button" onClick={onNext} title={`Next: ${nextProject.title}`}><span className="quest-dialog__pager-label">Next: {nextProject.title}</span><span aria-hidden="true">→</span></button>
           </nav>
         </div>
-        {lightboxIndex !== null && images.length > 0 && (
-          <Lightbox images={images} index={lightboxIndex} onClose={() => setLightboxIndex(null)} onChange={setLightboxIndex} />
-        )}
+
+        {isLightboxOpen && <CoverLightbox project={project} onClose={closeLightbox} />}
       </article>
     </div>,
     document.body

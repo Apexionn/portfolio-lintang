@@ -147,6 +147,8 @@ export default function ProjectsSection() {
         project={selectedProject}
         index={selectedIndex}
         total={PROJECTS.length}
+        previousProject={PROJECTS[(selectedIndex - 1 + PROJECTS.length) % PROJECTS.length]}
+        nextProject={PROJECTS[(selectedIndex + 1) % PROJECTS.length]}
         onClose={closeQuest}
         onPrevious={previousQuest}
         onNext={nextQuest}

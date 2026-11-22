@@ -80,7 +80,8 @@
 .quest-cover__sigil { display:grid;place-items:center;width:46px;height:46px;border:1px solid #c8ef76;border-radius:3px;color:#c8ef76;font:700 15px/1 'Press Start 2P',monospace;text-shadow:2px 2px 0 #0b1122;box-shadow:3px 3px 0 #0b1122; }
 .quest-cover__placeholder-title { font:10px/1.4 'Syne Mono',monospace;letter-spacing:.05em; }
 .quest-cover__inner-frame { position:absolute;inset:5px;border:1px solid rgba(199,215,242,.2);border-radius:3px;pointer-events:none; }
-.quest-cover--detail { aspect-ratio:16 / 9; }
+.quest-cover--detail { aspect-ratio:4 / 3;background:#111a30; }
+.quest-cover--detail .quest-cover__image { position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#111a30; }
 .quest-cover--detail .quest-cover__sigil { width:56px;height:56px;font-size:17px; }
 .quest-cover--detail .quest-cover__placeholder-title { font-size:12px; }
 
@@ -89,7 +90,7 @@
   position:relative;
   display:flex;
   flex-direction:column;
-  width:min(100%,1020px);
+  width:min(100%,1080px);
   max-height:min(92dvh,1000px);
   overflow:hidden;
   border:2px solid #7182a7;
@@ -107,51 +108,50 @@
 .quest-dialog__eyebrow { flex:1;margin:0;color:#aebbd6;font:9px/1.4 'Syne Mono',monospace;letter-spacing:.09em;text-transform:uppercase; }
 .quest-dialog__eyebrow span { color:#ff917d; }
 .quest-icon-button { display:grid;place-items:center;width:34px;height:34px;border:1px solid #62708f;border-radius:5px;background:#202a46;color:#f6efd9;font:24px/1 'DM Mono',monospace; }
-.quest-dialog__body { overflow:auto;padding:clamp(18px,3.5vw,34px);overscroll-behavior:contain; }
+.quest-icon-button:focus-visible { outline:2px solid #f6efd9;outline-offset:2px; }
+.quest-dialog__body { overflow:auto;padding:clamp(22px,3.5vw,36px);overscroll-behavior:contain; }
+.quest-dialog__content { animation:quest-content-in .2s ease both; }
 .quest-dialog__title-row { display:flex;align-items:flex-start;justify-content:space-between;gap:16px; }
-.quest-dialog__subtitle { margin:0 0 4px;color:#ffb2a3;font:10px/1.4 'Syne Mono',monospace;letter-spacing:.04em; }
+.quest-dialog__subtitle { margin:0 0 6px;color:#ffb2a3;font:12px/1.4 'Syne Mono',monospace;letter-spacing:.04em; }
 .quest-dialog__title-row h2 { margin:0;color:#f6efd9;font:800 clamp(25px,4vw,39px)/1.1 'Syne',sans-serif; }
-.quest-dialog__year { max-width:190px;padding-top:4px;color:#aebbd6;text-align:right;font:10px/1.5 'DM Mono',monospace; }
-.quest-dialog__role { display:flex;flex-wrap:wrap;gap:9px;margin:14px 0 20px;color:#d1d9ec;font:12px/1.5 'DM Mono',monospace; }
-.quest-dialog__role span,.quest-dialog__field-label { color:#c8ef76;font:9px/1.6 'Syne Mono',monospace;letter-spacing:.1em; }
-.quest-dialog__feature-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.85fr);gap:20px;align-items:start; }
-.quest-dialog__cover-button { display:block;width:100%;padding:0;border:0;background:transparent;text-align:left; }
-.quest-dialog__impact-panel { display:flex;flex-direction:column;align-items:flex-start;gap:7px;padding:17px;border:1px solid #536486;border-left:3px solid #c8ef76;border-radius:6px;background:#19243f; }
-.quest-dialog__impact-panel p { margin:0 0 8px;color:#d1d9ec;font:12px/1.65 'DM Mono',monospace; }
-.quest-dialog__impact-panel p:last-child { margin-bottom:0; }
-.quest-dialog__detail-grid { display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px; }
-.quest-dialog__detail-grid section,.quest-dialog__highlights,.quest-dialog__research,.quest-dialog__tech { min-width:0;padding:14px;border:1px solid #485777;border-radius:6px;background:rgba(23,33,59,.6); }
-.quest-dialog h3 { margin:0 0 7px;color:#f6efd9;font:700 13px/1.4 'Syne',sans-serif; }
-.quest-dialog__detail-grid p { margin:0;color:#c4cde0;font:11px/1.6 'DM Mono',monospace;overflow-wrap:anywhere; }
-.quest-dialog__highlights,.quest-dialog__research,.quest-dialog__tech { margin-top:12px; }
-.quest-dialog__highlights ul { display:grid;gap:7px;margin:0;padding:0;list-style:none; }
-.quest-dialog__highlights li { position:relative;padding-left:17px;color:#c4cde0;font:11px/1.5 'DM Mono',monospace; }
-.quest-dialog__highlights li::before { content:'✦';position:absolute;left:0;color:#c8ef76; }
-.quest-dialog__research dl { display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;margin:0; }
-.quest-dialog__research dl div { min-width:0; }
-.quest-dialog__research dt { margin-bottom:4px;color:#aebbd6;font:9px/1.4 'Syne Mono',monospace;text-transform:uppercase; }
-.quest-dialog__research dd { margin:0;color:#d1d9ec;font:11px/1.5 'DM Mono',monospace;overflow-wrap:anywhere; }
+.quest-dialog__metadata { display:flex;flex-wrap:wrap;gap:7px;margin:16px 0 24px; }
+.quest-dialog__metadata div { display:flex;align-items:baseline;gap:7px;max-width:100%;padding:6px 9px;border:1px solid #536486;border-radius:4px;background:#19243f; }
+.quest-dialog__metadata dt { flex:none;color:#c8ef76;font:9px/1.4 'Syne Mono',monospace;letter-spacing:.08em; }
+.quest-dialog__metadata dd { min-width:0;margin:0;color:#e1e7f3;font:11px/1.4 'DM Mono',monospace;overflow-wrap:anywhere; }
+.quest-dialog__feature-grid { display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:24px;align-items:start; }
+.quest-dialog__cover-wrap { min-width:0;padding-top:2px; }
+.quest-dialog__cover-button { position:relative;display:block;width:100%;padding:0;border:0;background:transparent;text-align:left;cursor:zoom-in; }
+.quest-dialog__cover-button:focus-visible { outline:2px solid #f6efd9;outline-offset:4px; }
+.quest-dialog__image-hint { position:absolute;right:10px;bottom:10px;padding:5px 7px;border:1px solid #7182a7;border-radius:3px;background:rgba(17,26,48,.92);color:#e1e7f3;font:9px/1.2 'Syne Mono',monospace; }
+.quest-dialog__story-column { display:grid;gap:10px;min-width:0; }
+.quest-dialog__story-card,.quest-dialog__tech { min-width:0;padding:13px;border:1px solid #485777;border-radius:6px;background:rgba(23,33,59,.72); }
+.quest-dialog__story-card:first-child { border-left:3px solid #c8ef76; }
+.quest-dialog h3 { margin:0 0 8px;color:#f6efd9;font:700 14px/1.4 'Syne',sans-serif; }
+.quest-dialog__field-label { display:block;margin-bottom:7px;color:#c8ef76;font:10px/1.6 'Syne Mono',monospace;letter-spacing:.1em; }
+.quest-dialog__story-card p { margin:0;color:#d1d9ec;font:14px/1.55 'DM Mono',monospace;overflow-wrap:anywhere; }
+.quest-dialog__feature-list { display:grid;gap:7px;margin:0;padding:0;list-style:none; }
+.quest-dialog__feature-list li { position:relative;padding-left:19px;color:#d1d9ec;font:14px/1.5 'DM Mono',monospace;overflow-wrap:anywhere; }
+.quest-dialog__feature-list li::before { content:'◆';position:absolute;left:0;top:.18em;color:#c8ef76;font:9px/1 'Syne Mono',monospace; }
+.quest-dialog__challenge p + p { margin-top:10px; }
+.quest-dialog__challenge p span { display:block;margin-bottom:3px;color:#ffb2a3;font:10px/1.5 'Syne Mono',monospace;letter-spacing:.06em;text-transform:uppercase; }
+.quest-dialog__tech { display:flex;align-items:flex-start;gap:15px;margin-top:16px;padding:10px 12px; }
+.quest-dialog__tech h3 { flex:none;margin:4px 0 0;font:700 12px/1.4 'Syne',sans-serif; }
 .quest-dialog__tech > div { display:flex;flex-wrap:wrap;gap:6px; }
-.quest-dialog__tech .game-tag { padding:5px 8px;font:12px/1.2 'DM Mono',monospace; }
-.quest-dialog__links { display:flex;flex-wrap:wrap;gap:9px;margin-top:14px; }
+.quest-dialog__tech .game-tag { padding:4px 7px;font:11px/1.2 'DM Mono',monospace; }
+.quest-dialog__links { display:flex;flex-wrap:wrap;gap:9px;margin-top:12px; }
 .quest-dialog__links a,.quest-dialog__pager button { display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:9px 12px;border:1px solid #7182a7;border-radius:5px;background:#17213b;color:#f6efd9;text-decoration:none;font:12px/1.25 'Syne Mono',monospace; }
 .quest-dialog__links a:hover,.quest-dialog__pager button:hover { border-color:#c8ef76;color:#c8ef76; }
 .quest-dialog__pager { display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:22px;padding-top:14px;border-top:1px solid #536486; }
 .quest-dialog__pager span { color:#aebbd6;font:10px/1.4 'Syne Mono',monospace; }
 .quest-dialog__pager button { cursor:pointer; }
-.quest-dialog__gallery { display:flex;gap:8px;margin-top:9px;overflow:auto; }
-.quest-dialog__gallery button { flex:none;width:88px;height:56px;padding:0;overflow:hidden;border:1px solid #62708f;border-radius:4px;background:#17213b; }
-.quest-dialog__gallery img { width:100%;height:100%;object-fit:cover; }
-.quest-lightbox { position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:55px 24px 65px;background:rgba(6,9,17,.97); }
+.quest-dialog__pager-label { display:block;max-width:clamp(90px,22vw,220px);overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+.quest-lightbox { position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:center;padding:54px 24px;background:rgba(6,9,17,.97);animation:quest-overlay-in .12s ease both; }
 .quest-lightbox > img { max-width:100%;max-height:100%;object-fit:contain; }
-.quest-lightbox p { position:absolute;bottom:14px;left:14px;right:14px;margin:0;color:#d1d9ec;text-align:center;font:10px/1.45 'DM Mono',monospace; }
 .quest-lightbox__close { position:absolute;top:12px;right:12px; }
-.quest-lightbox__previous,.quest-lightbox__next { position:absolute;top:50%;width:40px;height:40px;font-size:28px; }
-.quest-lightbox__previous { left:12px; }
-.quest-lightbox__next { right:12px; }
 
 @keyframes quest-overlay-in { from { opacity:0; } to { opacity:1; } }
 @keyframes quest-panel-in { from { opacity:0;transform:translateY(7px); } to { opacity:1;transform:translateY(0); } }
+@keyframes quest-content-in { from { opacity:0;transform:translateY(5px); } to { opacity:1;transform:translateY(0); } }
 
 @media (min-width:640px) { .quest-filters { display:flex; } }
 @media (max-width:1023px) {
@@ -161,11 +161,17 @@
   .quest-project-grid { grid-template-columns:1fr; }
   .quest-dialog-backdrop { align-items:stretch;padding:0; }
   .quest-dialog { width:100%;max-height:100dvh;border-radius:0;border-width:0; }
-  .quest-dialog__feature-grid,.quest-dialog__detail-grid,.quest-dialog__research dl { grid-template-columns:1fr; }
+  .quest-dialog__feature-grid { grid-template-columns:1fr;gap:15px; }
   .quest-dialog__body { padding:18px 16px calc(20px + env(safe-area-inset-bottom)); }
-  .quest-dialog__pager button { padding-inline:8px;font-size:9px; }
+  .quest-dialog__metadata { margin:13px 0 19px; }
+  .quest-dialog__metadata div { padding:5px 7px; }
+  .quest-dialog__metadata dd { font-size:10px; }
+  .quest-dialog__story-card,.quest-dialog__tech { padding:12px; }
+  .quest-dialog__pager { gap:5px; }
+  .quest-dialog__pager button { min-width:0;padding:8px 7px;font-size:9px; }
+  .quest-dialog__pager-label { max-width:27vw; }
 }
 @media (prefers-reduced-motion:reduce) {
-  .quest-project-grid,.quest-filters button,.quest-card,.quest-cover__image,.quest-dialog-backdrop,.quest-dialog { transition:none;animation:none; }
+  .quest-project-grid,.quest-filters button,.quest-card,.quest-cover__image,.quest-dialog-backdrop,.quest-dialog,.quest-dialog__content,.quest-lightbox { transition:none;animation:none; }
   .quest-card:hover,.quest-filters button:hover { transform:none; }
 }
