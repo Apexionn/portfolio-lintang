@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <>
-    <div className="game-page relative w-full overflow-x-hidden min-h-screen" inert={showJourney} aria-hidden={showJourney}>
+    <div className="game-page relative w-full min-h-[100svh]" inert={showJourney} aria-hidden={showJourney}>
       <GameWorldBackground />
       <Nav />
       <main>

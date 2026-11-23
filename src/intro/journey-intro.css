@@ -182,7 +182,6 @@
   letter-spacing:.13em;
 }
 .journey-intro-leaving { pointer-events:none; }
-.game-page[inert] .game-nav,
 .game-page[inert] .game-eyebrow,
 .game-page[inert] .hero-name-line,
 .game-page[inert] .game-hero-copy,
@@ -191,6 +190,7 @@
 .game-page[inert] .hero-enter-button,
 .game-page[inert] .hero-proof-strip,
 .game-page[inert] .game-avatar-stage { visibility:hidden; }
+.game-page[inert] .game-nav { opacity:0; }
 .journey-scroll-roll {
   --roll-y: 100vh;
   --roll-scale-y: .09;

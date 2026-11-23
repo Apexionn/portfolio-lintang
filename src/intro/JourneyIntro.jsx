@@ -241,7 +241,8 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
 
     root.dataset.phase = "journey";
     document.body.classList.remove("hero-world-active");
-    gsap.set(heroVisibilityTargets, { autoAlpha: 0, y: 16 });
+    gsap.set(heroVisibilityTargets.filter((target) => target !== nav), { autoAlpha: 0, y: 16 });
+    gsap.set(nav, { autoAlpha: 0, y: 0 });
     gsap.set(stage, { opacity: 1, clipPath: "inset(0% 0 0% 0 round 0%)" });
     gsap.set(sheet, { x: 0, y: 0, scaleX: 1, scaleY: 1, transformOrigin: "top left" });
     gsap.set(roll, { autoAlpha: 0 });
@@ -292,7 +293,7 @@ function FantasyMap({ reduced = false, short = false, onEnter, rootRef, skipRef 
       document.body.classList.add("hero-world-active");
       window.dispatchEvent(new Event("portfolio-world-enter"));
       rollTargets = [
-        { element: nav, enter: () => gsap.fromTo(nav, { autoAlpha: 0, y: -28 }, { autoAlpha: 1, y: 0, duration: .38, ease: "power2.out", overwrite: true }) },
+        { element: nav, enter: () => gsap.fromTo(nav, { autoAlpha: 0, y: -12 }, { autoAlpha: 1, y: 0, duration: .38, ease: "power2.out", overwrite: true }) },
         { element: eyebrow, enter: () => gsap.fromTo(eyebrow, { autoAlpha: 0, y: 14 }, { autoAlpha: 1, y: 0, duration: .32, ease: "power2.out", overwrite: true }) },
         ...(nameLines ? [...nameLines].map((line, index) => ({ element: line, enter: () => gsap.fromTo(line, { autoAlpha: 0, y: 22, clipPath: "inset(0 0 100% 0)" }, { autoAlpha: 1, y: 0, clipPath: "inset(0 0 0% 0)", duration: .38, delay: index * .09, ease: "power3.out", overwrite: true }) })) : []),
         { element: copy, enter: () => gsap.fromTo(copy, { autoAlpha: 0, y: 16 }, { autoAlpha: 1, y: 0, duration: .34, ease: "power2.out", overwrite: true }) },

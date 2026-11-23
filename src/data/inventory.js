@@ -32,8 +32,6 @@ export const INVENTORY_ITEMS = [
   { id: "docker", name: "Docker", category: "Tools", icon: "container", level: 1, draftFields: ["level"] },
 ];
 
-// REVIEW: draft side quest, edit to match reality.
 export const INVENTORY_SIDE_QUEST = {
-  text: "Learning Unity and Three.js by building small game prototypes",
-  draft: true,
+  text: "UI X AI Project",
 };
